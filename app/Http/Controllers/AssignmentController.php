@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Assignment;
+use App\Models\Equipment;
+use Illuminate\Http\Request;
+
+class AssignmentController extends Controller
+{
+    public function index()
+    {
+        return response()->json(
+            Assignment::with([
+                'equipment.brand',
+                'equipment.model',
+                'employee.department',
+                ])->get()
+        );
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'equipment_id'  => 'required|exists:equipment,id',
+            'employee_id'   => 'required|exists:employees,id',
+            'date_assigned' => 'required|date',
+            'notes'         => 'nullable|string',
+        ]);
+
+        // Make sure equipment is Available before assigning
+        $equipment = Equipment::findOrFail($request->equipment_id);
+
+        if ($equipment->status !== 'Available' && $equipment->status !== 'Spare Unit') {
+            return response()->json(['message' => 'Equipment is not available for assignment'], 422);
+        }
+
+        $assignment = Assignment::create($request->only(
+            'equipment_id', 'employee_id', 'date_assigned', 'notes'
+        ));
+
+        // Update equipment status to Assigned
+        $equipment->update(['status' => 'Assigned']);
+
+        return response()->json($assignment->load(['equipment', 'employee']), 201);
+    }
+
+    public function return(Request $request, Assignment $assignment)
+    {
+        $request->validate([
+            'date_returned' => 'required|date',
+            'notes'         => 'nullable|string',
+        ]);
+
+        $assignment->update([
+            'date_returned' => $request->date_returned,
+            'notes'         => $request->notes ?? $assignment->notes,
+        ]);
+
+        // Set equipment back to Available
+        $assignment->equipment->update(['status' => 'Available']);
+
+        return response()->json($assignment->load(['equipment', 'employee']));
+    }
+
+    public function show(Assignment $assignment)
+    {
+        return response()->json($assignment->load(['equipment', 'employee']));
+    }
+}

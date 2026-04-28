@@ -1,0 +1,122 @@
+import React, { useEffect, useState } from 'react';
+import { Laptop } from 'lucide-react';
+import api from '../../api/axios';
+
+export default function EmployeeList() {
+    const [employees, setEmployees] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                const response = await api.get('/employees');
+                setEmployees(response.data);
+            } catch (error) {
+                console.error('Failed to fetch employees:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEmployees();
+    }, []);
+
+    // Group employees by department
+    const groupedByDepartment = employees.reduce((groups, employee) => {
+        const dept = employee.department?.name || 'Unassigned';
+        if (!groups[dept]) groups[dept] = [];
+        groups[dept].push(employee);
+        return groups;
+    }, {});
+
+    const hasActiveAssignment = (employee) => {
+        return employee.assignments && employee.assignments.length > 0;
+    };
+
+    // Loading skeleton
+    if (loading) {
+        return (
+            <div className="p-6">
+                <div className="skeleton h-6 w-36 rounded mb-2"></div>
+                <div className="skeleton h-3 w-24 rounded mb-6"></div>
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="skeleton h-8 w-32 rounded m-4"></div>
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between px-4 py-3 border-t">
+                            <div className="skeleton h-3 w-40 rounded"></div>
+                            <div className="skeleton h-3 w-24 rounded"></div>
+                            <div className="skeleton h-5 w-5 rounded"></div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-6">
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Employees</h1>
+                <p className="text-sm text-gray-500 mt-1">
+                    {employees.length} employee{employees.length !== 1 ? 's' : ''} total
+                </p>
+            </div>
+
+            {/* Grouped Tables */}
+            <div className="space-y-6">
+                {Object.entries(groupedByDepartment).map(([deptName, deptEmployees]) => (
+                    <div key={deptName} className="bg-white rounded-lg shadow overflow-hidden">
+
+                        {/* Department Header */}
+                        <div className="bg-gray-50 px-4 py-3 border-b">
+                            <h2 className="text-sm font-semibold text-gray-700">{deptName}</h2>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                                {deptEmployees.length} employee{deptEmployees.length !== 1 ? 's' : ''}
+                            </p>
+                        </div>
+
+                        {/* Employee Table */}
+                        <table className="w-full text-sm">
+                            <thead className="text-gray-500 uppercase text-xs border-b">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">Name</th>
+                                    <th className="px-4 py-3 text-left">Department</th>
+                                    <th className="px-4 py-3 text-center">Assigned Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {deptEmployees.slice(0, 10).map((employee) => (
+                                    <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-gray-800">
+                                            {employee.name}
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-500">
+                                            {employee.department?.tag}
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <Laptop
+                                                size={18}
+                                                className={
+                                                    hasActiveAssignment(employee)
+                                                        ? 'text-blue-500 mx-auto'
+                                                        : 'text-gray-300 mx-auto'
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ))}
+
+                {/* Empty State */}
+                {employees.length === 0 && (
+                    <div className="text-center py-16 text-gray-400">
+                        <p className="text-sm">No employees found.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

@@ -10,6 +10,7 @@ use App\Http\Controllers\EquipmentModelController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\BulkImportController;
 
 // Public Routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -47,4 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('assignments', [AssignmentController::class, 'store']);
     Route::get('assignments/{assignment}', [AssignmentController::class, 'show']);
     Route::patch('assignments/{assignment}/return', [AssignmentController::class, 'return']);
+
+    //Bulk Import
+    Route::get('/bulk-import/equipment-template', [BulkImportController::class, 'downloadEquipmentTemplate']);
 });

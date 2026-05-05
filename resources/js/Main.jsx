@@ -7,6 +7,7 @@ import EquipmentAddEdit from './pages/equipment/EquipmentAddEdit';
 import EquipmentDetail from './pages/equipment/EquipmentDetail';
 import EmployeeList from './pages/employees/EmployeeList';
 import AssignmentList from './pages/assignments/AssignmentList';
+import BulkImport from './pages/bulk/BulkImport';
 import Layout from './components/Layout';
 
 const isAuthenticated = () => !!localStorage.getItem('token');
@@ -36,6 +37,7 @@ export default function Main() {
                     <Route path="equipment/:id" element={<EquipmentDetail />} />
                     <Route path="employees" element={<EmployeeList />} />
                     <Route path="assignments" element={<AssignmentList />} />
+                    <Route path="bulk-import" element={<BulkImport />} />
                 </Route>
             </Routes>
         </BrowserRouter>

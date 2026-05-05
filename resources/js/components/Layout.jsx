@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Laptop, Users, ClipboardList, LogOut, Settings, ChevronDown, ChevronRight, Building2, Tag, Truck } from 'lucide-react';
+import { LayoutDashboard, Laptop, Users, ClipboardList, LogOut, Settings, ChevronDown, ChevronRight, Building2, Tag, Truck, Upload, FileSpreadsheet } from 'lucide-react';
 import ManageDepartmentsModal from './ManageDepartmentsModal';
 import ManageBrandsModelsModal from './ManageBrandsModelsModal';
 import ManageSuppliersModal from './ManageSuppliersModal';
@@ -16,6 +16,7 @@ export default function Layout() {
     const [showBrandsModelsModal, setShowBrandsModelsModal] = useState(false);
     const [showSuppliersModal, setShowSuppliersModal] = useState(false);
     const [showEmployeesModal, setShowEmployeesModal] = useState(false);
+    const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
 
     const handleLogout = async () => {
         localStorage.removeItem('token');
@@ -111,6 +112,44 @@ export default function Layout() {
                             )}
                         </div>
                     )}
+
+                    {/* Bulk Actions Section — Admin Only */}
+                    {isAdmin && (
+                        <div className="pt-2">
+                            <button
+                            onClick={() => setBulkActionsOpen(!bulkActionsOpen)}
+                            className="flex items-center justify-between w-full px-3 py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                            >
+                               <div className="flex items-center gap-3">
+                                <Upload size={18} />
+                                Bulk Actions
+                                </div>
+                                {bulkActionsOpen
+                                ? <ChevronDown size={14} />
+                                : <ChevronRight size={14} />
+                                }
+                            </button>
+
+                            {bulkActionsOpen && (
+                                <div className="mt-1 ml-4 space-y-1">
+                                    <NavLink
+                                    to="/bulk-import"
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${
+                                            isActive
+                                            ? 'bg-blue-50 text-blue-600'
+                                            : 'text-gray-600 hover:bg-gray-100'
+                                        }`
+                                    }
+                                    >
+                                        <FileSpreadsheet size={16} />
+                                        Bulk Import
+                                    </NavLink>
+                                    </div>
+                                )}
+                                </div>
+                            )}
+
                 </nav>
 
                 <div className="p-4 border-t">

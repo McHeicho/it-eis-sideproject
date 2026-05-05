@@ -120,13 +120,11 @@ export default function AssignmentList() {
         setAssignErrors({});
         try {
             await api.post('/assignments', assignForm);
+            await fetchAll();
             setShowAssignModal(false);
-            fetchAll();
         } catch (error) {
             if (error.response?.status === 422) {
                 setAssignErrors(error.response.data.errors);
-            } else if (error.response?.status === 422) {
-                setAssignErrors({ general: [error.response.data.message] });
             } else {
                 console.error('Failed to assign:', error);
             }
@@ -142,8 +140,8 @@ export default function AssignmentList() {
         setReturnErrors({});
         try {
             await api.patch(`/assignments/${selectedAssignment.id}/return`, returnForm);
+            await fetchAll();
             setShowReturnModal(false);
-            fetchAll();
         } catch (error) {
             if (error.response?.status === 422) {
                 setReturnErrors(error.response.data.errors);

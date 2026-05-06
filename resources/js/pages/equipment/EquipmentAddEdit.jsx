@@ -14,6 +14,8 @@ export default function EquipmentAdd() {
     const [allModels, setAllModels] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [dropdownsLoading, setDropdownsLoading] = useState(true);
+    const [conditionOptions, setConditionOptions] = useState([]);
+    const [statusOptions, setStatusOptions] = useState([]);
 
     const [form, setForm] = useState({
         equipment_type_id: '',
@@ -34,16 +36,19 @@ export default function EquipmentAdd() {
     useEffect(() => {
         const fetchDropdowns = async () => {
             try {
-                const [typesRes, brandsRes, suppliersRes, modelsRes] = await Promise.all([
+                const [typesRes, brandsRes, suppliersRes, modelsRes, optionsRes] = await Promise.all([
                     api.get('/equipment-types'),
                     api.get('/brands'),
                     api.get('/suppliers'),
                     api.get('/equipment-models'),
+                    api.get('/equipment/options'),
                 ]);
                 setEquipmentTypes(typesRes.data);
                 setBrands(brandsRes.data);
                 setSuppliers(suppliersRes.data);
                 setAllModels(modelsRes.data);
+                setConditionOptions(optionsRes.data.conditions);
+                setStatusOptions(optionsRes.data.statuses);
                 if (isEditMode) {
                     const equipmentRes = await api.get(`/equipment/${id}`);
                     const eq = equipmentRes.data;
@@ -334,8 +339,9 @@ export default function EquipmentAdd() {
                             className={inputClass}
                         >
                             <option value="">Select Condition</option>
-                            <option value="Good">Good</option>
-                            <option value="Defective">Defective</option>
+                            {conditionOptions.map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                                ))}
                         </select>
                         {errors.condition && <p className={errorClass}>{errors.condition[0]}</p>}
                     </div>
@@ -351,11 +357,11 @@ export default function EquipmentAdd() {
                             {form.status === 'Assigned' && (
                                 <option value="Assigned">Assigned</option>
                             )}
-                            <option value="Available">Available</option>
-                            <option value="Under Repair">Under Repair</option>
-                            <option value="Lost/Missing">Lost/Missing</option>
-                            <option value="Retired/Disposed">Retired/Disposed</option>
-                            <option value="Spare Unit">Spare Unit</option>
+                            {statusOptions
+                            .filter((s) => s !== 'Assigned')
+                            .map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
                         </select>
                         {form.status === 'Assigned' && (
                             <p className="text-xs text-gray-400 mt-1">Status is locked while equipment is assigned. Use Return Equipment to change it.</p>

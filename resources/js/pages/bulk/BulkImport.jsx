@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { FileSpreadsheet, Users, ClipboardList } from 'lucide-react';
+import { FileSpreadsheet, Users, ClipboardList, Upload } from 'lucide-react';
 import api from '../../api/axios';
 
 export default function BulkImport() {
     const [downloading, setDownloading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [importResult, setImportResult] = useState(null);
 
     const handleDownloadTemplate = async () => {
         setDownloading(true);
@@ -25,6 +28,25 @@ export default function BulkImport() {
             setDownloading(false);
         }
     };
+
+    const handleUpload = async () => {
+    if (!selectedFile) return;
+    setUploading(true);
+    setImportResult(null);
+    try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const response = await api.post('/bulk-import/equipment', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setImportResult(response.data);
+        setSelectedFile(null);
+    } catch (error) {
+        console.error('Failed to import:', error);
+    } finally {
+        setUploading(false);
+    }
+};
 
     return (
         <div className="p-6">
@@ -48,14 +70,76 @@ export default function BulkImport() {
                     <p className="text-sm text-gray-500 mb-4">
                         Download the equipment template, fill in your records, then upload to register multiple equipment items at once.
                     </p>
-                    <button
-                        onClick={handleDownloadTemplate}
-                        disabled={downloading}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <FileSpreadsheet size={16} />
-                        {downloading ? 'Generating...' : 'Generate Template'}
-                    </button>
+                    
+                    {/* Actions Row */}
+<div className="flex items-center gap-3 flex-wrap">
+    <button
+        onClick={handleDownloadTemplate}
+        disabled={downloading || uploading}
+        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+        <FileSpreadsheet size={16} />
+        {downloading ? 'Generating...' : 'Generate Template'}
+    </button>
+
+    {/* File Picker */}
+    <label className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
+    downloading || uploading
+        ? 'opacity-50 cursor-not-allowed bg-gray-50'
+        : 'hover:bg-gray-50 cursor-pointer'
+}`}>
+        <Upload size={16} />
+        {selectedFile ? selectedFile.name : 'Choose File'}
+        <input
+    type="file"
+    accept=".xlsx"
+    className="hidden"
+    disabled={downloading || uploading}
+    onChange={(e) => {
+        setSelectedFile(e.target.files[0] || null);
+        setImportResult(null);
+    }}
+/>
+    </label>
+
+    {/* Upload Button */}
+    {selectedFile && (
+        <button
+            onClick={handleUpload}
+            disabled={uploading}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+            {uploading ? 'Importing...' : 'Import'}
+        </button>
+    )}
+</div>
+
+{/* Result Area */}
+{importResult && (
+    <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-2">
+        <p className="font-medium text-gray-700">
+            Import complete — {importResult.imported} record{importResult.imported !== 1 ? 's' : ''} imported successfully.
+        </p>
+        {importResult.failures.length > 0 && (
+            <div>
+                <p className="text-red-600 font-medium mb-1">{importResult.failures.length} row{importResult.failures.length !== 1 ? 's' : ''} failed:</p>
+                <ul className="space-y-1">
+                    {importResult.failures.map((f, i) => (
+                        <li key={i} className="text-red-500">
+                            <span className="font-medium">Row {f.row}:</span> {f.errors.join(' ')}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
+        <button
+            onClick={() => setImportResult(null)}
+            className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
+        >
+            OK
+        </button>
+    </div>
+)}
                 </div>
 
                 {/* Employees — Coming Soon */}

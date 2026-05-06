@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Equipment extends Model
 {
+    const CONDITIONS = ['Good', 'Defective'];
+    const STATUSES = ['Available', 'Assigned', 'Under Repair', 'Lost/Missing', 'Retired/Disposed', 'Spare Unit'];
+    
     protected $fillable = [
         'asset_tag', 'equipment_type_id', 'brand_id',
         'model_id', 'serial_number', 'supplier_id',

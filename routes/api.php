@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('employees', EmployeeController::class);
 
     // Equipment
+    Route::get('/equipment/options', [EquipmentController::class, 'options']);
     Route::apiResource('equipment', EquipmentController::class);
 
     // Assignments
@@ -51,4 +52,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Bulk Import
     Route::get('/bulk-import/equipment-template', [BulkImportController::class, 'downloadEquipmentTemplate']);
+    Route::post('/bulk-import/equipment', [BulkImportController::class, 'importEquipment']);
 });

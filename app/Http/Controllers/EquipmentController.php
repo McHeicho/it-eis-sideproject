@@ -7,6 +7,14 @@ use Illuminate\Http\Request;
 
 class EquipmentController extends Controller
 {
+    public function options()
+    {
+        return response()->json([
+            'conditions' => Equipment::CONDITIONS,
+            'statuses'   => Equipment::STATUSES,
+            ]);
+    }
+    
     public function index()
     {
         return response()->json(
@@ -25,8 +33,8 @@ class EquipmentController extends Controller
             'supplier_id'       => 'required|exists:suppliers,id',
             'purchase_date'     => 'required|date',
             'voucher_no'        => 'nullable|string',
-            'condition'         => 'required|in:Good,Defective',
-            'status'            => 'required|in:Available,Assigned,Under Repair,Lost/Missing,Retired/Disposed,Spare Unit',
+            'condition'         => 'required|in:' . implode(',', Equipment::CONDITIONS),
+            'status'            => 'required|in:' . implode(',', Equipment::STATUSES),
         ]);
 
         $equipment = Equipment::create($request->all());
@@ -50,8 +58,8 @@ class EquipmentController extends Controller
             'supplier_id'       => 'sometimes|exists:suppliers,id',
             'purchase_date'     => 'sometimes|date',
             'voucher_no'        => 'nullable|string',
-            'condition'         => 'sometimes|in:Good,Defective',
-            'status'            => 'sometimes|in:Available,Assigned,Under Repair,Lost/Missing,Retired/Disposed,Spare Unit',
+            'condition'         => 'required|in:' . implode(',', Equipment::CONDITIONS),
+            'status'            => 'required|in:' . implode(',', Equipment::STATUSES),
         ]);
 
         $equipment->update($request->all());

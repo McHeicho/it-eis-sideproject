@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Laptop } from 'lucide-react';
-import api from '../../api/axios';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Laptop } from "lucide-react";
+import api from "../../api/axios";
 
 export default function EquipmentAdd() {
     const navigate = useNavigate();
@@ -18,15 +18,15 @@ export default function EquipmentAdd() {
     const [statusOptions, setStatusOptions] = useState([]);
 
     const [form, setForm] = useState({
-        equipment_type_id: '',
-        brand_id: '',
-        model_id: '',
-        serial_number: '',
-        supplier_id: '',
-        purchase_date: '',
-        voucher_no: '',
-        condition: '',
-        status: 'Available',
+        equipment_type_id: "",
+        brand_id: "",
+        model_id: "",
+        serial_number: "",
+        supplier_id: "",
+        purchase_date: "",
+        voucher_no: "",
+        condition: "",
+        status: "Available",
     });
 
     const [errors, setErrors] = useState({});
@@ -36,12 +36,18 @@ export default function EquipmentAdd() {
     useEffect(() => {
         const fetchDropdowns = async () => {
             try {
-                const [typesRes, brandsRes, suppliersRes, modelsRes, optionsRes] = await Promise.all([
-                    api.get('/equipment-types'),
-                    api.get('/brands'),
-                    api.get('/suppliers'),
-                    api.get('/equipment-models'),
-                    api.get('/equipment/options'),
+                const [
+                    typesRes,
+                    brandsRes,
+                    suppliersRes,
+                    modelsRes,
+                    optionsRes,
+                ] = await Promise.all([
+                    api.get("/equipment-types"),
+                    api.get("/brands"),
+                    api.get("/suppliers"),
+                    api.get("/equipment-models"),
+                    api.get("/equipment/options"),
                 ]);
                 setEquipmentTypes(typesRes.data);
                 setBrands(brandsRes.data);
@@ -54,18 +60,18 @@ export default function EquipmentAdd() {
                     const eq = equipmentRes.data;
                     setForm({
                         equipment_type_id: eq.equipment_type_id,
-                        brand_id:          eq.brand_id,
-                        model_id:          eq.model_id,
-                        serial_number:     eq.serial_number,
-                        supplier_id:       eq.supplier_id,
-                        purchase_date:     eq.purchase_date,
-                        voucher_no:        eq.voucher_no || '',
-                        condition:         eq.condition,
-                        status:            eq.status,
+                        brand_id: eq.brand_id,
+                        model_id: eq.model_id,
+                        serial_number: eq.serial_number,
+                        supplier_id: eq.supplier_id,
+                        purchase_date: eq.purchase_date,
+                        voucher_no: eq.voucher_no || "",
+                        condition: eq.condition,
+                        status: eq.status,
                     });
                 }
             } catch (error) {
-                console.error('Failed to load dropdowns:', error);
+                console.error("Failed to load dropdowns:", error);
             } finally {
                 setDropdownsLoading(false);
             }
@@ -77,7 +83,7 @@ export default function EquipmentAdd() {
     useEffect(() => {
         if (!form.brand_id) {
             setModels([]);
-            setForm(prev => ({ ...prev, model_id: '' }));
+            setForm((prev) => ({ ...prev, model_id: "" }));
             return;
         }
         const filtered = allModels.filter(
@@ -85,13 +91,13 @@ export default function EquipmentAdd() {
         );
         setModels(filtered);
         if (!isEditMode) {
-            setForm(prev => ({ ...prev, model_id: '' }));
+            setForm((prev) => ({ ...prev, model_id: "" }));
         }
     }, [form.brand_id, allModels]);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
-        setErrors({ ...errors, [e.target.name]: '' });
+        setErrors({ ...errors, [e.target.name]: "" });
     };
 
     const handleSubmit = async (e) => {
@@ -103,21 +109,22 @@ export default function EquipmentAdd() {
             if (isEditMode) {
                 await api.put(`/equipment/${id}`, form);
             } else {
-                await api.post('/equipment', form);
+                await api.post("/equipment", form);
             }
-            navigate('/equipment');
+            navigate("/equipment");
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             } else {
-                console.error('Failed to save equipment:', error);
+                console.error("Failed to save equipment:", error);
             }
         } finally {
             setLoading(false);
         }
     };
 
-    const inputClass = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+    const inputClass =
+        "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
     const labelClass = "block text-sm font-medium text-gray-700 mb-1";
     const errorClass = "text-red-500 text-xs mt-1";
 
@@ -126,11 +133,16 @@ export default function EquipmentAdd() {
         return (
             <div className="p-6 max-w-2xl">
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800">{isEditMode ? 'Edit Equipment' : 'Add Equipment'}</h1>
-                    <p className="text-sm text-gray-500 mt-1">{isEditMode ? 'Update the equipment details below.' : 'Fill in the details below to register a new equipment record.'}</p>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        {isEditMode ? "Edit Equipment" : "Add Equipment"}
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {isEditMode
+                            ? "Update the equipment details below."
+                            : "Fill in the details below to register a new equipment record."}
+                    </p>
                 </div>
                 <div className="bg-white rounded-lg shadow p-6 space-y-5">
-
                     {/* Equipment Type skeleton */}
                     <div>
                         <div className="skeleton h-3 w-28 rounded mb-3"></div>
@@ -174,7 +186,6 @@ export default function EquipmentAdd() {
                             <div className="skeleton h-3 w-20 rounded mb-2"></div>
                             <div className="skeleton h-9 w-full rounded"></div>
                         </div>
-
                     </div>
 
                     {/* Condition + Status skeleton */}
@@ -194,9 +205,8 @@ export default function EquipmentAdd() {
                         <div className="skeleton h-9 w-32 rounded"></div>
                         <div className="skeleton h-9 w-24 rounded"></div>
                     </div>
-
-                    </div>
-                    </div>
+                </div>
+            </div>
         );
     }
 
@@ -204,12 +214,20 @@ export default function EquipmentAdd() {
         <div className="p-6 max-w-2xl">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">{isEditMode ? 'Edit Equipment' : 'Add Equipment'}</h1>
-                <p className="text-sm text-gray-500 mt-1">{isEditMode ? 'Update the equipment details below.' : 'Fill in the details below to register a new equipment record.'}</p>
+                <h1 className="text-2xl font-bold text-gray-800">
+                    {isEditMode ? "Edit Equipment" : "Add Equipment"}
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                    {isEditMode
+                        ? "Update the equipment details below."
+                        : "Fill in the details below to register a new equipment record."}
+                </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-5">
-
+            <form
+                onSubmit={handleSubmit}
+                className="bg-white rounded-lg shadow p-6 space-y-5"
+            >
                 {/* Equipment Type */}
                 <div>
                     <label className={labelClass}>Equipment Type</label>
@@ -218,11 +236,16 @@ export default function EquipmentAdd() {
                             <button
                                 type="button"
                                 key={type.id}
-                                onClick={() => setForm({ ...form, equipment_type_id: type.id })}
+                                onClick={() =>
+                                    setForm({
+                                        ...form,
+                                        equipment_type_id: type.id,
+                                    })
+                                }
                                 className={`flex flex-col items-center gap-1 px-4 py-3 rounded border text-sm transition-colors ${
                                     form.equipment_type_id === type.id
-                                        ? 'border-blue-500 bg-blue-50 text-blue-600'
-                                        : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                                        ? "border-blue-500 bg-blue-50 text-blue-600"
+                                        : "border-gray-300 text-gray-600 hover:bg-gray-50"
                                 }`}
                             >
                                 <Laptop size={20} />
@@ -230,7 +253,11 @@ export default function EquipmentAdd() {
                             </button>
                         ))}
                     </div>
-                    {errors.equipment_type_id && <p className={errorClass}>{errors.equipment_type_id[0]}</p>}
+                    {errors.equipment_type_id && (
+                        <p className={errorClass}>
+                            {errors.equipment_type_id[0]}
+                        </p>
+                    )}
                 </div>
 
                 {/* Brand */}
@@ -244,10 +271,14 @@ export default function EquipmentAdd() {
                     >
                         <option value="">Select Brand</option>
                         {brands.map((brand) => (
-                            <option key={brand.id} value={brand.id}>{brand.name}</option>
+                            <option key={brand.id} value={brand.id}>
+                                {brand.name}
+                            </option>
                         ))}
                     </select>
-                    {errors.brand_id && <p className={errorClass}>{errors.brand_id[0]}</p>}
+                    {errors.brand_id && (
+                        <p className={errorClass}>{errors.brand_id[0]}</p>
+                    )}
                 </div>
 
                 {/* Model */}
@@ -261,13 +292,19 @@ export default function EquipmentAdd() {
                         className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                     >
                         <option value="">
-                            {form.brand_id ? 'Select Model' : 'Select a brand first'}
+                            {form.brand_id
+                                ? "Select Model"
+                                : "Select a brand first"}
                         </option>
                         {models.map((model) => (
-                            <option key={model.id} value={model.id}>{model.name}</option>
+                            <option key={model.id} value={model.id}>
+                                {model.name}
+                            </option>
                         ))}
                     </select>
-                    {errors.model_id && <p className={errorClass}>{errors.model_id[0]}</p>}
+                    {errors.model_id && (
+                        <p className={errorClass}>{errors.model_id[0]}</p>
+                    )}
                 </div>
 
                 {/* Serial Number */}
@@ -281,7 +318,9 @@ export default function EquipmentAdd() {
                         className={inputClass}
                         placeholder="e.g. SN-2024-00123"
                     />
-                    {errors.serial_number && <p className={errorClass}>{errors.serial_number[0]}</p>}
+                    {errors.serial_number && (
+                        <p className={errorClass}>{errors.serial_number[0]}</p>
+                    )}
                 </div>
 
                 {/* Supplier */}
@@ -295,10 +334,14 @@ export default function EquipmentAdd() {
                     >
                         <option value="">Select Supplier</option>
                         {suppliers.map((supplier) => (
-                            <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
+                            <option key={supplier.id} value={supplier.id}>
+                                {supplier.name}
+                            </option>
                         ))}
                     </select>
-                    {errors.supplier_id && <p className={errorClass}>{errors.supplier_id[0]}</p>}
+                    {errors.supplier_id && (
+                        <p className={errorClass}>{errors.supplier_id[0]}</p>
+                    )}
                 </div>
 
                 {/* Purchase Date + Voucher No */}
@@ -312,7 +355,11 @@ export default function EquipmentAdd() {
                             onChange={handleChange}
                             className={inputClass}
                         />
-                        {errors.purchase_date && <p className={errorClass}>{errors.purchase_date[0]}</p>}
+                        {errors.purchase_date && (
+                            <p className={errorClass}>
+                                {errors.purchase_date[0]}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className={labelClass}>Voucher No.</label>
@@ -324,7 +371,9 @@ export default function EquipmentAdd() {
                             className={inputClass}
                             placeholder="e.g. DV-2024-001"
                         />
-                        {errors.voucher_no && <p className={errorClass}>{errors.voucher_no[0]}</p>}
+                        {errors.voucher_no && (
+                            <p className={errorClass}>{errors.voucher_no[0]}</p>
+                        )}
                     </div>
                 </div>
 
@@ -340,10 +389,14 @@ export default function EquipmentAdd() {
                         >
                             <option value="">Select Condition</option>
                             {conditionOptions.map((c) => (
-                                <option key={c} value={c}>{c}</option>
-                                ))}
+                                <option key={c} value={c}>
+                                    {c}
+                                </option>
+                            ))}
                         </select>
-                        {errors.condition && <p className={errorClass}>{errors.condition[0]}</p>}
+                        {errors.condition && (
+                            <p className={errorClass}>{errors.condition[0]}</p>
+                        )}
                     </div>
                     <div>
                         <label className={labelClass}>Status</label>
@@ -351,22 +404,29 @@ export default function EquipmentAdd() {
                             name="status"
                             value={form.status}
                             onChange={handleChange}
-                            disabled={form.status === 'Assigned'}
+                            disabled={form.status === "Assigned"}
                             className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                         >
-                            {form.status === 'Assigned' && (
+                            {form.status === "Assigned" && (
                                 <option value="Assigned">Assigned</option>
                             )}
                             {statusOptions
-                            .filter((s) => s !== 'Assigned')
-                            .map((s) => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
+                                .filter((s) => s !== "Assigned")
+                                .map((s) => (
+                                    <option key={s} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
                         </select>
-                        {form.status === 'Assigned' && (
-                            <p className="text-xs text-gray-400 mt-1">Status is locked while equipment is assigned. Use Return Equipment to change it.</p>
+                        {form.status === "Assigned" && (
+                            <p className="text-xs text-gray-400 mt-1">
+                                Status is locked while equipment is assigned.
+                                Use Return Equipment to change it.
+                            </p>
                         )}
-                        {errors.status && <p className={errorClass}>{errors.status[0]}</p>}
+                        {errors.status && (
+                            <p className={errorClass}>{errors.status[0]}</p>
+                        )}
                     </div>
                 </div>
 
@@ -377,11 +437,15 @@ export default function EquipmentAdd() {
                         disabled={loading}
                         className="bg-blue-600 text-white px-5 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
                     >
-                        {loading ? 'Saving...' : isEditMode ? 'Update Equipment' : 'Save Equipment'}
+                        {loading
+                            ? "Saving..."
+                            : isEditMode
+                            ? "Update Equipment"
+                            : "Save Equipment"}
                     </button>
                     <button
                         type="button"
-                        onClick={() => navigate('/equipment')}
+                        onClick={() => navigate("/equipment")}
                         className="bg-gray-100 text-gray-700 px-5 py-2 rounded text-sm font-medium hover:bg-gray-200 transition-colors"
                     >
                         Cancel

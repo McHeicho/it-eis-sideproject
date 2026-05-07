@@ -141,6 +141,12 @@ class EquipmentTemplateExport implements WithEvents, WithTitle
                     $listSheet->setCellValue("E" . ($i + 2), $status);
                 }
 
+                // --- Date Format for Purchase Date (Column F) ---
+                $sheet
+                    ->getStyle("F2:F101")
+                    ->getNumberFormat()
+                    ->setBuiltInFormatCode(14);
+
                 // Hide the sheet
                 $listSheet->setSheetState(
                     \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_HIDDEN,

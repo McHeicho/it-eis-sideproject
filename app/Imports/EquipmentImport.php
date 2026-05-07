@@ -10,6 +10,7 @@ use App\Models\Supplier;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class EquipmentImport implements ToCollection, WithHeadingRow
 {
@@ -35,6 +36,7 @@ class EquipmentImport implements ToCollection, WithHeadingRow
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2; // +2 because row 1 is headers
             $errors = [];
+            $validRows = [];
 
             // Extract values
             $typeName = trim($row["equipment_type"] ?? "");
@@ -80,9 +82,18 @@ class EquipmentImport implements ToCollection, WithHeadingRow
                 $errors[] = "Supplier '{$supplierName}' not found in system.";
             }
 
-            // Validate Purchase Date
-            if (!$purchaseDate) {
-                $errors[] = "Purchase Date is required.";
+            // Extract Purchase Date safely
+            $rawDate = $row["purchase_date"] ?? "";
+            if (is_numeric($rawDate)) {
+                // Excel serial number — convert to date
+                $purchaseDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(
+                    $rawDate,
+                )->format("Y-m-d");
+            } else {
+                // Already a string — normalize to Y-m-d
+                $purchaseDate = $rawDate
+                    ? date("Y-m-d", strtotime($rawDate))
+                    : "";
             }
 
             // Validate Condition
@@ -105,22 +116,45 @@ class EquipmentImport implements ToCollection, WithHeadingRow
             }
 
             // All good — insert
-            $equipment = Equipment::create([
-                "equipment_type_id" => $equipmentTypes[$typeName],
-                "brand_id" => $brands[$brandName],
-                "model_id" => $models[$modelKey],
-                "serial_number" => $serialNumber,
-                "supplier_id" => $suppliers[$supplierName],
-                "purchase_date" => $purchaseDate,
-                "voucher_no" => $voucherNo ?: null,
-                "condition" => $condition,
-                "status" => $status,
-            ]);
+            try {
+                DB::transaction(function () use (
+                    $equipmentTypes,
+                    $brands,
+                    $models,
+                    $suppliers,
+                    $typeName,
+                    $brandName,
+                    $modelKey,
+                    $serialNumber,
+                    $supplierName,
+                    $purchaseDate,
+                    $voucherNo,
+                    $condition,
+                    $status
+                ) {
+                    Equipment::create([
+                        "equipment_type_id" => $equipmentTypes[$typeName],
+                        "brand_id" => $brands[$brandName],
+                        "model_id" => $models[$modelKey],
+                        "serial_number" => $serialNumber,
+                        "supplier_id" => $suppliers[$supplierName],
+                        "purchase_date" => $purchaseDate,
+                        "voucher_no" => $voucherNo ?: null,
+                        "condition" => $condition,
+                        "status" => $status,
+                    ]);
+                });
 
-            $this->imported[] = $equipment->id;
-
-            // Add to existingSerials to catch duplicates within the same file
-            $existingSerials[] = $serialNumber;
+                $this->imported[] = $serialNumber;
+                $existingSerials[] = $serialNumber;
+            } catch (\Exception $e) {
+                $this->failures[] = [
+                    "row" => $rowNumber,
+                    "errors" => [
+                        "Unexpected error during insert: " . $e->getMessage(),
+                    ],
+                ];
+            }
         }
     }
 }

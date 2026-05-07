@@ -13,44 +13,67 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\BulkImportController;
 
 // Public Routes
-Route::post('/login', [AuthController::class, 'login']);
+Route::post("/login", [AuthController::class, "login"]);
 
 // Protected Routes
-Route::middleware('auth:sanctum')->group(function () {
-
+Route::middleware("auth:sanctum")->group(function () {
     // Auth
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/me', [AuthController::class, 'me']);
+    Route::post("/logout", [AuthController::class, "logout"]);
+    Route::get("/me", [AuthController::class, "me"]);
 
     // Departments
-    Route::apiResource('departments', DepartmentController::class);
+    Route::apiResource("departments", DepartmentController::class);
 
     // Equipment Types
-    Route::apiResource('equipment-types', EquipmentTypeController::class);
+    Route::apiResource("equipment-types", EquipmentTypeController::class);
 
     // Brands
-    Route::apiResource('brands', BrandController::class);
+    Route::apiResource("brands", BrandController::class);
 
     // Suppliers
-    Route::apiResource('suppliers', SupplierController::class);
+    Route::apiResource("suppliers", SupplierController::class);
 
     // Equipment Models
-    Route::apiResource('equipment-models', EquipmentModelController::class);
+    Route::apiResource("equipment-models", EquipmentModelController::class);
 
     // Employees
-    Route::apiResource('employees', EmployeeController::class);
+    Route::apiResource("employees", EmployeeController::class);
 
     // Equipment
-    Route::get('/equipment/options', [EquipmentController::class, 'options']);
-    Route::apiResource('equipment', EquipmentController::class);
+    Route::get("/equipment/options", [EquipmentController::class, "options"]);
+    Route::apiResource("equipment", EquipmentController::class);
 
     // Assignments
-    Route::get('assignments', [AssignmentController::class, 'index']);
-    Route::post('assignments', [AssignmentController::class, 'store']);
-    Route::get('assignments/{assignment}', [AssignmentController::class, 'show']);
-    Route::patch('assignments/{assignment}/return', [AssignmentController::class, 'return']);
+    Route::get("assignments", [AssignmentController::class, "index"]);
+    Route::post("assignments", [AssignmentController::class, "store"]);
+    Route::get("assignments/{assignment}", [
+        AssignmentController::class,
+        "show",
+    ]);
+    Route::patch("assignments/{assignment}/return", [
+        AssignmentController::class,
+        "return",
+    ]);
 
     //Bulk Import
-    Route::get('/bulk-import/equipment-template', [BulkImportController::class, 'downloadEquipmentTemplate']);
-    Route::post('/bulk-import/equipment', [BulkImportController::class, 'importEquipment']);
+    Route::get("/bulk-import/equipment-template", [
+        BulkImportController::class,
+        "downloadEquipmentTemplate",
+    ]);
+    Route::post("/bulk-import/equipment", [
+        BulkImportController::class,
+        "importEquipment",
+    ]);
+    Route::get("/bulk-import/employee-template", [
+        BulkImportController::class,
+        "downloadEmployeeTemplate",
+    ]);
+    Route::post('/bulk-import/employees', [
+        BulkImportController::class,
+        'importEmployees'
+    ]);
+    Route::post('/bulk-import/employees/force', [
+        BulkImportController::class,
+        'forceImportEmployees'
+    ]);
 });

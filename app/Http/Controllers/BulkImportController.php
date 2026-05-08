@@ -43,49 +43,69 @@ class BulkImportController extends Controller
         );
     }
 
-public function importEmployees(Request $request)
-{
-    $request->validate([
-        'file' => 'required|file|mimes:xlsx|max:2048',
-    ]);
+    public function importEmployees(Request $request)
+    {
+        $request->validate([
+            "file" => "required|file|mimes:xlsx|max:2048",
+        ]);
 
-    $import = new EmployeeImport();
-    Excel::import($import, $request->file('file'));
+        $import = new EmployeeImport();
+        Excel::import($import, $request->file("file"));
 
-    return response()->json($import->getResult());
-}
-
-public function forceImportEmployees(Request $request)
-{
-    $request->validate([
-        'employees' => 'required|array',
-        'employees.*.name' => 'required|string',
-        'employees.*.department_tag' => 'required|string',
-    ]);
-
-    $imported = 0;
-    $failures = [];
-
-    foreach ($request->employees as $index => $employee) {
-        try {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($employee) {
-                Employee::create([
-                    'name' => $employee['name'],
-                    'department_tag' => $employee['department_tag'],
-                ]);
-            });
-            $imported++;
-        } catch (\Exception $e) {
-            $failures[] = [
-                'row' => $index + 1,
-                'errors' => ['Unexpected error: ' . $e->getMessage()],
-            ];
-        }
+        return response()->json($import->getResult());
     }
 
-    return response()->json([
-        'imported' => $imported,
-        'failures' => $failures,
-    ]);
-}
+    public function forceImportEmployees(Request $request)
+    {
+        $request->validate([
+            "decisions" => "required|array",
+            "decisions.*.name" => "required|string",
+            "decisions.*.department_tag" => "required|string",
+            "decisions.*.existing_department_tag" => "required|string",
+            "decisions.*.update" => "required|boolean",
+            "decisions.*.addNew" => "required|boolean",
+        ]);
+
+        $imported = 0;
+        $updated = 0;
+        $failures = [];
+
+        foreach ($request->decisions as $index => $decision) {
+            try {
+                \Illuminate\Support\Facades\DB::transaction(function () use (
+                    $decision,
+                    &$imported,
+                    &$updated
+                ) {
+                    // Update existing record's department
+                    if ($decision["update"]) {
+                        Employee::where("name", $decision["name"])->update([
+                            "department_tag" => $decision["department_tag"],
+                        ]);
+                        $updated++;
+                    }
+
+                    // Add as new record
+                    if ($decision["addNew"]) {
+                        Employee::create([
+                            "name" => $decision["name"],
+                            "department_tag" => $decision["department_tag"],
+                        ]);
+                        $imported++;
+                    }
+                });
+            } catch (\Exception $e) {
+                $failures[] = [
+                    "row" => $index + 1,
+                    "errors" => ["Unexpected error: " . $e->getMessage()],
+                ];
+            }
+        }
+
+        return response()->json([
+            "imported" => $imported,
+            "updated" => $updated,
+            "failures" => $failures,
+        ]);
+    }
 }

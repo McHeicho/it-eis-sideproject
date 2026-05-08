@@ -12,6 +12,12 @@ export default function BulkImport() {
     const [empSelectedFile, setEmpSelectedFile] = useState(null);
     const [empImportResult, setEmpImportResult] = useState(null);
     const [empDuplicates, setEmpDuplicates] = useState([]);
+    const [empDuplicateIndex, setEmpDuplicateIndex] = useState(0);
+    const [empDecisions, setEmpDecisions] = useState([]);
+    const [empCurrentChecks, setEmpCurrentChecks] = useState({
+        left: false,
+        right: false,
+    });
 
     const handleDownloadTemplate = async () => {
         setEqDownloading(true);
@@ -93,15 +99,72 @@ export default function BulkImport() {
                     headers: { "Content-Type": "multipart/form-data" },
                 }
             );
-            setEmpImportResult(response.data);
-            if (response.data.duplicates?.length > 0) {
-                setEmpDuplicates(response.data.duplicates);
+            if (
+                response.data.imported === 0 &&
+                response.data.duplicates.length > 0 &&
+                response.data.duplicates.every(
+                    (d) => d.department_tag === d.existing_department_tag
+                )
+            ) {
+                setEmpImportResult({ allDuplicates: true });
+            } else {
+                setEmpImportResult(response.data);
+                if (response.data.duplicates?.length > 0) {
+                    setEmpDuplicates(response.data.duplicates);
+                }
             }
             setEmpSelectedFile(null);
         } catch (error) {
             console.error("Failed to import employees:", error);
         } finally {
             setEmpUploading(false);
+        }
+    };
+
+    const handleCancelDuplicates = () => {
+        setEmpDuplicates([]);
+        setEmpDecisions([]);
+        setEmpDuplicateIndex(0);
+        setEmpCurrentChecks({ left: false, right: false });
+    };
+
+    const handleDuplicateDecision = async () => {
+        const current = empDuplicates[empDuplicateIndex];
+        const decision = {
+            name: current.name,
+            department_tag: current.department_tag,
+            existing_department_tag: current.existing_department_tag,
+            update: !empCurrentChecks.left && empCurrentChecks.right,
+            addNew: empCurrentChecks.left && empCurrentChecks.right,
+        };
+
+        const newDecisions = [...empDecisions, decision];
+
+        if (empDuplicateIndex === empDuplicates.length - 1) {
+            // Last duplicate — fire batch request
+            try {
+                const response = await api.post(
+                    "/bulk-import/employees/force",
+                    {
+                        decisions: newDecisions,
+                    }
+                );
+                setEmpImportResult((prev) => ({
+                    ...prev,
+                    imported: prev.imported + response.data.imported,
+                    updated: (prev.updated ?? 0) + response.data.updated,
+                }));
+            } catch (error) {
+                console.error("Force import failed:", error);
+            }
+            setEmpDuplicates([]);
+            setEmpDecisions([]);
+            setEmpDuplicateIndex(0);
+            setEmpCurrentChecks({ left: false, right: false });
+        } else {
+            setEmpDecisions(newDecisions);
+            setEmpDuplicateIndex((prev) => prev + 1);
+            setEmpCurrentChecks({ left: false, right: false });
         }
     };
 
@@ -293,70 +356,185 @@ export default function BulkImport() {
                     {/* Result Area */}
                     {empImportResult && (
                         <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-2">
-                            <p className="font-medium text-gray-700">
-                                Import complete — {empImportResult.imported}{" "}
-                                record
-                                {empImportResult.imported !== 1 ? "s" : ""}{" "}
-                                imported successfully.
-                            </p>
+                            {empImportResult.allDuplicates ? (
+                                <p className="font-medium text-red-600">
+                                    Import failed — all records are duplicate
+                                    values.
+                                </p>
+                            ) : (
+                                <p className="font-medium text-gray-700">
+                                    Import complete — {empImportResult.imported}{" "}
+                                    record
+                                    {empImportResult.imported !== 1 ? "s" : ""}{" "}
+                                    imported
+                                    {empImportResult.updated > 0 &&
+                                        `, ${empImportResult.updated} record${
+                                            empImportResult.updated !== 1
+                                                ? "s"
+                                                : ""
+                                        } updated`}{" "}
+                                    successfully.
+                                </p>
+                            )}
 
-                            {/* Duplicate Names Panel */}
+                            {/* Duplicate Wizard Panel */}
                             {empDuplicates.length > 0 && (
-                                <div className="border border-yellow-300 bg-yellow-50 rounded p-3 space-y-2">
-                                    <p className="text-yellow-700 font-medium">
-                                        {empDuplicates.length} name
-                                        {empDuplicates.length !== 1 ? "s" : ""}{" "}
-                                        already exist in the system:
-                                    </p>
-                                    <ul className="space-y-1">
-                                        {empDuplicates.map((d, i) => (
-                                            <li
-                                                key={i}
-                                                className="text-yellow-600"
-                                            >
-                                                Row {d.row}: {d.name}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <div className="flex gap-2 pt-1">
-                                        <button
-                                            onClick={() => setEmpDuplicates([])}
-                                            className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded"
+                                <div className="mt-4 border border-yellow-300 bg-yellow-50 rounded p-4 space-y-4">
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-semibold text-yellow-800">
+                                            {empDuplicates.length -
+                                                empDuplicateIndex}{" "}
+                                            duplicate record
+                                            {empDuplicates.length -
+                                                empDuplicateIndex !==
+                                            1
+                                                ? "s"
+                                                : ""}{" "}
+                                            remaining
+                                        </p>
+                                    </div>
+
+                                    {/* Side by Side Cards */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {/* Left — Existing Record */}
+                                        <div
+                                            onClick={() =>
+                                                setEmpCurrentChecks((prev) => ({
+                                                    ...prev,
+                                                    left: !prev.left,
+                                                }))
+                                            }
+                                            className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
+                                                empCurrentChecks.left
+                                                    ? "border-blue-400 bg-blue-50"
+                                                    : "border-gray-300 bg-white"
+                                            }`}
                                         >
-                                            Skip All
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        empCurrentChecks.left
+                                                    }
+                                                    onChange={() =>
+                                                        setEmpCurrentChecks(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                left: !prev.left,
+                                                            })
+                                                        )
+                                                    }
+                                                    className="accent-blue-600"
+                                                />
+                                                <span className="text-xs font-semibold text-gray-500 uppercase">
+                                                    Existing
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {
+                                                    empDuplicates[
+                                                        empDuplicateIndex
+                                                    ].name
+                                                }
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {
+                                                    empDuplicates[
+                                                        empDuplicateIndex
+                                                    ].existing_department_name
+                                                }
+                                            </p>
+                                        </div>
+
+                                        {/* Right — Incoming Record */}
+                                        <div
+                                            onClick={() =>
+                                                setEmpCurrentChecks((prev) => ({
+                                                    ...prev,
+                                                    right: !prev.right,
+                                                }))
+                                            }
+                                            className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
+                                                empCurrentChecks.right
+                                                    ? "border-green-400 bg-green-50"
+                                                    : "border-gray-300 bg-white"
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        empCurrentChecks.right
+                                                    }
+                                                    onChange={() =>
+                                                        setEmpCurrentChecks(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                right: !prev.right,
+                                                            })
+                                                        )
+                                                    }
+                                                    className="accent-green-600"
+                                                />
+                                                <span className="text-xs font-semibold text-gray-500 uppercase">
+                                                    Incoming
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {
+                                                    empDuplicates[
+                                                        empDuplicateIndex
+                                                    ].name
+                                                }
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {
+                                                    empDuplicates[
+                                                        empDuplicateIndex
+                                                    ].department_name
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            onClick={handleCancelDuplicates}
+                                            className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded"
+                                        >
+                                            Cancel
                                         </button>
                                         <button
-    onClick={async () => {
-        try {
-            const response = await api.post('/bulk-import/employees/force', {
-                employees: empDuplicates,
-            });
-            setEmpDuplicates([]);
-            setEmpImportResult(prev => ({
-                ...prev,
-                imported: prev.imported + response.data.imported,
-            }));
-        } catch (error) {
-            console.error('Failed to force import:', error);
-        }
-    }}
-    className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
->
-    Add Anyway
-</button>
+                                            onClick={handleDuplicateDecision}
+                                            className={`text-xs text-white px-3 py-1.5 rounded ${
+                                                !empCurrentChecks.left &&
+                                                !empCurrentChecks.right
+                                                    ? "bg-gray-400 hover:bg-gray-500"
+                                                    : "bg-blue-600 hover:bg-blue-700"
+                                            }`}
+                                        >
+                                            {!empCurrentChecks.left &&
+                                            !empCurrentChecks.right
+                                                ? "Skip"
+                                                : "OK"}
+                                        </button>
                                     </div>
                                 </div>
                             )}
 
-                            <button
-                                onClick={() => {
-                                    setEmpImportResult(null);
-                                    setEmpDuplicates([]);
-                                }}
-                                className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
-                            >
-                                OK
-                            </button>
+                            {empDuplicates.length === 0 && (
+                                <button
+                                    onClick={() => {
+                                        setEmpImportResult(null);
+                                        setEmpDuplicates([]);
+                                    }}
+                                    className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
+                                >
+                                    OK
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

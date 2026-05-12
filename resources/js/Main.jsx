@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import EquipmentList from './pages/equipment/EquipmentList';
+import EquipmentReceipts from './pages/equipment/EquipmentReceipts';
 import EquipmentAddEdit from './pages/equipment/EquipmentAddEdit';
 import EquipmentDetail from './pages/equipment/EquipmentDetail';
 import EmployeeList from './pages/employees/EmployeeList';
@@ -33,6 +34,7 @@ export default function Main() {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="equipment" element={<EquipmentList />} />
                     <Route path="equipment/add" element={<EquipmentAddEdit />} />
+                    <Route path="equipment/receipts" element={<EquipmentReceipts />} />
                     <Route path="equipment/:id/edit" element={<EquipmentAddEdit />} />
                     <Route path="equipment/:id" element={<EquipmentDetail />} />
                     <Route path="employees" element={<EmployeeList />} />

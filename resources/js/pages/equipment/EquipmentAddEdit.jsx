@@ -11,8 +11,8 @@ export default function EquipmentAdd() {
     const [equipmentTypes, setEquipmentTypes] = useState([]);
     const [brands, setBrands] = useState([]);
     const [models, setModels] = useState([]);
-    const [allModels, setAllModels] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
+    const [allModels, setAllModels] = useState([]);
     const [dropdownsLoading, setDropdownsLoading] = useState(true);
     const [conditionOptions, setConditionOptions] = useState([]);
     const [statusOptions, setStatusOptions] = useState([]);
@@ -22,11 +22,22 @@ export default function EquipmentAdd() {
         brand_id: "",
         model_id: "",
         serial_number: "",
-        supplier_id: "",
-        purchase_date: "",
-        voucher_no: "",
+        delivery_id: "",
         condition: "",
         status: "Available",
+    });
+
+    const [deliveryMode, setDeliveryMode] = useState("voucher");
+    const [deliveryMatched, setDeliveryMatched] = useState(false);
+    const [deliveryLoading, setDeliveryLoading] = useState(false);
+    const [deliveryFields, setDeliveryFields] = useState({
+        voucher_no: "",
+        invoice_no: "",
+        supplier_id: "",
+        supplier_name: "",
+        purchase_date: "",
+        order_no: "",
+        notes: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -51,8 +62,8 @@ export default function EquipmentAdd() {
                 ]);
                 setEquipmentTypes(typesRes.data);
                 setBrands(brandsRes.data);
-                setSuppliers(suppliersRes.data);
                 setAllModels(modelsRes.data);
+                setSuppliers(suppliersRes.data);
                 setConditionOptions(optionsRes.data.conditions);
                 setStatusOptions(optionsRes.data.statuses);
                 if (isEditMode) {
@@ -63,13 +74,24 @@ export default function EquipmentAdd() {
                         brand_id: eq.brand_id,
                         model_id: eq.model_id,
                         serial_number: eq.serial_number,
-                        supplier_id: eq.supplier_id,
-                        purchase_date: eq.purchase_date,
-                        voucher_no: eq.voucher_no || "",
+                        delivery_id: eq.delivery_id,
                         condition: eq.condition,
                         status: eq.status,
                     });
+                    if (eq.delivery) {
+                    setDeliveryMatched(true);
+                    setDeliveryFields({
+                        voucher_no: eq.delivery.voucher_no ?? "",
+                        invoice_no: eq.delivery.invoice_no ?? "",
+                        supplier_id: eq.delivery.supplier_id ?? "",
+                        supplier_name: eq.delivery.supplier?.name ?? "",
+                        purchase_date: eq.delivery.purchase_date ?? "",
+                        order_no: eq.delivery.order_no ?? "",
+                        notes: eq.delivery.notes ?? "",
+                    });
                 }
+                }
+                
             } catch (error) {
                 console.error("Failed to load dropdowns:", error);
             } finally {
@@ -100,16 +122,68 @@ export default function EquipmentAdd() {
         setErrors({ ...errors, [e.target.name]: "" });
     };
 
+    const handleDeliveryBlur = async () => {
+        const handle =
+            deliveryMode === "voucher"
+                ? deliveryFields.voucher_no
+                : deliveryFields.invoice_no;
+
+        if (!handle.trim()) return;
+
+        setDeliveryLoading(true);
+        try {
+            const res = await api.post("/deliveries/match", {
+                handle,
+                mode: deliveryMode,
+            });
+
+            if (res.data.matched) {
+                setDeliveryMatched(true);
+                setForm((prev) => ({
+                    ...prev,
+                    delivery_id: res.data.delivery_id,
+                }));
+                setDeliveryFields((prev) => ({
+                    ...prev,
+                    supplier_id: res.data.supplier_id,
+                    supplier_name: res.data.supplier_name,
+                    purchase_date: res.data.purchase_date,
+                }));
+            } else {
+                setDeliveryMatched(false);
+                setForm((prev) => ({ ...prev, delivery_id: "" }));
+            }
+        } catch (error) {
+            console.error("Delivery match failed:", error);
+        } finally {
+            setDeliveryLoading(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setErrors({});
 
+        const payload = {
+            ...form,
+            ...(form.delivery_id
+                ? { delivery_id: form.delivery_id }
+                : {
+                      voucher_no: deliveryFields.voucher_no,
+                      invoice_no: deliveryFields.invoice_no,
+                      supplier_id: deliveryFields.supplier_id,
+                      purchase_date: deliveryFields.purchase_date,
+                      order_no: deliveryFields.order_no,
+                      notes: deliveryFields.notes,
+                  }),
+        };
+
         try {
             if (isEditMode) {
-                await api.put(`/equipment/${id}`, form);
+                await api.patch(`/equipment/${id}`, payload);
             } else {
-                await api.post("/equipment", form);
+                await api.post("/equipment", payload);
             }
             navigate("/equipment");
         } catch (error) {
@@ -316,65 +390,201 @@ export default function EquipmentAdd() {
                         value={form.serial_number}
                         onChange={handleChange}
                         className={inputClass}
-                        placeholder="e.g. SN-2024-00123"
+                        placeholder="e.g. PF123456"
                     />
                     {errors.serial_number && (
                         <p className={errorClass}>{errors.serial_number[0]}</p>
                     )}
                 </div>
 
-                {/* Supplier */}
-                <div>
-                    <label className={labelClass}>Supplier</label>
-                    <select
-                        name="supplier_id"
-                        value={form.supplier_id}
-                        onChange={handleChange}
-                        className={inputClass}
-                    >
-                        <option value="">Select Supplier</option>
-                        {suppliers.map((supplier) => (
-                            <option key={supplier.id} value={supplier.id}>
-                                {supplier.name}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.supplier_id && (
-                        <p className={errorClass}>{errors.supplier_id[0]}</p>
-                    )}
-                </div>
-
-                {/* Purchase Date + Voucher No */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className={labelClass}>Purchase Date</label>
-                        <input
-                            type="date"
-                            name="purchase_date"
-                            value={form.purchase_date}
-                            onChange={handleChange}
-                            className={inputClass}
-                        />
-                        {errors.purchase_date && (
-                            <p className={errorClass}>
-                                {errors.purchase_date[0]}
-                            </p>
-                        )}
+                {/* Delivery */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+        <label className={labelClass}>
+            {deliveryMode === "voucher" ? "Voucher No." : "Sales Invoice No."}
+        </label>
+                        <div className="flex gap-1 text-xs">
+                            <p className="text-xs text-gray-500">
+    {deliveryMode === "voucher" ? (
+        <>
+            No voucher number?{" "}
+            <button
+                type="button"
+                onClick={() => {
+                    setDeliveryMode("invoice");
+                    setDeliveryMatched(false);
+                    setDeliveryFields({
+                        voucher_no: "",
+                        invoice_no: "",
+                        supplier_id: "",
+                        supplier_name: "",
+                        purchase_date: "",
+                        order_no: "",
+                        notes: "",
+                    });
+                    setForm((prev) => ({ ...prev, delivery_id: "" }));
+                }}
+                className="underline text-blue-500"
+            >
+                Use invoice number instead
+            </button>
+        </>
+    ) : (
+        <>
+            Have a voucher number?{" "}
+            <button
+                type="button"
+                onClick={() => {
+                    setDeliveryMode("voucher");
+                    setDeliveryMatched(false);
+                    setDeliveryFields({
+                        voucher_no: "",
+                        invoice_no: "",
+                        supplier_id: "",
+                        supplier_name: "",
+                        purchase_date: "",
+                        order_no: "",
+                        notes: "",
+                    });
+                    setForm((prev) => ({ ...prev, delivery_id: "" }));
+                }}
+                className="underline text-blue-500"
+            >
+                Switch back to voucher
+            </button>
+        </>
+    )}
+</p>
+                        </div>
                     </div>
-                    <div>
-                        <label className={labelClass}>Voucher No.</label>
+
+                    {/* Handle input */}
+                    <div className="relative">
                         <input
                             type="text"
-                            name="voucher_no"
-                            value={form.voucher_no}
-                            onChange={handleChange}
-                            className={inputClass}
-                            placeholder="e.g. DV-2024-001"
+                            value={
+                                deliveryMode === "voucher"
+                                    ? deliveryFields.voucher_no
+                                    : deliveryFields.invoice_no
+                            }
+                            onChange={(e) => {
+                                const key =
+                                    deliveryMode === "voucher"
+                                        ? "voucher_no"
+                                        : "invoice_no";
+                                setDeliveryFields((prev) => ({
+                                    ...prev,
+                                    [key]: e.target.value,
+                                }));
+                                setDeliveryMatched(false);
+                                setForm((prev) => ({
+                                    ...prev,
+                                    delivery_id: "",
+                                }));
+                            }}
+                            onBlur={handleDeliveryBlur}
+                            className={`${inputClass} pr-8`}
                         />
-                        {errors.voucher_no && (
-                            <p className={errorClass}>{errors.voucher_no[0]}</p>
+                        {deliveryLoading && (
+                            <span className="absolute right-2 top-2.5 text-xs text-gray-400">
+                                ...
+                            </span>
+                        )}
+                        {deliveryMatched && !deliveryLoading && (
+                            <span className="absolute right-2 top-2.5 text-xs text-green-500">
+                                ✓
+                            </span>
                         )}
                     </div>
+
+                    {/* Matched / manual fields */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+    <label className={labelClass}>Supplier</label>
+    {deliveryMatched ? (
+        <input
+            type="text"
+            value={deliveryFields.supplier_name}
+            disabled
+            className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
+        />
+    ) : (
+        <select
+            value={deliveryFields.supplier_id}
+            onChange={(e) => {
+                const selected = suppliers.find(
+                    (s) => s.id === parseInt(e.target.value)
+                );
+                setDeliveryFields((prev) => ({
+                    ...prev,
+                    supplier_id:   e.target.value,
+                    supplier_name: selected ? selected.name : "",
+                }));
+            }}
+            className={inputClass}
+        >
+            <option value="">Select Supplier</option>
+            {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>
+                    {s.name}
+                </option>
+            ))}
+        </select>
+    )}
+    {errors.supplier_id && (
+        <p className={errorClass}>{errors.supplier_id[0]}</p>
+    )}
+</div>
+                        <div>
+                            <label className={labelClass}>Purchase Date</label>
+                            <input
+                                type="date"
+                                value={deliveryFields.purchase_date}
+                                onChange={(e) =>
+                                    setDeliveryFields((prev) => ({
+                                        ...prev,
+                                        purchase_date: e.target.value,
+                                    }))
+                                }
+                                disabled={deliveryMatched}
+                                className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
+                            />
+                            {errors.purchase_date && (
+                                <p className={errorClass}>
+                                    {errors.purchase_date[0]}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {deliveryMatched && (
+                        <p className="text-xs text-green-600">
+                            Delivery matched — supplier and date pre-filled and
+                            locked.{" "}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setDeliveryMatched(false);
+                                    setDeliveryFields({
+                                        voucher_no: "",
+                                        invoice_no: "",
+                                        supplier_id: "",
+                                        supplier_name: "",
+                                        purchase_date: "",
+                                        order_no: "",
+                                        notes: "",
+                                    });
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        delivery_id: "",
+                                    }));
+                                }}
+                                className="underline text-blue-500"
+                            >
+                                Clear
+                            </button>
+                        </p>
+                    )}
                 </div>
 
                 {/* Condition + Status */}

@@ -9,6 +9,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\EquipmentModelController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\BulkImportController;
 
@@ -42,6 +43,16 @@ Route::middleware("auth:sanctum")->group(function () {
     // Equipment
     Route::get("/equipment/options", [EquipmentController::class, "options"]);
     Route::apiResource("equipment", EquipmentController::class);
+
+    // Delivery
+    Route::get('/deliveries', [DeliveryController::class, 'index']);
+    Route::post('/deliveries/match', [DeliveryController::class, 'match']);
+    Route::post('/deliveries', [DeliveryController::class, 'store']);
+    Route::get('/deliveries/{delivery}', [DeliveryController::class, 'show']);
+    Route::patch('/deliveries/{delivery}', [DeliveryController::class, 'update']);
+    Route::post('/deliveries/{delivery}/attachments', [DeliveryController::class, 'attachFile']);
+    Route::delete('/deliveries/{delivery}/attachments/{attachment}', [DeliveryController::class, 'removeAttachment']);
+    Route::get('/deliveries/{delivery}/attachments/{attachment}/stream', [DeliveryController::class, 'streamAttachment']);
 
     // Assignments
     Route::get("assignments", [AssignmentController::class, "index"]);

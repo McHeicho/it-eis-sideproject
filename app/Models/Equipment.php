@@ -11,8 +11,8 @@ class Equipment extends Model
     
     protected $fillable = [
         'asset_tag', 'equipment_type_id', 'brand_id',
-        'model_id', 'serial_number', 'supplier_id',
-        'purchase_date', 'voucher_no', 'condition', 'status'
+        'model_id', 'serial_number',
+        'delivery_id', 'condition', 'status'
     ];
 
     public function type()
@@ -30,9 +30,9 @@ class Equipment extends Model
         return $this->belongsTo(EquipmentModel::class, 'model_id');
     }
 
-    public function supplier()
+    public function delivery()
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(Delivery::class);
     }
 
     public function assignments()

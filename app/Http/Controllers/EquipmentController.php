@@ -4,10 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use App\Models\Equipment;
+use App\Models\Brand;
+use App\Models\EquipmentModel;
+use App\Models\EquipmentType;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class EquipmentController extends Controller
 {
+    public function formData()
+    {
+        return response()->json([
+            "types" => EquipmentType::all(),
+            "brands" => Brand::all(),
+            "suppliers" => Supplier::all(),
+            "models" => EquipmentModel::with("brand")->get(),
+            "conditions" => Equipment::CONDITIONS,
+            "statuses" => Equipment::STATUSES,
+        ]);
+    }
+
     public function options()
     {
         return response()->json([
@@ -84,6 +100,20 @@ class EquipmentController extends Controller
 
     public function update(Request $request, Equipment $equipment)
     {
+        if ($request->filled("last_seen_updated_at")) {
+            $clientTimestamp = $request->last_seen_updated_at;
+            $serverTimestamp = $equipment->updated_at->toJSON();
+
+            if ($clientTimestamp !== $serverTimestamp) {
+                return response()->json(
+                    [
+                        "message" =>
+                            "This record was edited by another user since you opened it.",
+                    ],
+                    409,
+                );
+            }
+        }
         $request->validate([
             "equipment_type_id" => "sometimes|exists:equipment_types,id",
             "brand_id" => "sometimes|exists:brands,id",

@@ -16,6 +16,7 @@ export default function EquipmentAdd() {
     const [dropdownsLoading, setDropdownsLoading] = useState(true);
     const [conditionOptions, setConditionOptions] = useState([]);
     const [statusOptions, setStatusOptions] = useState([]);
+    const [lastSeenUpdatedAt, setLastSeenUpdatedAt] = useState(null);
 
     const [form, setForm] = useState({
         equipment_type_id: "",
@@ -45,30 +46,36 @@ export default function EquipmentAdd() {
 
     // Load all dropdowns at once on mount
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchDropdowns = async () => {
             try {
-                const [
-                    typesRes,
-                    brandsRes,
-                    suppliersRes,
-                    modelsRes,
-                    optionsRes,
-                ] = await Promise.all([
-                    api.get("/equipment-types"),
-                    api.get("/brands"),
-                    api.get("/suppliers"),
-                    api.get("/equipment-models"),
-                    api.get("/equipment/options"),
-                ]);
-                setEquipmentTypes(typesRes.data);
-                setBrands(brandsRes.data);
-                setAllModels(modelsRes.data);
-                setSuppliers(suppliersRes.data);
-                setConditionOptions(optionsRes.data.conditions);
-                setStatusOptions(optionsRes.data.statuses);
+                const requests = [
+                    api.get("/equipment/form-data", {
+                        signal: controller.signal,
+                    }),
+                ];
+
+                if (isEditMode)
+                    requests.push(
+                        api.get(`/equipment/${id}`, {
+                            signal: controller.signal,
+                        })
+                    );
+
+                const responses = await Promise.all(requests);
+                const formData = responses[0].data;
+
+                setEquipmentTypes(formData.types);
+                setBrands(formData.brands);
+                setSuppliers(formData.suppliers);
+                setAllModels(formData.models);
+                setConditionOptions(formData.conditions);
+                setStatusOptions(formData.statuses);
+
                 if (isEditMode) {
-                    const equipmentRes = await api.get(`/equipment/${id}`);
-                    const eq = equipmentRes.data;
+                    const eq = responses[1].data;
+                    if (isEditMode) setLastSeenUpdatedAt(eq.updated_at);
                     setForm({
                         equipment_type_id: eq.equipment_type_id,
                         brand_id: eq.brand_id,
@@ -79,26 +86,34 @@ export default function EquipmentAdd() {
                         status: eq.status,
                     });
                     if (eq.delivery) {
-                    setDeliveryMatched(true);
-                    setDeliveryFields({
-                        voucher_no: eq.delivery.voucher_no ?? "",
-                        invoice_no: eq.delivery.invoice_no ?? "",
-                        supplier_id: eq.delivery.supplier_id ?? "",
-                        supplier_name: eq.delivery.supplier?.name ?? "",
-                        purchase_date: eq.delivery.purchase_date ?? "",
-                        order_no: eq.delivery.order_no ?? "",
-                        notes: eq.delivery.notes ?? "",
-                    });
+                        setDeliveryMatched(true);
+                        setDeliveryMode(
+                            eq.delivery.voucher_no ? "voucher" : "invoice"
+                        );
+                        setDeliveryFields({
+                            voucher_no: eq.delivery.voucher_no ?? "",
+                            invoice_no: eq.delivery.invoice_no ?? "",
+                            supplier_id: eq.delivery.supplier_id ?? "",
+                            supplier_name: eq.delivery.supplier?.name ?? "",
+                            purchase_date: eq.delivery.purchase_date
+                                ? eq.delivery.purchase_date.slice(0, 10)
+                                : "",
+                            order_no: eq.delivery.order_no ?? "",
+                            notes: eq.delivery.notes ?? "",
+                        });
+                    }
                 }
-                }
-                
             } catch (error) {
+                if (error.name === "CanceledError") return;
                 console.error("Failed to load dropdowns:", error);
             } finally {
-                setDropdownsLoading(false);
+                if (!controller.signal.aborted) {
+                    setDropdownsLoading(false);
+                }
             }
         };
         fetchDropdowns();
+        return () => controller.abort();
     }, []);
 
     // Filter models client-side when brand changes
@@ -177,6 +192,9 @@ export default function EquipmentAdd() {
                       order_no: deliveryFields.order_no,
                       notes: deliveryFields.notes,
                   }),
+                  ...(isEditMode && lastSeenUpdatedAt
+                    ? { last_seen_updated_at: lastSeenUpdatedAt }
+                    : {}),
         };
 
         try {
@@ -187,7 +205,10 @@ export default function EquipmentAdd() {
             }
             navigate("/equipment");
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === 409) {
+                alert(error.response.data.message);
+                navigate("/equipment");
+            } else if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             } else {
                 console.error("Failed to save equipment:", error);
@@ -400,61 +421,73 @@ export default function EquipmentAdd() {
                 {/* Delivery */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-        <label className={labelClass}>
-            {deliveryMode === "voucher" ? "Voucher No." : "Sales Invoice No."}
-        </label>
+                        <label className={labelClass}>
+                            {deliveryMode === "voucher"
+                                ? "Voucher No."
+                                : "Sales Invoice No."}
+                        </label>
                         <div className="flex gap-1 text-xs">
                             <p className="text-xs text-gray-500">
-    {deliveryMode === "voucher" ? (
-        <>
-            No voucher number?{" "}
-            <button
-                type="button"
-                onClick={() => {
-                    setDeliveryMode("invoice");
-                    setDeliveryMatched(false);
-                    setDeliveryFields({
-                        voucher_no: "",
-                        invoice_no: "",
-                        supplier_id: "",
-                        supplier_name: "",
-                        purchase_date: "",
-                        order_no: "",
-                        notes: "",
-                    });
-                    setForm((prev) => ({ ...prev, delivery_id: "" }));
-                }}
-                className="underline text-blue-500"
-            >
-                Use invoice number instead
-            </button>
-        </>
-    ) : (
-        <>
-            Have a voucher number?{" "}
-            <button
-                type="button"
-                onClick={() => {
-                    setDeliveryMode("voucher");
-                    setDeliveryMatched(false);
-                    setDeliveryFields({
-                        voucher_no: "",
-                        invoice_no: "",
-                        supplier_id: "",
-                        supplier_name: "",
-                        purchase_date: "",
-                        order_no: "",
-                        notes: "",
-                    });
-                    setForm((prev) => ({ ...prev, delivery_id: "" }));
-                }}
-                className="underline text-blue-500"
-            >
-                Switch back to voucher
-            </button>
-        </>
-    )}
-</p>
+                                {deliveryMode === "voucher" ? (
+                                    <>
+                                        No voucher number?{" "}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDeliveryMode("invoice");
+                                                if (!isEditMode) {
+                                                    setDeliveryMatched(false);
+                                                    setDeliveryFields({
+                                                        voucher_no: "",
+                                                        invoice_no: "",
+                                                        supplier_id: "",
+                                                        supplier_name: "",
+                                                        purchase_date: "",
+                                                        order_no: "",
+                                                        notes: "",
+                                                    });
+                                                    setForm((prev) => ({
+                                                        ...prev,
+                                                        delivery_id: "",
+                                                    }));
+                                                }
+                                            }}
+                                            className="underline text-blue-500"
+                                        >
+                                            Use invoice number instead
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        Have a voucher number?{" "}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDeliveryMode("voucher");
+                                                if (!isEditMode) {
+                                                    setDeliveryMatched(false);
+                                                    setDeliveryFields({
+                                                        voucher_no: "",
+                                                        invoice_no: "",
+                                                        supplier_id: "",
+                                                        supplier_name: "",
+                                                        purchase_date: "",
+                                                        order_no: "",
+                                                        notes: "",
+                                                    });
+                                                    setForm((prev) => ({
+                                                        ...prev,
+                                                        delivery_id: "",
+                                                    }));
+                                                }
+                                            }}
+                                            className="underline text-blue-500"
+                                        >
+                                            Switch back to voucher
+                                        </button>
+                                    </>
+                                )}
+                            </p>
                         </div>
                     </div>
 
@@ -500,41 +533,47 @@ export default function EquipmentAdd() {
                     {/* Matched / manual fields */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-    <label className={labelClass}>Supplier</label>
-    {deliveryMatched ? (
-        <input
-            type="text"
-            value={deliveryFields.supplier_name}
-            disabled
-            className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
-        />
-    ) : (
-        <select
-            value={deliveryFields.supplier_id}
-            onChange={(e) => {
-                const selected = suppliers.find(
-                    (s) => s.id === parseInt(e.target.value)
-                );
-                setDeliveryFields((prev) => ({
-                    ...prev,
-                    supplier_id:   e.target.value,
-                    supplier_name: selected ? selected.name : "",
-                }));
-            }}
-            className={inputClass}
-        >
-            <option value="">Select Supplier</option>
-            {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>
-                    {s.name}
-                </option>
-            ))}
-        </select>
-    )}
-    {errors.supplier_id && (
-        <p className={errorClass}>{errors.supplier_id[0]}</p>
-    )}
-</div>
+                            <label className={labelClass}>Supplier</label>
+                            {deliveryMatched ? (
+                                <input
+                                    type="text"
+                                    value={deliveryFields.supplier_name}
+                                    disabled
+                                    className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
+                                />
+                            ) : (
+                                <select
+                                    value={deliveryFields.supplier_id}
+                                    onChange={(e) => {
+                                        const selected = suppliers.find(
+                                            (s) =>
+                                                s.id ===
+                                                parseInt(e.target.value)
+                                        );
+                                        setDeliveryFields((prev) => ({
+                                            ...prev,
+                                            supplier_id: e.target.value,
+                                            supplier_name: selected
+                                                ? selected.name
+                                                : "",
+                                        }));
+                                    }}
+                                    className={inputClass}
+                                >
+                                    <option value="">Select Supplier</option>
+                                    {suppliers.map((s) => (
+                                        <option key={s.id} value={s.id}>
+                                            {s.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                            {errors.supplier_id && (
+                                <p className={errorClass}>
+                                    {errors.supplier_id[0]}
+                                </p>
+                            )}
+                        </div>
                         <div>
                             <label className={labelClass}>Purchase Date</label>
                             <input

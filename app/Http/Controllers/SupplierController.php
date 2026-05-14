@@ -15,7 +15,7 @@ class SupplierController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|unique:suppliers,name',
+            'name' => 'required|string|max:50|unique:suppliers,name',
         ]);
 
         $supplier = Supplier::create($request->only('name'));
@@ -30,7 +30,7 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier)
     {
         $request->validate([
-            'name' => 'sometimes|string|unique:suppliers,name,' . $supplier->id,
+            'name' => 'required|string|max:50|unique:suppliers,name,' . $supplier->id,
         ]);
 
         $supplier->update($request->only('name'));

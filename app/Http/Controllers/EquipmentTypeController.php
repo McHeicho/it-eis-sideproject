@@ -15,7 +15,7 @@ class EquipmentTypeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|max:50|unique:equipment_types,name',
             'icon' => 'nullable|string',
         ]);
 
@@ -31,7 +31,7 @@ class EquipmentTypeController extends Controller
     public function update(Request $request, EquipmentType $equipmentType)
     {
         $request->validate([
-            'name' => 'sometimes|string',
+            'name' => 'required|string|max:50|unique:equipment_types,name,' . $equipmentType->id,
             'icon' => 'nullable|string',
         ]);
 

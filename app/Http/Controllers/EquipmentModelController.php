@@ -23,7 +23,7 @@ class EquipmentModelController extends Controller
     {
         $request->validate([
             'brand_id' => 'required|exists:brands,id',
-            'name'     => 'required|string',
+            'name' => 'required|string|max:50|unique:equipment_models,name',
         ]);
 
         $model = EquipmentModel::create($request->only('brand_id', 'name'));
@@ -39,7 +39,7 @@ class EquipmentModelController extends Controller
     {
         $request->validate([
             'brand_id' => 'sometimes|exists:brands,id',
-            'name'     => 'sometimes|string',
+            'name' => 'required|string|max:50|unique:equipment_models,name,' . $equipmentModel->id,
         ]);
 
         $equipmentModel->update($request->only('brand_id', 'name'));

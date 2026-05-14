@@ -9,14 +9,29 @@ use Illuminate\Support\Facades\Storage;
 
 class DeliveryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $deliveries = Delivery::with("supplier")
+        $query = Delivery::with("supplier")
             ->withCount("equipment")
-            ->orderBy("created_at", "desc")
-            ->get();
+            ->orderBy("created_at", "desc");
 
-        return response()->json($deliveries);
+        if ($request->filled("voucher_no")) {
+            $query->where("voucher_no", $request->voucher_no);
+        }
+
+        if ($request->filled("invoice_no")) {
+            $query->where("invoice_no", $request->invoice_no);
+        }
+
+        if ($request->filled("order_no")) {
+            $query->where("order_no", $request->order_no);
+        }
+
+        if ($request->filled("supplier_id")) {
+            $query->where("supplier_id", $request->supplier_id);
+        }
+
+        return response()->json($query->get());
     }
 
     public function match(Request $request)
@@ -75,6 +90,7 @@ class DeliveryController extends Controller
         return response()->json(
             $delivery->load([
                 "supplier",
+                "equipment.type",
                 "equipment.brand",
                 "equipment.model",
                 "attachments",
@@ -119,7 +135,7 @@ class DeliveryController extends Controller
         $delivery->attachments()->each(fn($att) => $att->delete());
 
         $file = $request->file("file");
-        $path = $file->store('deliveries/attachments', 'public');
+        $path = $file->store("deliveries/attachments", "public");
         $originalName = $file->getClientOriginalName();
         $mimeType = $file->getClientMimeType();
         $fileSize = $file->getSize();
@@ -150,18 +166,26 @@ class DeliveryController extends Controller
         return response()->json(["message" => "Attachment removed."]);
     }
     public function streamAttachment(Delivery $delivery, Attachment $attachment)
-{
-    if ($attachment->attachable_id !== $delivery->id) {
-        return response()->json(['message' => 'Attachment does not belong to this delivery.'], 403);
+    {
+        if ($attachment->attachable_id !== $delivery->id) {
+            return response()->json(
+                ["message" => "Attachment does not belong to this delivery."],
+                403,
+            );
+        }
+
+        if (!Storage::disk("public")->exists($attachment->file_path)) {
+            return response()->json(["message" => "File not found."], 404);
+        }
+
+        return Storage::disk("public")->response(
+            $attachment->file_path,
+            $attachment->original_filename,
+            [
+                "Content-Type" => "application/pdf",
+                "Content-Disposition" =>
+                    'inline; filename="' . $attachment->original_filename . '"',
+            ],
+        );
     }
-
-    if (!Storage::disk('public')->exists($attachment->file_path)) {
-    return response()->json(['message' => 'File not found.'], 404);
-}
-
-return Storage::disk('public')->response($attachment->file_path, $attachment->original_filename, [
-    'Content-Type'        => 'application/pdf',
-    'Content-Disposition' => 'inline; filename="' . $attachment->original_filename . '"',
-]);
-}
 }

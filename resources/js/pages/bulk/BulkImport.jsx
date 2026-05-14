@@ -256,6 +256,29 @@ export default function BulkImport() {
                                 record{eqImportResult.imported !== 1 ? "s" : ""}{" "}
                                 imported successfully.
                             </p>
+
+                            {eqImportResult.warnings?.length > 0 && (
+                                <div>
+                                    <p className="text-amber-600 font-medium mb-1">
+                                        {eqImportResult.warnings.length} warning
+                                        {eqImportResult.warnings.length !== 1
+                                            ? "s"
+                                            : ""}
+                                        :
+                                    </p>
+                                    <ul className="space-y-1">
+                                        {eqImportResult.warnings.map((w, i) => (
+                                            <li
+                                                key={i}
+                                                className="text-amber-500"
+                                            >
+                                                {w}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
                             {eqImportResult.failures.length > 0 && (
                                 <div>
                                     <p className="text-red-600 font-medium mb-1">
@@ -280,6 +303,7 @@ export default function BulkImport() {
                                     </ul>
                                 </div>
                             )}
+
                             <button
                                 onClick={() => setEqImportResult(null)}
                                 className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
@@ -365,7 +389,9 @@ export default function BulkImport() {
                                 <p className="font-medium text-gray-700">
                                     Import complete — {empImportResult.imported}{" "}
                                     record
-                                    {empImportResult.imported !== 1 ? "s" : ""}{" "}
+                                    {empImportResult.imported !== 1
+                                        ? "s"
+                                        : ""}{" "}
                                     imported
                                     {empImportResult.updated > 0 &&
                                         `, ${empImportResult.updated} record${

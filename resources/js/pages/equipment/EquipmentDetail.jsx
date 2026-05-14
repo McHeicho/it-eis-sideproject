@@ -189,32 +189,13 @@ export default function EquipmentDetail() {
                     {/* Status Row with Placeholder Buttons */}
                     <div className="flex justify-between items-center py-2">
                         <span className="text-sm text-gray-500">Status</span>
-                        <div className="flex items-center gap-3">
-                            <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                    equipment.status
-                                )}`}
-                            >
-                                {equipment.status}
-                            </span>
-                            {(equipment.status === "Available" ||
-                                equipment.status === "Spare Unit") && (
-                                <button
-                                    disabled
-                                    className="bg-green-500 text-white px-3 py-1 rounded text-xs font-medium opacity-60 cursor-not-allowed"
-                                >
-                                    Assign Equipment
-                                </button>
-                            )}
-                            {equipment.status === "Assigned" && (
-                                <button
-                                    disabled
-                                    className="bg-blue-500 text-white px-3 py-1 rounded text-xs font-medium opacity-60 cursor-not-allowed"
-                                >
-                                    Return Equipment
-                                </button>
-                            )}
-                        </div>
+                        <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                                equipment.status
+                            )}`}
+                        >
+                            {equipment.status}
+                        </span>
                     </div>
                 </div>
             </div>

@@ -33,7 +33,9 @@ class EquipmentTemplateExport implements WithEvents, WithTitle
             ->toArray();
         $this->suppliers = Supplier::pluck("name")->toArray();
         $this->conditions = Equipment::CONDITIONS;
-        $this->statuses = Equipment::STATUSES;
+        $this->statuses = array_values(
+            array_filter(Equipment::STATUSES, fn($s) => $s !== "Assigned"),
+        );
     }
 
     public function title(): string
@@ -56,8 +58,9 @@ class EquipmentTemplateExport implements WithEvents, WithTitle
                     "E1" => "Supplier",
                     "F1" => "Purchase Date",
                     "G1" => "Voucher No",
-                    "H1" => "Condition",
-                    "I1" => "Status",
+                    "H1" => "Invoice No",
+                    "I1" => "Condition",
+                    "J1" => "Status",
                 ];
 
                 foreach ($headers as $cell => $label) {
@@ -81,7 +84,7 @@ class EquipmentTemplateExport implements WithEvents, WithTitle
                     ],
                 ];
 
-                $sheet->getStyle("A1:I1")->applyFromArray($headerStyle);
+                $sheet->getStyle("A1:J1")->applyFromArray($headerStyle);
 
                 // Freeze the header row
                 $sheet->freezePane("A2");
@@ -95,8 +98,9 @@ class EquipmentTemplateExport implements WithEvents, WithTitle
                     "E" => 20, // Supplier
                     "F" => 16, // Purchase Date
                     "G" => 16, // Voucher No
-                    "H" => 14, // Condition
-                    "I" => 14, // Status
+                    "H" => 16, // Invoice No
+                    "I" => 14, // Condition
+                    "J" => 14, // Status
                 ];
 
                 foreach ($widths as $col => $width) {
@@ -196,9 +200,9 @@ class EquipmentTemplateExport implements WithEvents, WithTitle
                     '_lists!$C$2:$C$' . ($supplierCount + 1),
                 );
 
-                // Condition (Column H) → _lists!D
+                // Condition (Column I) → _lists!D
                 $validation = $sheet->getDataValidation(
-                    "H" . $dataRow . ":H" . $lastRow,
+                    "I" . $dataRow . ":I" . $lastRow,
                 );
                 $validation->setType(
                     \PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST,
@@ -214,9 +218,9 @@ class EquipmentTemplateExport implements WithEvents, WithTitle
                     '_lists!$D$2:$D$' . ($conditionCount + 1),
                 );
 
-                // Status (Column I) → _lists!E
+                // Status (Column J) → _lists!E
                 $validation = $sheet->getDataValidation(
-                    "I" . $dataRow . ":I" . $lastRow,
+                    "J" . $dataRow . ":J" . $lastRow,
                 );
                 $validation->setType(
                     \PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST,

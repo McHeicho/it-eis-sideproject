@@ -47,12 +47,6 @@ export default function Layout() {
             icon: <LayoutDashboard size={18} />,
             label: "Dashboard",
         },
-        { to: "/employees", icon: <Users size={18} />, label: "Employees" },
-        {
-            to: "/assignments",
-            icon: <ClipboardList size={18} />,
-            label: "Assignments",
-        },
     ];
 
     return (
@@ -133,9 +127,37 @@ export default function Layout() {
                                     <Receipt size={16} />
                                     Receipts
                                 </NavLink>
+                                <NavLink
+                                    to="/assignments"
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${
+                                            isActive
+                                                ? "bg-blue-50 text-blue-600"
+                                                : "text-gray-600 hover:bg-gray-100"
+                                        }`
+                                    }
+                                >
+                                    <ClipboardList size={16} />
+                                    Assignments
+                                </NavLink>
                             </div>
                         )}
                     </div>
+
+                    {/* Employees */}
+                    <NavLink
+                        to="/employees"
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                                isActive
+                                    ? "bg-blue-50 text-blue-600"
+                                    : "text-gray-600 hover:bg-gray-100"
+                            }`
+                        }
+                    >
+                        <Users size={18} />
+                        Employees
+                    </NavLink>
 
                     {/* Maintenance Section — Admin Only */}
                     {isAdmin && (

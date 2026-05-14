@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Laptop } from 'lucide-react';
-import api from '../../api/axios';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Laptop } from "lucide-react";
+import api from "../../api/axios";
 
 export default function EquipmentList() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
     const navigate = useNavigate();
     const [equipment, setEquipment] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,10 +15,10 @@ export default function EquipmentList() {
 
     const fetchEquipment = async () => {
         try {
-            const response = await api.get('/equipment');
+            const response = await api.get("/equipment");
             setEquipment(response.data);
         } catch (error) {
-            console.error('Failed to fetch equipment:', error);
+            console.error("Failed to fetch equipment:", error);
         } finally {
             setLoading(false);
         }
@@ -26,27 +26,29 @@ export default function EquipmentList() {
 
     const getStatusStyle = (status) => {
         const styles = {
-            'Available':         'bg-green-100 text-green-700',
-            'Assigned':          'bg-blue-100 text-blue-700',
-            'Under Repair':      'bg-yellow-100 text-yellow-700',
-            'Lost/Missing':      'bg-red-100 text-red-700',
-            'Retired/Disposed':  'bg-gray-100 text-gray-600',
-            'Spare Unit':        'bg-purple-100 text-purple-700',
+            Available: "bg-green-100 text-green-700",
+            Assigned: "bg-blue-100 text-blue-700",
+            "Under Repair": "bg-yellow-100 text-yellow-700",
+            "Lost/Missing": "bg-red-100 text-red-700",
+            "Retired/Disposed": "bg-gray-100 text-gray-600",
+            "Spare Unit": "bg-purple-100 text-purple-700",
         };
-        return styles[status] || 'bg-gray-100 text-gray-600';
+        return styles[status] || "bg-gray-100 text-gray-600";
     };
 
     const getConditionStyle = (condition) => {
         const styles = {
-            'Good':      'bg-green-100 text-green-700',
-            'Defective': 'bg-red-100 text-red-700',
+            Good: "bg-green-100 text-green-700",
+            Defective: "bg-red-100 text-red-700",
+        };
+        return styles[condition] || "bg-gray-100 text-gray-600";
     };
-    return styles[condition] || 'bg-gray-100 text-gray-600';
-};
 
     if (loading) {
         return (
-            <div className="p-6 text-sm text-gray-500">Loading equipment...</div>
+            <div className="p-6 text-sm text-gray-500">
+                Loading equipment...
+            </div>
         );
     }
 
@@ -55,13 +57,16 @@ export default function EquipmentList() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Equipment</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        Equipment
+                    </h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        {equipment.length} record{equipment.length !== 1 ? 's' : ''} found
+                        {equipment.length} record
+                        {equipment.length !== 1 ? "s" : ""} found
                     </p>
                 </div>
                 <button
-                    onClick={() => navigate('/equipment/add')}
+                    onClick={() => navigate("/equipment/add")}
                     className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                     <Plus size={16} />
@@ -83,16 +88,25 @@ export default function EquipmentList() {
                                 <th className="px-4 py-3 text-left">Type</th>
                                 <th className="px-4 py-3 text-left">Brand</th>
                                 <th className="px-4 py-3 text-left">Model</th>
-                                <th className="px-4 py-3 text-left">Serial No.</th>
-                                <th className="px-4 py-3 text-left">Supplier</th>
-                                <th className="px-4 py-3 text-left">Condition</th>
+                                <th className="px-4 py-3 text-left">
+                                    Serial No.
+                                </th>
+                                <th className="px-4 py-3 text-left">
+                                    Supplier
+                                </th>
+                                <th className="px-4 py-3 text-left">
+                                    Condition
+                                </th>
                                 <th className="px-4 py-3 text-left">Status</th>
                                 <th className="px-4 py-3 text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {equipment.map((item) => (
-                                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                                <tr
+                                    key={item.id}
+                                    className="hover:bg-gray-50 transition-colors"
+                                >
                                     <td className="px-4 py-3 text-gray-500">
                                         <Laptop size={16} />
                                     </td>
@@ -106,29 +120,45 @@ export default function EquipmentList() {
                                         {item.serial_number}
                                     </td>
                                     <td className="px-4 py-3 text-gray-600">
-                                        {item.supplier?.name}
+                                        {item.delivery?.supplier?.name || "—"}
                                     </td>
                                     <td className="px-4 py-3">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionStyle(item.condition)}`}>
+                                        <span
+                                            className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionStyle(
+                                                item.condition
+                                            )}`}
+                                        >
                                             {item.condition}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(item.status)}`}>
+                                        <span
+                                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                                                item.status
+                                            )}`}
+                                        >
                                             {item.status}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3">
                                         <button
-                                            onClick={() => navigate(`/equipment/${item.id}`)}
+                                            onClick={() =>
+                                                navigate(
+                                                    `/equipment/${item.id}`
+                                                )
+                                            }
                                             className="text-blue-600 hover:underline text-xs"
                                         >
                                             View
                                         </button>
                                         {user.role_id === 1 && (
                                             <button
-                                            onClick={() => navigate(`/equipment/${item.id}/edit`)}
-                                            className="text-amber-600 hover:underline text-xs"
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/equipment/${item.id}/edit`
+                                                    )
+                                                }
+                                                className="text-amber-600 hover:underline text-xs"
                                             >
                                                 Edit
                                             </button>

@@ -32,6 +32,7 @@ class BulkImportController extends Controller
         return response()->json([
             "imported" => count($import->imported),
             "failures" => $import->failures,
+            "warnings" => $import->warnings,
         ]);
     }
 

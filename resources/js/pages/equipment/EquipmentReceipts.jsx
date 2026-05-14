@@ -1,25 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { ChevronDown, ChevronRight, Paperclip } from "lucide-react";
+import {
+    ChevronDown,
+    ChevronRight,
+    Paperclip,
+    Pencil,
+    Laptop,
+} from "lucide-react";
 import api from "../../api/axios";
 
 export default function EquipmentReceipts() {
+    const [suppliers, setSuppliers] = useState([]);
     const [deliveries, setDeliveries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
     const [expandedData, setExpandedData] = useState({});
     const [expandLoading, setExpandLoading] = useState(null);
+    const [filterForm, setFilterForm] = useState({
+        voucher_no: "",
+        invoice_no: "",
+        order_no: "",
+        supplier_id: "",
+    });
+    const [filtering, setFiltering] = useState(false);
 
+    const fetchDeliveries = async (params = {}) => {
+        const isInitial = suppliers.length === 0;
+        if (isInitial) setLoading(true);
+        else setFiltering(true);
+        try {
+            const requests = [api.get("/deliveries", { params })];
+            if (isInitial) requests.push(api.get("/suppliers"));
+
+            const responses = await Promise.all(requests);
+            setDeliveries(responses[0].data);
+            if (isInitial) setSuppliers(responses[1].data);
+        } catch (error) {
+            console.error("Failed to fetch deliveries:", error);
+        } finally {
+            setLoading(false);
+            setFiltering(false);
+        }
+    };
     useEffect(() => {
-        const fetchDeliveries = async () => {
-            try {
-                const res = await api.get("/deliveries");
-                setDeliveries(res.data);
-            } catch (error) {
-                console.error("Failed to fetch deliveries:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchDeliveries();
     }, []);
 
@@ -39,6 +61,48 @@ export default function EquipmentReceipts() {
         } finally {
             setExpandLoading(null);
         }
+    };
+
+    const handleDeliveryUpdated = (updatedDelivery) => {
+        setDeliveries((prev) =>
+            prev.map((d) =>
+                d.id === updatedDelivery.id
+                    ? {
+                          ...d,
+                          voucher_no: updatedDelivery.voucher_no,
+                          invoice_no: updatedDelivery.invoice_no,
+                          purchase_date: updatedDelivery.purchase_date,
+                          supplier: updatedDelivery.supplier,
+                          supplier_id: updatedDelivery.supplier_id,
+                      }
+                    : d
+            )
+        );
+        setExpandedData((prev) => ({
+            ...prev,
+            [updatedDelivery.id]: {
+                ...prev[updatedDelivery.id],
+                ...updatedDelivery,
+            },
+        }));
+    };
+
+    const handleFilter = () => {
+        setExpandedId(null);
+        setExpandedData({});
+        fetchDeliveries(filterForm);
+    };
+
+    const handleReset = () => {
+        setFilterForm({
+            voucher_no: "",
+            invoice_no: "",
+            order_no: "",
+            supplier_id: "",
+        });
+        setExpandedId(null);
+        setExpandedData({});
+        fetchDeliveries();
     };
 
     const labelClass = "text-xs text-gray-500";
@@ -64,6 +128,110 @@ export default function EquipmentReceipts() {
                 <p className="text-sm text-gray-500 mt-1">
                     Procurement records and delivery documents.
                 </p>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="bg-white rounded-lg shadow p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                    <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                            Voucher No.
+                        </label>
+                        <input
+                            type="text"
+                            value={filterForm.voucher_no}
+                            onChange={(e) =>
+                                setFilterForm((prev) => ({
+                                    ...prev,
+                                    voucher_no: e.target.value,
+                                }))
+                            }
+                            onKeyDown={(e) =>
+                                e.key === "Enter" && handleFilter()
+                            }
+                            className="border rounded px-2 py-1.5 text-sm w-full"
+                            placeholder="Enter Voucher No."
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                            Invoice No.
+                        </label>
+                        <input
+                            type="text"
+                            value={filterForm.invoice_no}
+                            onChange={(e) =>
+                                setFilterForm((prev) => ({
+                                    ...prev,
+                                    invoice_no: e.target.value,
+                                }))
+                            }
+                            onKeyDown={(e) =>
+                                e.key === "Enter" && handleFilter()
+                            }
+                            className="border rounded px-2 py-1.5 text-sm w-full"
+                            placeholder="Enter Invoice No."
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                            Purchase Order No.
+                        </label>
+                        <input
+                            type="text"
+                            value={filterForm.order_no}
+                            onChange={(e) =>
+                                setFilterForm((prev) => ({
+                                    ...prev,
+                                    order_no: e.target.value,
+                                }))
+                            }
+                            onKeyDown={(e) =>
+                                e.key === "Enter" && handleFilter()
+                            }
+                            className="border rounded px-2 py-1.5 text-sm w-full"
+                            placeholder="Enter Purchase Order No."
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                            Supplier
+                        </label>
+                        <select
+                            value={filterForm.supplier_id}
+                            onChange={(e) =>
+                                setFilterForm((prev) => ({
+                                    ...prev,
+                                    supplier_id: e.target.value,
+                                }))
+                            }
+                            className="border rounded px-2 py-1.5 text-sm w-full bg-white"
+                        >
+                            <option value="">All Suppliers</option>
+                            {suppliers.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                    {s.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                    <button
+                        onClick={handleReset}
+                        disabled={filtering}
+                        className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors px-3 py-1.5"
+                    >
+                        Reset
+                    </button>
+                    <button
+                        onClick={handleFilter}
+                        disabled={filtering}
+                        className="text-xs bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    >
+                        {filtering ? "Filtering..." : "Filter"}
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -145,6 +313,10 @@ export default function EquipmentReceipts() {
                                 ) : expandedData[delivery.id] ? (
                                     <ReceiptDetail
                                         delivery={expandedData[delivery.id]}
+                                        suppliers={suppliers}
+                                        onDeliveryUpdated={
+                                            handleDeliveryUpdated
+                                        }
                                         onAttachmentUploaded={(attachment) => {
                                             setExpandedData((prev) => ({
                                                 ...prev,
@@ -179,14 +351,83 @@ export default function EquipmentReceipts() {
         </div>
     );
 }
+
+const TYPE_ICONS = {
+    Laptop: Laptop,
+};
+
 function ReceiptDetail({
     delivery,
+    suppliers,
+    onDeliveryUpdated,
     onAttachmentUploaded,
     onAttachmentRemoved,
 }) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState("");
+
+    const [isAdmin] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem("user"))?.role_id === 1;
+        } catch {
+            return false;
+        }
+    });
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({});
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState("");
+
+    const handleEditStart = () => {
+        setIsEditing(true);
+        setEditForm({
+            voucher_no: delivery.voucher_no ?? "",
+            invoice_no: delivery.invoice_no ?? "",
+            supplier_id: delivery.supplier_id ?? "",
+            purchase_date: delivery.purchase_date
+                ? delivery.purchase_date.slice(0, 10)
+                : "",
+            order_no: delivery.order_no ?? "",
+            notes: delivery.notes ?? "",
+        });
+        setSaveError("");
+    };
+
+    const handleEditCancel = () => {
+        setIsEditing(false);
+        setEditForm({});
+        setSaveError("");
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        setSaveError("");
+        const payload = {
+            voucher_no: editForm.voucher_no === "" ? null : editForm.voucher_no,
+            invoice_no: editForm.invoice_no === "" ? null : editForm.invoice_no,
+            supplier_id: editForm.supplier_id,
+            purchase_date: editForm.purchase_date,
+            order_no: editForm.order_no === "" ? null : editForm.order_no,
+            notes: editForm.notes === "" ? null : editForm.notes,
+        };
+        try {
+            const res = await api.patch(`/deliveries/${delivery.id}`, payload);
+            onDeliveryUpdated(res.data);
+            setIsEditing(false);
+            setEditForm({});
+        } catch (error) {
+            if (error.response?.status === 422) {
+                const errors = error.response.data.errors;
+                const firstError = Object.values(errors)?.[0]?.[0];
+                setSaveError(firstError || "Validation failed.");
+            } else {
+                setSaveError("Failed to save. Please try again.");
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0] || null);
@@ -241,6 +482,210 @@ function ReceiptDetail({
 
     return (
         <div className="pt-4 space-y-5">
+            {/* Receipt Details */}
+            <div>
+                <div className="flex items-center gap-3 mb-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Receipt Details
+                    </p>
+                    {isAdmin && !isEditing && (
+                        <button
+                            onClick={handleEditStart}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-amber-500 transition-colors"
+                        >
+                            <Pencil size={12} />
+                            Edit
+                        </button>
+                    )}
+                </div>
+                <div className="bg-white border rounded divide-y text-sm">
+                    {/* Voucher No. */}
+                    <div className="flex items-center px-4 py-2 gap-3">
+                        <span className="text-xs text-gray-500 w-36 shrink-0">
+                            Voucher No.
+                        </span>
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                value={editForm.voucher_no}
+                                onChange={(e) =>
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        voucher_no: e.target.value,
+                                    }))
+                                }
+                                className="border rounded px-2 py-1 text-sm flex-1"
+                            />
+                        ) : (
+                            <span className="text-gray-800 flex-1">
+                                {delivery.voucher_no || "—"}
+                            </span>
+                        )}
+                    </div>
+                    {/* Invoice No. */}
+                    <div className="flex items-center px-4 py-2 gap-3">
+                        <span className="text-xs text-gray-500 w-36 shrink-0">
+                            Invoice No.
+                        </span>
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                value={editForm.invoice_no}
+                                onChange={(e) =>
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        invoice_no: e.target.value,
+                                    }))
+                                }
+                                className="border rounded px-2 py-1 text-sm flex-1"
+                            />
+                        ) : (
+                            <span className="text-gray-800 flex-1">
+                                {delivery.invoice_no || "—"}
+                            </span>
+                        )}
+                    </div>
+                    {/* Supplier */}
+                    <div className="flex items-center px-4 py-2 gap-3">
+                        <span className="text-xs text-gray-500 w-36 shrink-0">
+                            Supplier
+                        </span>
+                        {isEditing ? (
+                            <select
+                                value={editForm.supplier_id}
+                                onChange={(e) =>
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        supplier_id: e.target.value,
+                                    }))
+                                }
+                                className="border rounded px-2 py-1 text-sm flex-1"
+                            >
+                                {suppliers.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.name}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            <span className="text-gray-800 flex-1">
+                                {delivery.supplier?.name || "—"}
+                            </span>
+                        )}
+                    </div>
+                    {/* Purchase Date */}
+                    <div className="flex items-center px-4 py-2 gap-3">
+                        <span className="text-xs text-gray-500 w-36 shrink-0">
+                            Purchase Date
+                        </span>
+                        {isEditing ? (
+                            <input
+                                type="date"
+                                value={editForm.purchase_date}
+                                onChange={(e) =>
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        purchase_date: e.target.value,
+                                    }))
+                                }
+                                className="border rounded px-2 py-1 text-sm flex-1"
+                            />
+                        ) : (
+                            <span className="text-gray-800 flex-1">
+                                {delivery.purchase_date
+                                    ? new Date(
+                                          delivery.purchase_date
+                                      ).toLocaleDateString("en-PH", {
+                                          year: "numeric",
+                                          month: "short",
+                                          day: "numeric",
+                                      })
+                                    : "—"}
+                            </span>
+                        )}
+                    </div>
+                    {/* Purchase Order No. */}
+                    <div className="flex items-center px-4 py-2 gap-3">
+                        <span className="text-xs text-gray-500 w-36 shrink-0">
+                            Purchase Order No.
+                        </span>
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                value={editForm.order_no}
+                                onChange={(e) =>
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        order_no: e.target.value,
+                                    }))
+                                }
+                                className="border rounded px-2 py-1 text-sm flex-1"
+                            />
+                        ) : (
+                            <span className="text-gray-800 flex-1">
+                                {delivery.order_no || "—"}
+                            </span>
+                        )}
+                    </div>
+                    {/* Notes */}
+                    <div className="flex items-start px-4 py-2 gap-3">
+                        <span className="text-xs text-gray-500 w-36 shrink-0 pt-1">
+                            Notes
+                        </span>
+                        {isEditing ? (
+                            <textarea
+                                value={editForm.notes}
+                                onChange={(e) =>
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        notes: e.target.value,
+                                    }))
+                                }
+                                className="border rounded px-2 py-1 text-sm flex-1 resize-none"
+                                rows={3}
+                            />
+                        ) : (
+                            <span
+                                className={`flex-1 ${
+                                    delivery.notes
+                                        ? "text-gray-800"
+                                        : "text-gray-400 italic"
+                                }`}
+                            >
+                                {delivery.notes || "no notes provided"}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Save / Cancel */}
+            {isEditing && (
+                <div className="flex items-center gap-3">
+                    {saveError && (
+                        <p className="text-xs text-red-500 flex-1">
+                            {saveError}
+                        </p>
+                    )}
+                    <div className="flex gap-2 ml-auto">
+                        <button
+                            onClick={handleEditCancel}
+                            disabled={saving}
+                            className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                        >
+                            {saving ? "Saving..." : "Save"}
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Linked Equipment */}
             <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
@@ -255,6 +700,9 @@ function ReceiptDetail({
                         <table className="w-full text-sm">
                             <thead className="bg-gray-100 text-xs text-gray-500 uppercase">
                                 <tr>
+                                    <th className="px-4 py-2 text-left">
+                                        Type
+                                    </th>
                                     <th className="px-4 py-2 text-left">
                                         Brand
                                     </th>
@@ -275,6 +723,22 @@ function ReceiptDetail({
                             <tbody className="divide-y divide-gray-100 bg-white">
                                 {delivery.equipment.map((eq) => (
                                     <tr key={eq.id}>
+                                        <td className="px-4 py-2">
+                                            {(() => {
+                                                const Icon =
+                                                    TYPE_ICONS[eq.type?.name];
+                                                return Icon ? (
+                                                    <Icon
+                                                        size={15}
+                                                        className="text-gray-500"
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-400">
+                                                        —
+                                                    </span>
+                                                );
+                                            })()}
+                                        </td>
                                         <td className="px-4 py-2">
                                             {eq.brand?.name || "—"}
                                         </td>
@@ -298,13 +762,37 @@ function ReceiptDetail({
                 )}
             </div>
 
-            {/* Attachments */}
+            {/* Documents */}
             <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                     Documents
                 </p>
 
-                {/* Existing Attachments */}
+                {/* Empty state */}
+                {delivery.attachments?.length === 0 && (
+                    <div className="mb-3">
+                        <div className="flex items-center justify-between bg-white border rounded px-4 py-2 text-sm">
+                            <div className="flex items-center gap-2 text-gray-400 italic">
+                                <Paperclip
+                                    size={14}
+                                    className="text-gray-300"
+                                />
+                                No documents provided.
+                            </div>
+                            <label className="cursor-pointer border rounded px-3 py-1.5 text-xs font-medium bg-green-500 text-white hover:bg-green-600 border-green-500 transition-colors">
+                                Choose PDF
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                )}
+
+                {/* Existing attachments */}
                 {delivery.attachments?.length > 0 && (
                     <div className="mb-3 space-y-2">
                         {delivery.attachments.map((att) => (
@@ -320,48 +808,41 @@ function ReceiptDetail({
                                     {att.original_filename}
                                 </div>
                                 <div className="flex items-center gap-4 text-xs text-gray-400">
-    <span>{formatFileSize(att.file_size)}</span>
-    <span>{att.uploaded_by_name || '—'}</span>
-    <a
-    href={`/storage/${att.file_path}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-400 hover:text-blue-600 transition-colors"
->
-    View
-</a>
-    <button
-        onClick={() => handleRemove(att.id)}
-        className="text-red-400 hover:text-red-600 transition-colors"
-    >
-        Remove
-    </button>
-</div>
+                                    <span>{formatFileSize(att.file_size)}</span>
+                                    <span>{att.uploaded_by_name || "—"}</span>
+                                    <a
+                                        href={`/storage/${att.file_path}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-400 hover:text-blue-600 transition-colors"
+                                    >
+                                        View
+                                    </a>
+                                    <button
+                                        onClick={() => handleRemove(att.id)}
+                                        className="text-red-400 hover:text-red-600 transition-colors"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
                 )}
 
-                {/* Upload Input */}
+                {/* Replace PDF + Upload */}
                 <div className="flex items-center gap-3">
-                    <label
-                        className={`cursor-pointer border rounded px-3 py-2 text-sm font-medium transition-colors ${
-                            delivery.attachments?.length > 0
-                                ? "bg-amber-500 text-white hover:bg-amber-600 border-amber-500"
-                                : "bg-green-500 text-white hover:bg-green-600 border-green-500"
-                        }`}
-                    >
-                        {delivery.attachments?.length > 0
-                            ? "Replace PDF"
-                            : "Choose PDF"}
-                        <input
-                            type="file"
-                            accept=".pdf"
-                            onChange={handleFileChange}
-                            className="hidden"
-                        />
-                    </label>
-
+                    {delivery.attachments?.length > 0 && (
+                        <label className="cursor-pointer border rounded px-3 py-2 text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 border-amber-500 transition-colors">
+                            Replace PDF
+                            <input
+                                type="file"
+                                accept=".pdf"
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                        </label>
+                    )}
                     {selectedFile && (
                         <>
                             <span className="text-sm text-gray-600 truncate max-w-xs">

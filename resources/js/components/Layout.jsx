@@ -16,6 +16,8 @@ import {
     FileSpreadsheet,
     List,
     Receipt,
+    Download,
+    FileText,
 } from "lucide-react";
 import ManageDepartmentsModal from "./ManageDepartmentsModal";
 import ManageBrandsModelsModal from "./ManageBrandsModelsModal";
@@ -34,6 +36,7 @@ export default function Layout() {
     const [showSuppliersModal, setShowSuppliersModal] = useState(false);
     const [showEmployeesModal, setShowEmployeesModal] = useState(false);
     const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
+    const [reportsOpen, setReportsOpen] = useState(false);
 
     const handleLogout = async () => {
         localStorage.removeItem("token");
@@ -261,6 +264,41 @@ export default function Layout() {
                                     </NavLink>
                                 </div>
                             )}
+                            {/* Generate Reports Section */}
+<div className="pt-2">
+    <button
+        onClick={() => setReportsOpen(!reportsOpen)}
+        className="flex items-center justify-between w-full px-3 py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+    >
+        <div className="flex items-center gap-3">
+            <FileText size={18} />
+            Generate Reports
+        </div>
+        {reportsOpen ? (
+            <ChevronDown size={14} />
+        ) : (
+            <ChevronRight size={14} />
+        )}
+    </button>
+
+    {reportsOpen && (
+        <div className="mt-1 ml-4 space-y-1">
+            <NavLink
+                to="/reports-equipment"
+                className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${
+                        isActive
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-600 hover:bg-gray-100"
+                    }`
+                }
+            >
+                <Laptop size={16} />
+                Equipment Reports
+            </NavLink>
+        </div>
+    )}
+</div>
                         </div>
                     )}
                 </nav>

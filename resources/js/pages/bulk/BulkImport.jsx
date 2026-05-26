@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { FileSpreadsheet, Users, ClipboardList, Upload } from "lucide-react";
+import React, { useState , useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    FileSpreadsheet,
+    Users,
+    ClipboardList,
+    Upload,
+    Paperclip,
+} from "lucide-react";
 import api from "../../api/axios";
 
 export default function BulkImport() {
@@ -18,6 +25,12 @@ export default function BulkImport() {
         left: false,
         right: false,
     });
+    const [docFiles, setDocFiles] = useState([]);
+    const [docDeliveries, setDocDeliveries] = useState([]);
+    const [docLoadingDeliveries, setDocLoadingDeliveries] = useState(false);
+    const [docUploading, setDocUploading] = useState(false);
+    const [docResults, setDocResults] = useState([]);
+    const [eqCountdown, setEqCountdown] = useState(null);
 
     const handleDownloadTemplate = async () => {
         setEqDownloading(true);
@@ -55,6 +68,7 @@ export default function BulkImport() {
                 }
             );
             setEqImportResult(response.data);
+            setEqCountdown(5);
             setEqSelectedFile(null);
         } catch (error) {
             console.error("Failed to import:", error);
@@ -168,6 +182,94 @@ export default function BulkImport() {
         }
     };
 
+    const handleDocFilesSelected = async (e) => {
+        const selected = Array.from(e.target.files);
+        if (selected.length === 0) return;
+
+        setDocResults([]);
+        setDocFiles(selected.map((file) => ({ file, deliveryId: "" })));
+
+        // Fetch deliveries missing documents if not already loaded
+        if (docDeliveries.length === 0) {
+            setDocLoadingDeliveries(true);
+            try {
+                const res = await api.get("/deliveries", {
+                    params: { no_attachment: true },
+                });
+                setDocDeliveries(res.data);
+            } catch (err) {
+                console.error("Failed to fetch deliveries:", err);
+            } finally {
+                setDocLoadingDeliveries(false);
+            }
+        }
+    };
+
+    const handleDocDeliveryChange = (index, deliveryId, inputValue = "") => {
+        setDocFiles((prev) =>
+            prev.map((item, i) =>
+                i === index ? { ...item, deliveryId, inputValue } : item
+            )
+        );
+    };
+
+    const handleDocUploadAll = async () => {
+        setDocUploading(true);
+        setDocResults([]);
+
+        const results = await Promise.allSettled(
+            docFiles.map(async ({ file, deliveryId }) => {
+                if (!deliveryId) {
+                    return {
+                        filename: file.name,
+                        success: false,
+                        message: "No delivery selected.",
+                    };
+                }
+                const formData = new FormData();
+                formData.append("file", file);
+                try {
+                    await api.post(
+                        `/deliveries/${deliveryId}/attachments`,
+                        formData,
+                        {
+                            headers: { "Content-Type": "multipart/form-data" },
+                        }
+                    );
+                    return { filename: file.name, success: true };
+                } catch (err) {
+                    const msg =
+                        err.response?.data?.errors?.file?.[0] ||
+                        "Upload failed.";
+                    return {
+                        filename: file.name,
+                        success: false,
+                        message: msg,
+                    };
+                }
+            })
+        );
+
+        setDocResults(results.map((r) => r.value));
+        setDocFiles([]);
+        setDocDeliveries([]);
+        setDocUploading(false);
+    };
+
+    useEffect(() => {
+        if (eqCountdown === null) return;
+        if (eqCountdown === 0) {
+            setEqImportResult(null);
+            setEqCountdown(null);
+            return;
+        }
+        const timer = setTimeout(
+            () => setEqCountdown((prev) => prev - 1),
+            1000
+        );
+        return () => clearTimeout(timer);
+    }, [eqCountdown]);
+
     return (
         <div className="p-6">
             {/* Header */}
@@ -250,66 +352,106 @@ export default function BulkImport() {
 
                     {/* Result Area */}
                     {eqImportResult && (
-                        <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-2">
-                            <p className="font-medium text-gray-700">
-                                Import complete — {eqImportResult.imported}{" "}
-                                record{eqImportResult.imported !== 1 ? "s" : ""}{" "}
-                                imported successfully.
-                            </p>
+                        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+                            <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
+                                {/* Title */}
+                                <h2 className="text-base font-bold text-gray-800">
+                                    Import Complete
+                                </h2>
 
-                            {eqImportResult.warnings?.length > 0 && (
-                                <div>
-                                    <p className="text-amber-600 font-medium mb-1">
-                                        {eqImportResult.warnings.length} warning
-                                        {eqImportResult.warnings.length !== 1
-                                            ? "s"
-                                            : ""}
-                                        :
-                                    </p>
-                                    <ul className="space-y-1">
-                                        {eqImportResult.warnings.map((w, i) => (
-                                            <li
-                                                key={i}
-                                                className="text-amber-500"
-                                            >
-                                                {w}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                {/* Summary */}
+                                <p className="text-sm text-gray-700">
+                                    {eqImportResult.imported} record
+                                    {eqImportResult.imported !== 1 ? "s" : ""}{" "}
+                                    imported successfully.
+                                </p>
+
+                                {/* Warnings */}
+                                {eqImportResult.warnings?.length > 0 && (
+                                    <div>
+                                        <p className="text-amber-600 font-medium text-xs mb-1">
+                                            {eqImportResult.warnings.length}{" "}
+                                            warning
+                                            {eqImportResult.warnings.length !==
+                                            1
+                                                ? "s"
+                                                : ""}
+                                            :
+                                        </p>
+                                        <ul className="space-y-1">
+                                            {eqImportResult.warnings.map(
+                                                (w, i) => (
+                                                    <li
+                                                        key={i}
+                                                        className="text-amber-500 text-xs"
+                                                    >
+                                                        {w}
+                                                    </li>
+                                                )
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Failures */}
+                                {eqImportResult.failures?.length > 0 && (
+                                    <div>
+                                        <p className="text-red-600 font-medium text-xs mb-1">
+                                            {eqImportResult.failures.length} row
+                                            {eqImportResult.failures.length !==
+                                            1
+                                                ? "s"
+                                                : ""}{" "}
+                                            failed:
+                                        </p>
+                                        <ul className="space-y-1">
+                                            {eqImportResult.failures.map(
+                                                (f, i) => (
+                                                    <li
+                                                        key={i}
+                                                        className="text-red-500 text-xs"
+                                                    >
+                                                        <span className="font-medium">
+                                                            Row {f.row}:
+                                                        </span>{" "}
+                                                        {f.errors.join(" ")}
+                                                    </li>
+                                                )
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Question */}
+                                <p className="text-sm text-gray-600">
+                                    Where would you like to go next?
+                                </p>
+
+                                {/* Actions */}
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        onClick={() => navigate("/equipment")}
+                                        className="w-full bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+                                    >
+                                        Go to Equipment List
+                                    </button>
+                                    <button
+                                        onClick={() => navigate("/assignments")}
+                                        className="w-full bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 transition-colors"
+                                    >
+                                        Go to Assignment List
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setEqImportResult(null);
+                                            setEqCountdown(null);
+                                        }}
+                                        className="w-full border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 transition-colors"
+                                    >
+                                        OK — dismiss ({eqCountdown}s)
+                                    </button>
                                 </div>
-                            )}
-
-                            {eqImportResult.failures.length > 0 && (
-                                <div>
-                                    <p className="text-red-600 font-medium mb-1">
-                                        {eqImportResult.failures.length} row
-                                        {eqImportResult.failures.length !== 1
-                                            ? "s"
-                                            : ""}{" "}
-                                        failed:
-                                    </p>
-                                    <ul className="space-y-1">
-                                        {eqImportResult.failures.map((f, i) => (
-                                            <li
-                                                key={i}
-                                                className="text-red-500"
-                                            >
-                                                <span className="font-medium">
-                                                    Row {f.row}:
-                                                </span>{" "}
-                                                {f.errors.join(" ")}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            <button
-                                onClick={() => setEqImportResult(null)}
-                                className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
-                            >
-                                OK
-                            </button>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -561,6 +703,207 @@ export default function BulkImport() {
                                     OK
                                 </button>
                             )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Bulk Attach Documents */}
+                <div className="bg-white rounded-lg shadow p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                        <Paperclip size={20} className="text-blue-600" />
+                        <h2 className="text-base font-semibold text-gray-800">
+                            Receipt Documents
+                        </h2>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-4">
+                        Select multiple PDFs and match each one to its delivery
+                        receipt before uploading.
+                    </p>
+
+                    {/* File Picker */}
+                    <label className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 cursor-pointer w-fit">
+                        <Upload size={16} />
+                        Choose PDFs
+                        <input
+                            type="file"
+                            accept=".pdf"
+                            multiple
+                            className="hidden"
+                            onChange={handleDocFilesSelected}
+                        />
+                    </label>
+
+                    {/* Matching Table */}
+                    {docFiles.length > 0 && (
+                        <div className="mt-4 space-y-3">
+                            {docLoadingDeliveries ? (
+                                <p className="text-sm text-gray-400">
+                                    Loading deliveries...
+                                </p>
+                            ) : (
+                                <>
+                                    {docFiles.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-3 flex-wrap"
+                                        >
+                                            <span
+                                                className="text-sm text-gray-700 w-64 truncate"
+                                                title={item.file.name}
+                                            >
+                                                {item.file.name}
+                                            </span>
+                                            <input
+                                                list={`deliveries-list-${index}`}
+                                                value={
+                                                    item.deliveryId
+                                                        ? docDeliveries.find(
+                                                              (d) =>
+                                                                  d.id ==
+                                                                  item.deliveryId
+                                                          )
+                                                            ? [
+                                                                  docDeliveries.find(
+                                                                      (d) =>
+                                                                          d.id ==
+                                                                          item.deliveryId
+                                                                  ).voucher_no,
+                                                                  docDeliveries.find(
+                                                                      (d) =>
+                                                                          d.id ==
+                                                                          item.deliveryId
+                                                                  ).invoice_no,
+                                                              ]
+                                                                  .filter(
+                                                                      Boolean
+                                                                  )
+                                                                  .join(" / ") +
+                                                              " — " +
+                                                              (docDeliveries.find(
+                                                                  (d) =>
+                                                                      d.id ==
+                                                                      item.deliveryId
+                                                              ).supplier
+                                                                  ?.name ||
+                                                                  "No Supplier")
+                                                            : item.deliveryId
+                                                        : item.inputValue || ""
+                                                }
+                                                onChange={(e) => {
+                                                    const typed =
+                                                        e.target.value;
+                                                    const matched = docDeliveries.find(
+                                                        (d) => {
+                                                            const label =
+                                                                [
+                                                                    d.voucher_no,
+                                                                    d.invoice_no,
+                                                                ]
+                                                                    .filter(
+                                                                        Boolean
+                                                                    )
+                                                                    .join(
+                                                                        " / "
+                                                                    ) +
+                                                                " — " +
+                                                                (d.supplier
+                                                                    ?.name ||
+                                                                    "No Supplier");
+                                                            return (
+                                                                label === typed
+                                                            );
+                                                        }
+                                                    );
+                                                    handleDocDeliveryChange(
+                                                        index,
+                                                        matched
+                                                            ? matched.id
+                                                            : "",
+                                                        typed
+                                                    );
+                                                }}
+                                                placeholder="Type voucher or invoice no..."
+                                                className="border rounded px-2 py-1.5 text-sm flex-1 min-w-48"
+                                            />
+                                            <datalist
+                                                id={`deliveries-list-${index}`}
+                                            >
+                                                {docDeliveries.map((d) => (
+                                                    <option
+                                                        key={d.id}
+                                                        value={
+                                                            [
+                                                                d.voucher_no,
+                                                                d.invoice_no,
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(" / ") +
+                                                            " — " +
+                                                            (d.supplier?.name ||
+                                                                "No Supplier")
+                                                        }
+                                                    />
+                                                ))}
+                                            </datalist>
+                                        </div>
+                                    ))}
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleDocUploadAll}
+                                            disabled={
+                                                docUploading ||
+                                                docFiles.every(
+                                                    (f) => !f.deliveryId
+                                                )
+                                            }
+                                            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            {docUploading
+                                                ? "Uploading..."
+                                                : "Upload All"}
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                window.location.reload()
+                                            }
+                                            disabled={docUploading}
+                                            className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Results */}
+                    {docResults.length > 0 && (
+                        <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-1">
+                            {docResults.map((r, i) => (
+                                <p
+                                    key={i}
+                                    className={
+                                        r.success
+                                            ? "text-green-600"
+                                            : "text-red-500"
+                                    }
+                                >
+                                    <span className="font-medium">
+                                        {r.filename}:
+                                    </span>{" "}
+                                    {r.success
+                                        ? "Uploaded successfully."
+                                        : r.message}
+                                </p>
+                            ))}
+                            <button
+                                onClick={() => setDocResults([])}
+                                className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
+                            >
+                                OK
+                            </button>
                         </div>
                     )}
                 </div>

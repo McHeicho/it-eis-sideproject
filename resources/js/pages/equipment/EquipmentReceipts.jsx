@@ -9,6 +9,7 @@ import {
 import api from "../../api/axios";
 
 export default function EquipmentReceipts() {
+    const isAdmin = JSON.parse(localStorage.getItem("user") || "{}")?.role_id === 1;
     const [suppliers, setSuppliers] = useState([]);
     const [deliveries, setDeliveries] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,6 +21,8 @@ export default function EquipmentReceipts() {
         invoice_no: "",
         order_no: "",
         supplier_id: "",
+        no_attachment: false,
+        serial_number: "",
     });
     const [filtering, setFiltering] = useState(false);
 
@@ -99,6 +102,8 @@ export default function EquipmentReceipts() {
             invoice_no: "",
             order_no: "",
             supplier_id: "",
+            no_attachment: false,
+            serial_number: "",
         });
         setExpandedId(null);
         setExpandedData({});
@@ -216,6 +221,43 @@ export default function EquipmentReceipts() {
                         </select>
                     </div>
                 </div>
+                {isAdmin && (
+    <div>
+        <label className="text-xs text-gray-500 block mb-1">
+            Serial Number
+        </label>
+        <input
+            type="text"
+            value={filterForm.serial_number}
+            onChange={(e) =>
+                setFilterForm((prev) => ({
+                    ...prev,
+                    serial_number: e.target.value,
+                }))
+            }
+            onKeyDown={(e) => e.key === "Enter" && handleFilter()}
+            className="border rounded px-2 py-1.5 text-sm w-full"
+            placeholder="Starts with..."
+        />
+    </div>
+)}
+                <div className="flex items-center gap-2 mt-1">
+    <input
+        type="checkbox"
+        id="no_attachment"
+        checked={filterForm.no_attachment}
+        onChange={(e) =>
+            setFilterForm((prev) => ({
+                ...prev,
+                no_attachment: e.target.checked,
+            }))
+        }
+        className="rounded border-gray-300"
+    />
+    <label htmlFor="no_attachment" className="text-xs text-gray-600 cursor-pointer">
+        Missing documents only
+    </label>
+</div>
                 <div className="flex justify-end gap-2">
                     <button
                         onClick={handleReset}

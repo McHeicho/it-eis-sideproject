@@ -31,6 +31,16 @@ class DeliveryController extends Controller
             $query->where("supplier_id", $request->supplier_id);
         }
 
+        if ($request->boolean('no_attachment')) {
+            $query->doesntHave('attachments');
+        }
+
+        if ($request->filled('serial_number')) {
+            $query->whereHas('equipment', function ($q) use ($request) {
+                $q->where('serial_number', 'like', $request->serial_number . '%');
+                });
+        }
+
         return response()->json($query->get());
     }
 

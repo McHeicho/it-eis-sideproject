@@ -46,6 +46,7 @@ Route::middleware("auth:sanctum")->group(function () {
         EquipmentController::class,
         "formData",
     ]);
+    Route::get('/equipment/export', [EquipmentController::class, 'export']);
     Route::apiResource("equipment", EquipmentController::class);
 
     // Delivery

@@ -47,9 +47,6 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 - [ ] **#12 — After bulk import, redirect to Equipment List with imported records highlighted**
   Currently the user lands back on the import screen with no visual link to what was just created. Prerequisite: #13.
 
-- [ ] **#13 — Add search functionality to Equipment List**
-  Prerequisite for #12.
-
 - [ ] **#14 — Bulk Import error correction**
   Allow inline editing of failed rows directly in the UI instead of re-uploading the Excel file (errors only, not duplicate serial numbers).
 
@@ -68,8 +65,11 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 - [ ] **#19 — Add Anyway / wizard OK button has no loading state**
   Force-import button in the Employee duplicate wizard fires silently with no spinner.
 
-- [ ] **#21 — PDF compression on upload**
-  Target ceiling 25MB. Some real-world voucher PDFs exceed current limits.
+- [ ] **#21 — PDF compression on upload** ⚠️ HIGH PRIORITY
+  Real-world voucher PDFs are exceeding the current 25MB cap, surfacing as silent
+  "Upload failed" errors on both the Receipt detail page and Bulk Attach Documents.
+  Compress PDFs server-side on upload rather than raising the hard cap.
+  Affects: `DeliveryController::attachFile()`.
 
 - [ ] **#22 — Optimize attachment logic**
   Clean up orphaned physical files from storage when Attachment record is soft-deleted.
@@ -89,6 +89,9 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   controllers: `BrandController`, `EquipmentTypeController`, `EquipmentModelController`, 
   `SupplierController`. Backend returns 422 on violation; Maintenance modals surface the 
   error automatically.
+
+- [x] **#13 — Add search functionality to Equipment List**
+  Prerequisite for #12.
 
 - [x] **#20 — Bulk Import for Delivery** *(closed at CHK#7)*
   Three phases: template adds Invoice No column, importer adds Delivery resolution logic with voucher/invoice matching + in-memory cache for same-batch grouping + mismatch warnings, frontend surfaces warnings in amber alongside failures.

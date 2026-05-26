@@ -8,6 +8,8 @@ use App\Models\Brand;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentType;
 use App\Models\Supplier;
+use App\Exports\EquipmentExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
 class EquipmentController extends Controller
@@ -32,18 +34,40 @@ class EquipmentController extends Controller
         ]);
     }
 
-    public function index()
-    {
-        return response()->json(
-            Equipment::with([
-                "type",
-                "brand",
-                "model",
-                "delivery.supplier",
-                "currentAssignment.employee",
-            ])->get(),
-        );
+public function index(Request $request)
+{
+    $query = Equipment::with([
+        "type",
+        "brand",
+        "model",
+        "delivery.supplier",
+        "currentAssignment.employee",
+    ]);
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
     }
+
+    if ($request->filled('condition')) {
+        $query->where('condition', $request->condition);
+    }
+
+    if ($request->filled('equipment_type_id')) {
+        $query->where('equipment_type_id', $request->equipment_type_id);
+    }
+
+    if ($request->filled('supplier_id')) {
+        $query->whereHas('delivery', function ($q) use ($request) {
+            $q->where('supplier_id', $request->supplier_id);
+        });
+    }
+
+    if ($request->filled('serial_number')) {
+        $query->where('serial_number', 'like', $request->serial_number . '%');
+    }
+
+    return response()->json($query->get());
+}
 
     public function store(Request $request)
     {
@@ -167,4 +191,12 @@ class EquipmentController extends Controller
             ]),
         );
     }
+
+public function export()
+{
+    return Excel::download(
+        new EquipmentExport(),
+        'equipment-' . now()->format('Y-m-d') . '.xlsx'
+    );
 }
+            }

@@ -17,4 +17,20 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// If any request gets a 401, clear local storage and redirect to login
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
+
 export default api;

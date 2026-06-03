@@ -189,13 +189,25 @@ export default function EquipmentDetail() {
                     {/* Status Row with Placeholder Buttons */}
                     <div className="flex justify-between items-center py-2">
                         <span className="text-sm text-gray-500">Status</span>
-                        <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                equipment.status
-                            )}`}
-                        >
-                            {equipment.status}
-                        </span>
+                        <div className="tooltip-wrapper">
+                            <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                                    equipment.status
+                                )}`}
+                            >
+                                {equipment.status}
+                            </span>
+                            {equipment.status === "Assigned" &&
+                                equipment.current_assignment?.employee && (
+                                    <span className="tooltip">
+                                        Assigned to:{" "}
+                                        {
+                                            equipment.current_assignment
+                                                .employee.name
+                                        }
+                                    </span>
+                                )}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -397,15 +397,29 @@ export default function AssignmentList() {
                                                       : "—"}
                                               </td>
                                               <td className="px-4 py-3">
-                                                  <span
-                                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                          isActive
-                                                              ? "bg-green-100 text-green-700"
-                                                              : "bg-gray-100 text-gray-600"
-                                                      }`}
-                                                  >
-                                                      {eq.status}
-                                                  </span>
+                                                  <div className="tooltip-wrapper">
+                                                      <span
+                                                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                              isActive
+                                                                  ? "bg-green-100 text-green-700"
+                                                                  : "bg-gray-100 text-gray-600"
+                                                          }`}
+                                                      >
+                                                          {eq.status}
+                                                      </span>
+                                                      {eq.status ===
+                                                          "Assigned" &&
+                                                          assignment?.employee && (
+                                                              <span className="tooltip">
+                                                                  Assigned to:{" "}
+                                                                  {
+                                                                      assignment
+                                                                          .employee
+                                                                          .name
+                                                                  }
+                                                              </span>
+                                                          )}
+                                                  </div>
                                               </td>
                                               {isAdmin && (
                                                   <td className="px-4 py-3">

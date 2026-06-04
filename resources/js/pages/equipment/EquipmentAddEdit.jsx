@@ -13,10 +13,13 @@ export default function EquipmentAdd() {
     const [models, setModels] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [allModels, setAllModels] = useState([]);
+    const [employees, setEmployees] = useState([]);
     const [dropdownsLoading, setDropdownsLoading] = useState(true);
     const [conditionOptions, setConditionOptions] = useState([]);
     const [statusOptions, setStatusOptions] = useState([]);
     const [lastSeenUpdatedAt, setLastSeenUpdatedAt] = useState(null);
+    const [employeeId, setEmployeeId] = useState("");
+    const [employeeSearch, setEmployeeSearch] = useState("");
 
     const [form, setForm] = useState({
         equipment_type_id: "",
@@ -72,6 +75,7 @@ export default function EquipmentAdd() {
                 setAllModels(formData.models);
                 setConditionOptions(formData.conditions);
                 setStatusOptions(formData.statuses);
+                setEmployees(formData.employees);
 
                 if (isEditMode) {
                     const eq = responses[1].data;
@@ -133,9 +137,14 @@ export default function EquipmentAdd() {
     }, [form.brand_id, allModels]);
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-        setErrors({ ...errors, [e.target.name]: "" });
-    };
+    const { name, value } = e.target;
+    if (name === 'status' && value !== 'Assigned') {
+        setEmployeeSearch('');
+        setEmployeeId('');
+    }
+    setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: '' });
+};
 
     const handleDeliveryBlur = async () => {
         const handle =
@@ -180,6 +189,12 @@ export default function EquipmentAdd() {
         setLoading(true);
         setErrors({});
 
+        if (!isEditMode && form.status === 'Assigned' && !employeeId) {
+    setErrors({ employee_id: ['Please select a valid employee.'] });
+    setLoading(false);
+    return;
+}
+
         const payload = {
             ...form,
             ...(form.delivery_id
@@ -195,6 +210,9 @@ export default function EquipmentAdd() {
                   ...(isEditMode && lastSeenUpdatedAt
                     ? { last_seen_updated_at: lastSeenUpdatedAt }
                     : {}),
+                    ...(!isEditMode && form.status === 'Assigned' && employeeId
+                        ? { employee_id: employeeId }
+                        : {}),
         };
 
         try {
@@ -647,36 +665,74 @@ export default function EquipmentAdd() {
                             <p className={errorClass}>{errors.condition[0]}</p>
                         )}
                     </div>
-                    <div>
-                        <label className={labelClass}>Status</label>
-                        <select
-                            name="status"
-                            value={form.status}
-                            onChange={handleChange}
-                            disabled={form.status === "Assigned"}
-                            className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
-                        >
-                            {form.status === "Assigned" && (
-                                <option value="Assigned">Assigned</option>
-                            )}
-                            {statusOptions
-                                .filter((s) => s !== "Assigned")
-                                .map((s) => (
-                                    <option key={s} value={s}>
-                                        {s}
-                                    </option>
-                                ))}
-                        </select>
-                        {form.status === "Assigned" && (
-                            <p className="text-xs text-gray-400 mt-1">
-                                Status is locked while equipment is assigned.
-                                Use Return Equipment to change it.
-                            </p>
-                        )}
-                        {errors.status && (
-                            <p className={errorClass}>{errors.status[0]}</p>
-                        )}
-                    </div>
+                    {/* Status */}
+<div>
+    <label className={labelClass}>Status</label>
+    {isEditMode ? (
+        <>
+            <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                disabled={form.status === "Assigned"}
+                className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
+            >
+                {form.status === "Assigned" && (
+                    <option value="Assigned">Assigned</option>
+                )}
+                {statusOptions
+                    .filter((s) => s !== "Assigned")
+                    .map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                    ))}
+            </select>
+            {form.status === "Assigned" && (
+                <p className="text-xs text-gray-400 mt-1">
+                    Status is locked while equipment is assigned. Use Return Equipment to change it.
+                </p>
+            )}
+        </>
+    ) : (
+        <select
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+            className={inputClass}
+        >
+            {statusOptions.map((s) => (
+                <option key={s} value={s}>{s}</option>
+            ))}
+        </select>
+    )}
+    {errors.status && <p className={errorClass}>{errors.status[0]}</p>}
+</div>
+
+{/* Employee assignment — add mode only, visible when Assigned is selected */}
+{!isEditMode && form.status === 'Assigned' && (
+    <div>
+        <label className={labelClass}>Assign to Employee</label>
+        <input
+            list="employee-list"
+            value={employeeSearch}
+            onChange={(e) => {
+                const val = e.target.value;
+                setEmployeeSearch(val);
+                const match = employees.find(emp => emp.name === val);
+                setEmployeeId(match ? match.id : "");
+            }}
+            placeholder="Type to search employee..."
+            className={inputClass}
+        />
+        <datalist id="employee-list">
+            {employees.map(emp => (
+                <option key={emp.id} value={emp.name} />
+            ))}
+        </datalist>
+        {errors.employee_id && (
+            <p className={errorClass}>{errors.employee_id[0]}</p>
+        )}
+    </div>
+)}
                 </div>
 
                 {/* Actions */}

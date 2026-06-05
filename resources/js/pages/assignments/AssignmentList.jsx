@@ -29,6 +29,9 @@ export default function AssignmentList() {
     });
     const [assignErrors, setAssignErrors] = useState({});
     const [assigning, setAssigning] = useState(false);
+    const [lostOnly, setLostOnly] = useState(false);
+    const [lostEquipment, setLostEquipment] = useState([]);
+    const [loadingLost, setLoadingLost] = useState(false);
 
     // Return modal
     const [showReturnModal, setShowReturnModal] = useState(false);
@@ -104,6 +107,21 @@ export default function AssignmentList() {
           )
         : employees;
 
+    const fetchLostEquipment = async () => {
+        setLoadingLost(true);
+        setLostEquipment([]);
+        try {
+            const res = await api.get("/equipment", {
+                params: { status: "Lost/Missing" },
+            });
+            setLostEquipment(res.data);
+        } catch (error) {
+            console.error("Failed to fetch lost equipment:", error);
+        } finally {
+            setLoadingLost(false);
+        }
+    };
+
     // Open assign modal
     const handleOpenAssign = () => {
         setAssignForm({
@@ -114,6 +132,8 @@ export default function AssignmentList() {
             notes: "",
         });
         setAssignErrors({});
+        setLostOnly(false);
+        setLostEquipment([]);
         setShowAssignModal(true);
     };
 
@@ -592,9 +612,37 @@ export default function AssignmentList() {
                                 {view === "equipment" ? (
                                     <>
                                         <div>
-                                            <label className={labelClass}>
-                                                Equipment
-                                            </label>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label className={labelClass}>
+                                                    Equipment
+                                                </label>
+                                                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={lostOnly}
+                                                        onChange={(e) => {
+                                                            const checked =
+                                                                e.target
+                                                                    .checked;
+                                                            setLostOnly(
+                                                                checked
+                                                            );
+                                                            setAssignForm({
+                                                                ...assignForm,
+                                                                equipment_id:
+                                                                    "",
+                                                            });
+                                                            if (checked)
+                                                                fetchLostEquipment();
+                                                            else
+                                                                setLostEquipment(
+                                                                    []
+                                                                );
+                                                        }}
+                                                    />
+                                                    Show Lost/Missing only
+                                                </label>
+                                            </div>
                                             <select
                                                 value={assignForm.equipment_id}
                                                 onChange={(e) =>
@@ -604,24 +652,28 @@ export default function AssignmentList() {
                                                             e.target.value,
                                                     })
                                                 }
-                                                className={inputClass}
+                                                disabled={loadingLost}
+                                                className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                                             >
                                                 <option value="">
-                                                    Select Equipment
+                                                    {loadingLost
+                                                        ? "Loading..."
+                                                        : "Select Equipment"}
                                                 </option>
-                                                {availableEquipment.map(
-                                                    (eq) => (
-                                                        <option
-                                                            key={eq.id}
-                                                            value={eq.id}
-                                                        >
-                                                            {eq.brand?.name}{" "}
-                                                            {eq.model?.name} —{" "}
-                                                            {eq.serial_number} (
-                                                            {eq.status})
-                                                        </option>
-                                                    )
-                                                )}
+                                                {(lostOnly
+                                                    ? lostEquipment
+                                                    : availableEquipment
+                                                ).map((eq) => (
+                                                    <option
+                                                        key={eq.id}
+                                                        value={eq.id}
+                                                    >
+                                                        {eq.brand?.name}{" "}
+                                                        {eq.model?.name} —{" "}
+                                                        {eq.serial_number} (
+                                                        {eq.status})
+                                                    </option>
+                                                ))}
                                             </select>
                                             {assignErrors.equipment_id && (
                                                 <p className={errorClass}>
@@ -747,9 +799,37 @@ export default function AssignmentList() {
                                             )}
                                         </div>
                                         <div>
-                                            <label className={labelClass}>
-                                                Equipment
-                                            </label>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label className={labelClass}>
+                                                    Equipment
+                                                </label>
+                                                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={lostOnly}
+                                                        onChange={(e) => {
+                                                            const checked =
+                                                                e.target
+                                                                    .checked;
+                                                            setLostOnly(
+                                                                checked
+                                                            );
+                                                            setAssignForm({
+                                                                ...assignForm,
+                                                                equipment_id:
+                                                                    "",
+                                                            });
+                                                            if (checked)
+                                                                fetchLostEquipment();
+                                                            else
+                                                                setLostEquipment(
+                                                                    []
+                                                                );
+                                                        }}
+                                                    />
+                                                    Show Lost/Missing only
+                                                </label>
+                                            </div>
                                             <select
                                                 value={assignForm.equipment_id}
                                                 onChange={(e) =>
@@ -759,24 +839,28 @@ export default function AssignmentList() {
                                                             e.target.value,
                                                     })
                                                 }
-                                                className={inputClass}
+                                                disabled={loadingLost}
+                                                className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                                             >
                                                 <option value="">
-                                                    Select Equipment
+                                                    {loadingLost
+                                                        ? "Loading..."
+                                                        : "Select Equipment"}
                                                 </option>
-                                                {availableEquipment.map(
-                                                    (eq) => (
-                                                        <option
-                                                            key={eq.id}
-                                                            value={eq.id}
-                                                        >
-                                                            {eq.brand?.name}{" "}
-                                                            {eq.model?.name} —{" "}
-                                                            {eq.serial_number} (
-                                                            {eq.status})
-                                                        </option>
-                                                    )
-                                                )}
+                                                {(lostOnly
+                                                    ? lostEquipment
+                                                    : availableEquipment
+                                                ).map((eq) => (
+                                                    <option
+                                                        key={eq.id}
+                                                        value={eq.id}
+                                                    >
+                                                        {eq.brand?.name}{" "}
+                                                        {eq.model?.name} —{" "}
+                                                        {eq.serial_number} (
+                                                        {eq.status})
+                                                    </option>
+                                                ))}
                                             </select>
                                             {assignErrors.equipment_id && (
                                                 <p className={errorClass}>

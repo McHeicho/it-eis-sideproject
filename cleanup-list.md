@@ -67,6 +67,10 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   - Native `<input list>` + `<datalist>` employee picker in `EquipmentAddEdit.jsx` (Assigned-on-creation) and the per-file delivery-match datalist in Bulk Attach Documents.
     → Candidate: Headless UI Combobox (`@headlessui/react`) — headless/unstyled, pairs with Tailwind, stays configurable per location. Headless UI is on v2; build against current syntax. Decision pending on adding the dependency.
   - Re-evaluate other custom selects, modals, and dropdowns the same way.
+  - Collapsed sidebar icon alignment in `Layout.jsx` — current implementation uses manual 
+    `justify-center` / `gap-3 px-3` className toggles per nav item. Brittle and repetitive. 
+    → Candidate: revisit when doing the broader Headless UI audit, or extract a `SidebarNavItem` 
+    component that encapsulates the collapsed/expanded styling logic in one place.
 
 ---
 

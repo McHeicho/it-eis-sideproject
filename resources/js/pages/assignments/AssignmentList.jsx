@@ -30,6 +30,7 @@ export default function AssignmentList() {
     const [assignErrors, setAssignErrors] = useState({});
     const [assigning, setAssigning] = useState(false);
     const [lostOnly, setLostOnly] = useState(false);
+    const [noLaptopOnly, setNoLaptopOnly] = useState(false);
     const [lostEquipment, setLostEquipment] = useState([]);
     const [loadingLost, setLoadingLost] = useState(false);
 
@@ -101,11 +102,25 @@ export default function AssignmentList() {
     );
 
     // Filter employees for selection
-    const filteredEmployees = assignForm.department_tag
-        ? employees.filter(
-              (e) => e.department_tag === assignForm.department_tag
-          )
-        : employees;
+    const laptopIds = new Set(
+        equipment.filter((e) => e.equipment_type_id === 1).map((e) => e.id)
+    );
+
+    const employeeIdsWithLaptop = new Set(
+        assignments
+            .filter((a) => !a.date_returned && laptopIds.has(a.equipment_id))
+            .map((a) => a.employee_id)
+    );
+
+    const filteredEmployees = employees.filter((e) => {
+        if (
+            assignForm.department_tag &&
+            e.department_tag !== assignForm.department_tag
+        )
+            return false;
+        if (noLaptopOnly && employeeIdsWithLaptop.has(e.id)) return false;
+        return true;
+    });
 
     const fetchLostEquipment = async () => {
         setLoadingLost(true);
@@ -134,6 +149,7 @@ export default function AssignmentList() {
         setAssignErrors({});
         setLostOnly(false);
         setLostEquipment([]);
+        setNoLaptopOnly(false);
         setShowAssignModal(true);
     };
 
@@ -716,9 +732,27 @@ export default function AssignmentList() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className={labelClass}>
-                                                Employee
-                                            </label>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label className={labelClass}>
+                                                    Employee
+                                                </label>
+                                                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={noLaptopOnly}
+                                                        onChange={(e) => {
+                                                            setNoLaptopOnly(
+                                                                e.target.checked
+                                                            );
+                                                            setAssignForm({
+                                                                ...assignForm,
+                                                                employee_id: "",
+                                                            });
+                                                        }}
+                                                    />
+                                                    No laptop assigned
+                                                </label>
+                                            </div>
                                             <select
                                                 value={assignForm.employee_id}
                                                 onChange={(e) =>
@@ -759,9 +793,48 @@ export default function AssignmentList() {
                                 ) : (
                                     <>
                                         <div>
-                                            <label className={labelClass}>
-                                                Employee
-                                            </label>
+                                            <div className="mb-4">
+        <label className={labelClass}>Department</label>
+        <select
+            value={assignForm.department_tag}
+            onChange={(e) =>
+                setAssignForm({
+                    ...assignForm,
+                    department_tag: e.target.value,
+                    employee_id: "",
+                })
+            }
+            className={inputClass}
+        >
+            <option value="">All Departments</option>
+            {departments.map((dept) => (
+                <option key={dept.id} value={dept.tag}>
+                    {dept.name} ({dept.tag})
+                </option>
+            ))}
+        </select>
+    </div>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label className={labelClass}>
+                                                    Employee
+                                                </label>
+                                                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={noLaptopOnly}
+                                                        onChange={(e) => {
+                                                            setNoLaptopOnly(
+                                                                e.target.checked
+                                                            );
+                                                            setAssignForm({
+                                                                ...assignForm,
+                                                                employee_id: "",
+                                                            });
+                                                        }}
+                                                    />
+                                                    No laptop assigned
+                                                </label>
+                                            </div>
                                             <select
                                                 value={assignForm.employee_id}
                                                 onChange={(e) =>

@@ -58,37 +58,40 @@ export default function Layout() {
         <div className="flex h-screen bg-gray-100">
             {/* Sidebar */}
             <aside
-    className={`${sidebarCollapsed ? "w-14" : "w-56"} bg-white shadow-md flex flex-col transition-all duration-200`}
->
+                className={`${
+                    sidebarCollapsed ? "w-14" : "w-56"
+                } bg-white shadow-md flex flex-col transition-all duration-200`}
+            >
                 <div className="p-3 border-b flex items-center justify-between min-h-[57px]">
-    {!sidebarCollapsed && (
-        <div className="overflow-hidden">
-            <h1 className="text-sm font-bold text-gray-800 whitespace-nowrap">
-                IT Inventory
-            </h1>
-            <p className="text-xs text-gray-400 mt-1 whitespace-nowrap">
-                {user.first_name} {user.last_name}
-            </p>
-        </div>
-    )}
-    <button
-        onClick={() => {
-            setSidebarCollapsed(!sidebarCollapsed);
-            if (!sidebarCollapsed) {
-                setEquipmentOpen(false);
-                setMaintenanceOpen(false);
-                setBulkActionsOpen(false);
-                setReportsOpen(false);
-            }
-        }}
-        className="ml-auto p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
-    >
-        {sidebarCollapsed
-            ? <ChevronRight size={16} />
-            : <ChevronLeft size={16} />
-        }
-    </button>
-</div>
+                    {!sidebarCollapsed && (
+                        <div className="overflow-hidden">
+                            <h1 className="text-sm font-bold text-gray-800 whitespace-nowrap">
+                                IT Inventory
+                            </h1>
+                            <p className="text-xs text-gray-400 mt-1 whitespace-nowrap">
+                                {user.first_name} {user.last_name}
+                            </p>
+                        </div>
+                    )}
+                    <button
+                        onClick={() => {
+                            setSidebarCollapsed(!sidebarCollapsed);
+                            if (!sidebarCollapsed) {
+                                setEquipmentOpen(false);
+                                setMaintenanceOpen(false);
+                                setBulkActionsOpen(false);
+                                setReportsOpen(false);
+                            }
+                        }}
+                        className="ml-auto p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                    >
+                        {sidebarCollapsed ? (
+                            <ChevronRight size={16} />
+                        ) : (
+                            <ChevronLeft size={16} />
+                        )}
+                    </button>
+                </div>
 
                 <nav className="flex-1 p-4 space-y-1">
                     {/* Main Nav Items */}
@@ -97,7 +100,11 @@ export default function Layout() {
                             key={item.to}
                             to={item.to}
                             className={({ isActive }) =>
-                                `flex items-center py-2 rounded text-sm font-medium transition-colors ${sidebarCollapsed ? "justify-center" : "gap-3 px-3"} ${
+                                `flex items-center py-2 rounded text-sm font-medium transition-colors ${
+                                    sidebarCollapsed
+                                        ? "justify-center"
+                                        : "gap-3 px-3"
+                                } ${
                                     isActive
                                         ? "bg-blue-50 text-blue-600"
                                         : "text-gray-600 hover:bg-gray-100"
@@ -105,7 +112,7 @@ export default function Layout() {
                             }
                         >
                             {item.icon}
-{!sidebarCollapsed && item.label}
+                            {!sidebarCollapsed && item.label}
                         </NavLink>
                     ))}
 
@@ -113,21 +120,30 @@ export default function Layout() {
                     <div>
                         <button
                             onClick={() => setEquipmentOpen(!equipmentOpen)}
-                            className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${sidebarCollapsed ? "justify-center" : "justify-between px-3"}`}
+                            className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${
+                                sidebarCollapsed
+                                    ? "justify-center"
+                                    : "justify-between px-3"
+                            }`}
                         >
-                            <div className={`flex items-center ${sidebarCollapsed ? "" : "gap-3"}`}>
-    <Laptop size={18} />
-    {!sidebarCollapsed && "Equipment"}
-</div>
-{!sidebarCollapsed && (
-    equipmentOpen
-        ? <ChevronDown size={14} />
-        : <ChevronRight size={14} />
-)}
+                            <div
+                                className={`flex items-center ${
+                                    sidebarCollapsed ? "" : "gap-3"
+                                }`}
+                            >
+                                <Laptop size={18} />
+                                {!sidebarCollapsed && "Equipment"}
+                            </div>
+                            {!sidebarCollapsed &&
+                                (equipmentOpen ? (
+                                    <ChevronDown size={14} />
+                                ) : (
+                                    <ChevronRight size={14} />
+                                ))}
                         </button>
 
                         {equipmentOpen && !sidebarCollapsed && (
-    <div className="mt-1 ml-4 space-y-1">
+                            <div className="mt-1 ml-4 space-y-1">
                                 <NavLink
                                     to="/equipment"
                                     end
@@ -176,7 +192,11 @@ export default function Layout() {
                     <NavLink
                         to="/employees"
                         className={({ isActive }) =>
-                            `flex items-center py-2 rounded text-sm font-medium transition-colors ${sidebarCollapsed ? "justify-center" : "gap-3 px-3"} ${
+                            `flex items-center py-2 rounded text-sm font-medium transition-colors ${
+                                sidebarCollapsed
+                                    ? "justify-center"
+                                    : "gap-3 px-3"
+                            } ${
                                 isActive
                                     ? "bg-blue-50 text-blue-600"
                                     : "text-gray-600 hover:bg-gray-100"
@@ -184,7 +204,7 @@ export default function Layout() {
                         }
                     >
                         <Users size={18} />
-{!sidebarCollapsed && "Employees"}
+                        {!sidebarCollapsed && "Employees"}
                     </NavLink>
 
                     {/* Maintenance Section — Admin Only */}
@@ -195,17 +215,26 @@ export default function Layout() {
                                 onClick={() =>
                                     setMaintenanceOpen(!maintenanceOpen)
                                 }
-                                className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${sidebarCollapsed ? "justify-center" : "justify-between px-3"}`}
+                                className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${
+                                    sidebarCollapsed
+                                        ? "justify-center"
+                                        : "justify-between px-3"
+                                }`}
                             >
-                                <div className={`flex items-center ${sidebarCollapsed ? "" : "gap-3"}`}>
-    <Settings size={18} />
-    {!sidebarCollapsed && "Maintenance"}
-</div>
-{!sidebarCollapsed && (
-    maintenanceOpen
-        ? <ChevronDown size={14} />
-        : <ChevronRight size={14} />
-)}
+                                <div
+                                    className={`flex items-center ${
+                                        sidebarCollapsed ? "" : "gap-3"
+                                    }`}
+                                >
+                                    <Settings size={18} />
+                                    {!sidebarCollapsed && "Maintenance"}
+                                </div>
+                                {!sidebarCollapsed &&
+                                    (maintenanceOpen ? (
+                                        <ChevronDown size={14} />
+                                    ) : (
+                                        <ChevronRight size={14} />
+                                    ))}
                             </button>
 
                             {/* Dropdown Items */}
@@ -259,21 +288,30 @@ export default function Layout() {
                                 onClick={() =>
                                     setBulkActionsOpen(!bulkActionsOpen)
                                 }
-                                className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${sidebarCollapsed ? "justify-center" : "justify-between px-3"}`}
+                                className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${
+                                    sidebarCollapsed
+                                        ? "justify-center"
+                                        : "justify-between px-3"
+                                }`}
                             >
-                                <div className={`flex items-center ${sidebarCollapsed ? "" : "gap-3"}`}>
-    <Upload size={18} />
-    {!sidebarCollapsed && "Bulk Actions"}
-</div>
-{!sidebarCollapsed && (
-    bulkActionsOpen
-        ? <ChevronDown size={14} />
-        : <ChevronRight size={14} />
-)}
+                                <div
+                                    className={`flex items-center ${
+                                        sidebarCollapsed ? "" : "gap-3"
+                                    }`}
+                                >
+                                    <Upload size={18} />
+                                    {!sidebarCollapsed && "Bulk Actions"}
+                                </div>
+                                {!sidebarCollapsed &&
+                                    (bulkActionsOpen ? (
+                                        <ChevronDown size={14} />
+                                    ) : (
+                                        <ChevronRight size={14} />
+                                    ))}
                             </button>
 
                             {bulkActionsOpen && !sidebarCollapsed && (
-    <div className="mt-1 ml-4 space-y-1">
+                                <div className="mt-1 ml-4 space-y-1">
                                     <NavLink
                                         to="/bulk-import"
                                         className={({ isActive }) =>
@@ -290,40 +328,50 @@ export default function Layout() {
                                 </div>
                             )}
                             {/* Generate Reports Section */}
-<div className="pt-2">
-    <button
-        onClick={() => setReportsOpen(!reportsOpen)}
-        className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${sidebarCollapsed ? "justify-center" : "justify-between px-3"}`}
-    >
-        <div className={`flex items-center ${sidebarCollapsed ? "" : "gap-3"}`}>
-    <FileText size={18} />
-    {!sidebarCollapsed && "Generate Reports"}
-</div>
-{!sidebarCollapsed && (
-    reportsOpen
-        ? <ChevronDown size={14} />
-        : <ChevronRight size={14} />
-)}
-</button>
+                            <div className="pt-2">
+                                <button
+                                    onClick={() => setReportsOpen(!reportsOpen)}
+                                    className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${
+                                        sidebarCollapsed
+                                            ? "justify-center"
+                                            : "justify-between px-3"
+                                    }`}
+                                >
+                                    <div
+                                        className={`flex items-center ${
+                                            sidebarCollapsed ? "" : "gap-3"
+                                        }`}
+                                    >
+                                        <FileText size={18} />
+                                        {!sidebarCollapsed &&
+                                            "Generate Reports"}
+                                    </div>
+                                    {!sidebarCollapsed &&
+                                        (reportsOpen ? (
+                                            <ChevronDown size={14} />
+                                        ) : (
+                                            <ChevronRight size={14} />
+                                        ))}
+                                </button>
 
-    {reportsOpen && !sidebarCollapsed && (
-    <div className="mt-1 ml-4 space-y-1">
-            <NavLink
-                to="/reports-equipment"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${
-                        isActive
-                            ? "bg-blue-50 text-blue-600"
-                            : "text-gray-600 hover:bg-gray-100"
-                    }`
-                }
-            >
-                <Laptop size={16} />
-                Equipment Reports
-            </NavLink>
-        </div>
-    )}
-</div>
+                                {reportsOpen && !sidebarCollapsed && (
+                                    <div className="mt-1 ml-4 space-y-1">
+                                        <NavLink
+                                            to="/reports-equipment"
+                                            className={({ isActive }) =>
+                                                `flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${
+                                                    isActive
+                                                        ? "bg-blue-50 text-blue-600"
+                                                        : "text-gray-600 hover:bg-gray-100"
+                                                }`
+                                            }
+                                        >
+                                            <Laptop size={16} />
+                                            Equipment Reports
+                                        </NavLink>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </nav>
@@ -331,10 +379,12 @@ export default function Layout() {
                 <div className="p-4 border-t">
                     <button
                         onClick={handleLogout}
-                        className={`flex items-center w-full py-2 rounded text-sm font-medium text-red-500 hover:bg-red-50 transition-colors ${sidebarCollapsed ? "justify-center" : "gap-3 px-3"}`}
+                        className={`flex items-center w-full py-2 rounded text-sm font-medium text-red-500 hover:bg-red-50 transition-colors ${
+                            sidebarCollapsed ? "justify-center" : "gap-3 px-3"
+                        }`}
                     >
                         <LogOut size={18} />
-{!sidebarCollapsed && "Logout"}
+                        {!sidebarCollapsed && "Logout"}
                     </button>
                 </div>
             </aside>

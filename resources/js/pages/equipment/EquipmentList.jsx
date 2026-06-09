@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Laptop } from "lucide-react";
+import { Plus, Laptop, FileSearch, Pencil } from "lucide-react";
 import api from "../../api/axios";
 
 export default function EquipmentList() {
@@ -336,28 +336,22 @@ export default function EquipmentList() {
                                                 )}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-3 flex items-center gap-3">
                                         <button
-                                            onClick={() =>
-                                                navigate(
-                                                    `/equipment/${item.id}`
-                                                )
-                                            }
-                                            className="text-blue-600 hover:underline text-xs"
-                                        >
-                                            View
-                                        </button>
+    onClick={() => navigate(`/equipment/${item.id}`)}
+    className="text-blue-600 hover:text-blue-800 transition-colors"
+    title="View"
+>
+    <FileSearch size={15} />
+</button>
                                         {user.role_id === 1 && (
                                             <button
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/equipment/${item.id}/edit`
-                                                    )
-                                                }
-                                                className="text-amber-600 hover:underline text-xs"
-                                            >
-                                                Edit
-                                            </button>
+    onClick={() => navigate(`/equipment/${item.id}/edit`)}
+    className="text-amber-600 hover:text-amber-800 transition-colors"
+    title="Edit"
+>
+    <Pencil size={15} />
+</button>
                                         )}
                                     </td>
                                 </tr>

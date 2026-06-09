@@ -103,7 +103,7 @@ export default function AssignmentList() {
 
     // Filter employees for selection
     const laptopIds = new Set(
-        equipment.filter((e) => e.equipment_type_id === 1).map((e) => e.id)
+        equipment.filter((e) => e.type?.name === "Laptop").map((e) => e.id)
     );
 
     const employeeIdsWithLaptop = new Set(

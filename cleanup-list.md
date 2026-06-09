@@ -72,6 +72,16 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
     → Candidate: revisit when doing the broader Headless UI audit, or extract a `SidebarNavItem` 
     component that encapsulates the collapsed/expanded styling logic in one place.
 
+- [ ] **#26 — Disallow "Assigned" status in the Equipment bulk import**
+  The bulk Excel import path can still create orphaned equipment — rows flagged
+  `status = Assigned` with no matching `assignments` row — because the import
+  was never covered by CHK9's assigned-on-creation fix (which only guards the
+  single-record `EquipmentController::store()` path). Reject or strip `Assigned`
+  on import so a unit can only become Assigned through the actual assignment
+  flow (which creates the Assignment row). Exact mechanism (hard validation
+  error vs. silent coercion to Available) to be decided when picked up.
+  Pairs conceptually with the now-closed #2 structural fix.
+
 ---
 
 ## Closed Items

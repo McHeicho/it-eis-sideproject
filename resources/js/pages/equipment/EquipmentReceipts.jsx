@@ -9,8 +9,10 @@ import {
 import api from "../../api/axios";
 
 export default function EquipmentReceipts() {
-    const isAdmin = JSON.parse(localStorage.getItem("user") || "{}")?.role_id === 1;
+    const isAdmin =
+        JSON.parse(localStorage.getItem("user") || "{}")?.role_id === 1;
     const [suppliers, setSuppliers] = useState([]);
+    const [statuses, setStatuses] = useState([]);
     const [deliveries, setDeliveries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
@@ -23,6 +25,7 @@ export default function EquipmentReceipts() {
         supplier_id: "",
         no_attachment: false,
         serial_number: "",
+        status: "",
     });
     const [filtering, setFiltering] = useState(false);
 
@@ -32,11 +35,17 @@ export default function EquipmentReceipts() {
         else setFiltering(true);
         try {
             const requests = [api.get("/deliveries", { params })];
-            if (isInitial) requests.push(api.get("/suppliers"));
+            if (isInitial) {
+                requests.push(api.get("/suppliers"));
+                requests.push(api.get("/equipment/options"));
+            }
 
             const responses = await Promise.all(requests);
             setDeliveries(responses[0].data);
-            if (isInitial) setSuppliers(responses[1].data);
+            if (isInitial) {
+                setSuppliers(responses[1].data);
+                setStatuses(responses[2].data.statuses);
+            }
         } catch (error) {
             console.error("Failed to fetch deliveries:", error);
         } finally {
@@ -104,6 +113,7 @@ export default function EquipmentReceipts() {
             supplier_id: "",
             no_attachment: false,
             serial_number: "",
+            status: "",
         });
         setExpandedId(null);
         setExpandedData({});
@@ -222,42 +232,71 @@ export default function EquipmentReceipts() {
                     </div>
                 </div>
                 {isAdmin && (
-    <div>
-        <label className="text-xs text-gray-500 block mb-1">
-            Serial Number
-        </label>
-        <input
-            type="text"
-            value={filterForm.serial_number}
-            onChange={(e) =>
-                setFilterForm((prev) => ({
-                    ...prev,
-                    serial_number: e.target.value,
-                }))
-            }
-            onKeyDown={(e) => e.key === "Enter" && handleFilter()}
-            className="border rounded px-2 py-1.5 text-sm w-full"
-            placeholder="Starts with..."
-        />
-    </div>
-)}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-xs text-gray-500 block mb-1">
+                                Serial Number
+                            </label>
+                            <input
+                                type="text"
+                                value={filterForm.serial_number}
+                                onChange={(e) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        serial_number: e.target.value,
+                                    }))
+                                }
+                                onKeyDown={(e) =>
+                                    e.key === "Enter" && handleFilter()
+                                }
+                                className="border rounded px-2 py-1.5 text-sm w-full"
+                                placeholder="Starts with..."
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs text-gray-500 block mb-1">
+                                Equipment Status
+                            </label>
+                            <select
+                                value={filterForm.status}
+                                onChange={(e) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        status: e.target.value,
+                                    }))
+                                }
+                                className="border rounded px-2 py-1.5 text-sm w-full bg-white"
+                            >
+                                <option value="">All Statuses</option>
+                                {statuses.map((s) => (
+                                    <option key={s} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                )}
                 <div className="flex items-center gap-2 mt-1">
-    <input
-        type="checkbox"
-        id="no_attachment"
-        checked={filterForm.no_attachment}
-        onChange={(e) =>
-            setFilterForm((prev) => ({
-                ...prev,
-                no_attachment: e.target.checked,
-            }))
-        }
-        className="rounded border-gray-300"
-    />
-    <label htmlFor="no_attachment" className="text-xs text-gray-600 cursor-pointer">
-        Missing documents only
-    </label>
-</div>
+                    <input
+                        type="checkbox"
+                        id="no_attachment"
+                        checked={filterForm.no_attachment}
+                        onChange={(e) =>
+                            setFilterForm((prev) => ({
+                                ...prev,
+                                no_attachment: e.target.checked,
+                            }))
+                        }
+                        className="rounded border-gray-300"
+                    />
+                    <label
+                        htmlFor="no_attachment"
+                        className="text-xs text-gray-600 cursor-pointer"
+                    >
+                        Missing documents only
+                    </label>
+                </div>
                 <div className="flex justify-end gap-2">
                     <button
                         onClick={handleReset}

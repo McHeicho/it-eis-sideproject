@@ -41,6 +41,12 @@ class DeliveryController extends Controller
                 });
         }
 
+        if ($request->filled('status')) {
+            $query->whereHas('equipment', function ($q) use ($request) {
+                $q->where('status', $request->status);
+                });
+        }
+
         return response()->json($query->get());
     }
 

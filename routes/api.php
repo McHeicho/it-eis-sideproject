@@ -12,6 +12,7 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\BulkImportController;
+use App\Http\Controllers\DashboardController;
 
 // Public Routes
 Route::post("/login", [AuthController::class, "login"]);
@@ -21,6 +22,9 @@ Route::middleware("auth:sanctum")->group(function () {
     // Auth
     Route::post("/logout", [AuthController::class, "logout"]);
     Route::get("/me", [AuthController::class, "me"]);
+
+    // Dashboard
+    Route::get("/dashboard", [DashboardController::class, "index"]);
 
     // Departments
     Route::apiResource("departments", DepartmentController::class);

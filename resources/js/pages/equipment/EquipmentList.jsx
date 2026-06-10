@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Laptop, FileSearch, Pencil } from "lucide-react";
 import api from "../../api/axios";
 
 export default function EquipmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    // Allow deep links like /equipment?status=Lost/Missing (e.g. dashboard alerts).
+    const initialStatus = searchParams.get("status") || "";
     const [equipment, setEquipment] = useState([]);
     const [types, setTypes] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filtering, setFiltering] = useState(false);
     const [filterForm, setFilterForm] = useState({
-        status: "",
+        status: initialStatus,
         condition: "",
         equipment_type_id: "",
         supplier_id: "",
@@ -20,7 +23,7 @@ export default function EquipmentList() {
     });
 
     useEffect(() => {
-        fetchEquipment();
+        fetchEquipment(initialStatus ? { status: initialStatus } : {});
     }, []);
 
     const fetchEquipment = async (params = {}) => {

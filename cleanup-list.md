@@ -25,9 +25,6 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 - [ ] **#8 — Bulk Return action for assignments**
   Assignments can currently only be returned one at a time.
 
-- [ ] **#9 — Build Dashboard page**
-  Stubbed placeholder; future home for at-a-glance metrics.
-
 - [ ] **#11 — Validate Brand names against special characters**
   Brand names become Excel named ranges in the import template; special chars (hyphens, ampersands) silently break the `INDIRECT()` dependent Model dropdown. Models, Suppliers, Employees, and Types are unaffected (never named ranges). Scope: `BrandController` validation + Maintenance modal feedback.
   - ⏳ Defer to #6 — Maintenance modals will be touched anyway.
@@ -91,6 +88,9 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 
 - [x] **#2 — Add `Assigned` status back to Equipment Add/Edit with guard logic** *(MiscFixes02)*
   Resolved in MiscFixes02 session — approach inverted from original intent. Rather than re-adding 'Assigned' to the manual status dropdown with a guard, the status is now action-driven: selecting 'Assigned' in add mode surfaces an employee picker, and the backend atomically creates both the Equipment and an Assignment row in a single DB::transaction(). 'Assigned' remains unreachable via the edit-mode dropdown, keeping the orphaned-status problem structurally impossible. Date defaults to record creation date; note defaults to 'Assigned upon record creation'. Frontend guard prevents submission if no valid employee is selected.
+
+- [x] **#9 — Build Dashboard page** *(closed 2026-06-10)*
+  Replaced placeholder with a role-aware dashboard. Admin view: KPI stat cards (total equipment + by type), department bar chart, status donut, and a 4-up alert grid (employees with no laptop, Lost/Missing, Under Repair, idle stock) each with a top-5 preview and "View all" link. User/viewer view: KPI cards + department bar only — trimmed payload gated server-side, not just hidden in the UI. Backed by a dedicated `GET /api/dashboard` endpoint (`DashboardController::index()`) returning pre-aggregated SQL. Recharts added as a dependency (v3.8.1); resolved a Vite/esbuild pre-bundling issue — fix is Vite ≥ 8.0.16, no package overrides required. Admin path verified live; non-admin path built and server-gated but unverifiable until a `role_id = 2` account exists in the DB.
 
 - [x] **#10 — Character-limit validation on Maintenance modal name fields** *(MiscFixes01)*
   `max:50` added to `name` validation in `store()` and `update()` across `BrandController`, `EquipmentTypeController`, `EquipmentModelController`, and `SupplierController`. Backend returns 422; Maintenance modals surface the error automatically.

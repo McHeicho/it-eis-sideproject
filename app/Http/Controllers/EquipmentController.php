@@ -45,7 +45,7 @@ public function index(Request $request)
         "brand",
         "model",
         "delivery.supplier",
-        "currentAssignment.employee",
+        "currentAssignment.employee.homeOffice",
     ]);
 
     if ($request->filled('status')) {
@@ -134,7 +134,7 @@ public function index(Request $request)
                 "model",
                 "delivery.supplier",
                 "assignments.employee",
-                "currentAssignment.employee",
+                "currentAssignment.employee.homeOffice",
             ]),
         );
     }

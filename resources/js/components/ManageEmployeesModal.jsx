@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { X, Plus, Pencil } from 'lucide-react';
-import api from '../api/axios';
+import React, { useEffect, useState } from "react";
+import { X, Plus, Pencil } from "lucide-react";
+import api from "../api/axios";
 
 export default function ManageEmployeesModal({ onClose }) {
     const [employees, setEmployees] = useState([]);
+    const [offices, setOffices] = useState([]);
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedDeptTag, setSelectedDeptTag] = useState('');
+    const [selectedDeptTag, setSelectedDeptTag] = useState("");
     const [showForm, setShowForm] = useState(false);
-    const [form, setForm] = useState({ name: '', department_tag: '' });
+    const [form, setForm] = useState({
+        name: "",
+        department_tag: "",
+        home_office_tag: "HO",
+    });
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -21,14 +26,20 @@ export default function ManageEmployeesModal({ onClose }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [employeesRes, departmentsRes] = await Promise.all([
-                    api.get('/employees'),
-                    api.get('/departments'),
+                const [
+                    employeesRes,
+                    departmentsRes,
+                    officesRes,
+                ] = await Promise.all([
+                    api.get("/employees"),
+                    api.get("/departments"),
+                    api.get("/offices"),
                 ]);
                 setEmployees(employeesRes.data);
                 setDepartments(departmentsRes.data);
+                setOffices(officesRes.data);
             } catch (error) {
-                console.error('Failed to fetch data:', error);
+                console.error("Failed to fetch data:", error);
             } finally {
                 setLoading(false);
             }
@@ -42,7 +53,7 @@ export default function ManageEmployeesModal({ onClose }) {
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
-        setErrors({ ...errors, [e.target.name]: '' });
+        setErrors({ ...errors, [e.target.name]: "" });
     };
 
     const handleSubmit = async (e) => {
@@ -50,11 +61,11 @@ export default function ManageEmployeesModal({ onClose }) {
         setSaving(true);
         setErrors({});
         try {
-            await api.post('/employees', form);
-            setForm({ name: '', department_tag: '' });
+            await api.post("/employees", form);
+            setForm({ name: "", department_tag: "", home_office_tag: "HO" });
             setSuccess(true);
             setShowForm(false);
-            const res = await api.get('/employees');
+            const res = await api.get("/employees");
             setEmployees(res.data);
         } catch (error) {
             if (error.response?.status === 422) {
@@ -67,11 +78,14 @@ export default function ManageEmployeesModal({ onClose }) {
 
     // Enter edit mode
     const handleEditClick = () => {
-        setEditRows(filteredEmployees.map((e) => ({
-            id: e.id,
-            name: e.name,
-            department_tag: e.department_tag,
-        })));
+        setEditRows(
+            filteredEmployees.map((e) => ({
+                id: e.id,
+                name: e.name,
+                department_tag: e.department_tag,
+                home_office_tag: e.home_office_tag,
+            }))
+        );
         setRowErrors({});
         setIsEditing(true);
         setShowForm(false);
@@ -83,8 +97,11 @@ export default function ManageEmployeesModal({ onClose }) {
         const newErrors = {};
         editRows.forEach((row, index) => {
             const rowErr = {};
-            if (!row.name.trim()) rowErr.name = 'This field is required.';
-            if (!row.department_tag) rowErr.department_tag = 'This field is required.';
+            if (!row.name.trim()) rowErr.name = "This field is required.";
+            if (!row.department_tag)
+                rowErr.department_tag = "This field is required.";
+            if (!row.home_office_tag)
+                rowErr.home_office_tag = "This field is required.";
             if (Object.keys(rowErr).length > 0) newErrors[index] = rowErr;
         });
         return newErrors;
@@ -104,15 +121,16 @@ export default function ManageEmployeesModal({ onClose }) {
                     api.put(`/employees/${row.id}`, {
                         name: row.name,
                         department_tag: row.department_tag,
+                        home_office_tag: row.home_office_tag,
                     })
                 )
             );
-            const res = await api.get('/employees');
+            const res = await api.get("/employees");
             setEmployees(res.data);
             setIsEditing(false);
             setSuccess(true);
         } catch (error) {
-            console.error('Failed to save employees:', error);
+            console.error("Failed to save employees:", error);
         } finally {
             setSaving(false);
         }
@@ -139,25 +157,28 @@ export default function ManageEmployeesModal({ onClose }) {
         }
     };
 
-    const inputClass = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const errorInputClass = "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
+    const inputClass =
+        "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+    const errorInputClass =
+        "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
     const labelClass = "block text-sm font-medium text-gray-700 mb-1";
     const errorClass = "text-red-500 text-xs mt-1";
 
     return (
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 className="text-base font-bold text-gray-800">Employees</h2>
+                    <h2 className="text-base font-bold text-gray-800">
+                        Employees
+                    </h2>
                     <button
                         onClick={onClose}
                         disabled={isEditing}
                         className={`transition-colors ${
                             isEditing
-                                ? 'text-gray-200 cursor-not-allowed'
-                                : 'text-gray-400 hover:text-gray-600'
+                                ? "text-gray-200 cursor-not-allowed"
+                                : "text-gray-400 hover:text-gray-600"
                         }`}
                     >
                         <X size={18} />
@@ -166,10 +187,11 @@ export default function ManageEmployeesModal({ onClose }) {
 
                 {/* Body */}
                 <div className="px-6 py-4 space-y-4 max-h-96 overflow-y-auto">
-
                     {/* Department Filter */}
                     <div>
-                        <label className={labelClass}>Filter by Department</label>
+                        <label className={labelClass}>
+                            Filter by Department
+                        </label>
                         <select
                             value={selectedDeptTag}
                             onChange={(e) => {
@@ -193,7 +215,10 @@ export default function ManageEmployeesModal({ onClose }) {
                     {!isEditing && (
                         <div className="flex gap-2">
                             <button
-                                onClick={() => { setShowForm(!showForm); setSuccess(false); }}
+                                onClick={() => {
+                                    setShowForm(!showForm);
+                                    setSuccess(false);
+                                }}
                                 className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-blue-700 transition-colors"
                             >
                                 <Plus size={14} />
@@ -213,8 +238,100 @@ export default function ManageEmployeesModal({ onClose }) {
                     {/* Success Message */}
                     {success && (
                         <div className="bg-green-50 text-green-700 text-xs px-3 py-2 rounded">
-                            {isEditing ? 'Employees updated successfully!' : 'Employee added successfully!'}
+                            {isEditing
+                                ? "Employees updated successfully!"
+                                : "Employee added successfully!"}
                         </div>
+                    )}
+
+                    {/* Add Form */}
+                    {showForm && !isEditing && (
+                        <form
+                            onSubmit={handleSubmit}
+                            className="border-t pt-4 space-y-3"
+                        >
+                            <div>
+                                <label className={labelClass}>Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={form.name}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                    placeholder="e.g. Juan dela Cruz"
+                                />
+                                {errors.name && (
+                                    <p className={errorClass}>
+                                        {errors.name[0]}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className={labelClass}>Department</label>
+                                <select
+                                    name="department_tag"
+                                    value={form.department_tag}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                >
+                                    <option value="">Select Department</option>
+                                    {departments.map((dept) => (
+                                        <option key={dept.id} value={dept.tag}>
+                                            {dept.name} ({dept.tag})
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.department_tag && (
+                                    <p className={errorClass}>
+                                        {errors.department_tag[0]}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className={labelClass}>Office</label>
+                                <select
+                                    name="home_office_tag"
+                                    value={form.home_office_tag}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                >
+                                    {offices.map((office) => (
+                                        <option
+                                            key={office.id}
+                                            value={office.tag}
+                                        >
+                                            {office.name} ({office.tag})
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.home_office_tag && (
+                                    <p className={errorClass}>
+                                        {errors.home_office_tag[0]}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex gap-2 pt-1">
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                >
+                                    {saving ? "Saving..." : "Save Employee"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowForm(false);
+                                        setErrors({});
+                                    }}
+                                    className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
                     )}
 
                     {/* Employees Table */}
@@ -233,40 +350,116 @@ export default function ManageEmployeesModal({ onClose }) {
                                 <tr>
                                     <th className="py-2 text-left">#</th>
                                     <th className="py-2 text-left">Name</th>
-                                    <th className="py-2 text-left">Department</th>
+                                    <th className="py-2 text-left">
+                                        Department
+                                    </th>
+                                    <th className="py-2 text-left">Office</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {editRows.map((row, index) => (
                                     <tr key={row.id} className="align-top">
-                                        <td className="py-2 text-xs text-gray-400 pr-2">{index + 1}</td>
+                                        <td className="py-2 text-xs text-gray-400 pr-2">
+                                            {index + 1}
+                                        </td>
                                         <td className="py-2 pr-2">
                                             <input
                                                 type="text"
                                                 value={row.name}
-                                                onChange={(e) => handleRowChange(index, 'name', e.target.value)}
-                                                className={rowErrors[index]?.name ? errorInputClass : inputClass}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "name",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className={
+                                                    rowErrors[index]?.name
+                                                        ? errorInputClass
+                                                        : inputClass
+                                                }
                                                 placeholder="Employee name"
                                             />
                                             {rowErrors[index]?.name && (
-                                                <p className={errorClass}>{rowErrors[index].name}</p>
+                                                <p className={errorClass}>
+                                                    {rowErrors[index].name}
+                                                </p>
                                             )}
                                         </td>
                                         <td className="py-2">
                                             <select
                                                 value={row.department_tag}
-                                                onChange={(e) => handleRowChange(index, 'department_tag', e.target.value)}
-                                                className={rowErrors[index]?.department_tag ? errorInputClass : inputClass}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "department_tag",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className={
+                                                    rowErrors[index]
+                                                        ?.department_tag
+                                                        ? errorInputClass
+                                                        : inputClass
+                                                }
                                             >
-                                                <option value="">Select Department</option>
+                                                <option value="">
+                                                    Select Department
+                                                </option>
                                                 {departments.map((dept) => (
-                                                    <option key={dept.id} value={dept.tag}>
+                                                    <option
+                                                        key={dept.id}
+                                                        value={dept.tag}
+                                                    >
                                                         {dept.name} ({dept.tag})
                                                     </option>
                                                 ))}
                                             </select>
-                                            {rowErrors[index]?.department_tag && (
-                                                <p className={errorClass}>{rowErrors[index].department_tag}</p>
+                                            {rowErrors[index]
+                                                ?.department_tag && (
+                                                <p className={errorClass}>
+                                                    {
+                                                        rowErrors[index]
+                                                            .department_tag
+                                                    }
+                                                </p>
+                                            )}
+                                        </td>
+                                        <td className="py-2 pl-2">
+                                            <select
+                                                value={row.home_office_tag}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "home_office_tag",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className={
+                                                    rowErrors[index]
+                                                        ?.home_office_tag
+                                                        ? errorInputClass
+                                                        : inputClass
+                                                }
+                                            >
+                                                {offices.map((office) => (
+                                                    <option
+                                                        key={office.id}
+                                                        value={office.tag}
+                                                    >
+                                                        {office.name} (
+                                                        {office.tag})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {rowErrors[index]
+                                                ?.home_office_tag && (
+                                                <p className={errorClass}>
+                                                    {
+                                                        rowErrors[index]
+                                                            .home_office_tag
+                                                    }
+                                                </p>
                                             )}
                                         </td>
                                     </tr>
@@ -279,81 +472,42 @@ export default function ManageEmployeesModal({ onClose }) {
                                 <tr>
                                     <th className="py-2 text-left">#</th>
                                     <th className="py-2 text-left">Name</th>
-                                    <th className="py-2 text-left">Department</th>
+                                    <th className="py-2 text-left">
+                                        Department
+                                    </th>
+                                    <th className="py-2 text-left">Office</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {filteredEmployees.map((emp, index) => (
-                                    <tr key={emp.id} className="hover:bg-gray-50">
-                                        <td className="py-2 text-xs text-gray-400">{index + 1}</td>
-                                        <td className="py-2 text-gray-800">{emp.name}</td>
+                                    <tr
+                                        key={emp.id}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        <td className="py-2 text-xs text-gray-400">
+                                            {index + 1}
+                                        </td>
+                                        <td className="py-2 text-gray-800">
+                                            {emp.name}
+                                        </td>
                                         <td className="py-2 text-gray-500 text-xs">
-                                            {emp.department?.name} ({emp.department_tag})
+                                            {emp.department?.name} (
+                                            {emp.department_tag})
                                         </td>
                                     </tr>
                                 ))}
                                 {filteredEmployees.length === 0 && (
                                     <tr>
-                                        <td colSpan={3} className="py-4 text-center text-gray-400 text-xs">
+                                        <td
+                                            colSpan={3}
+                                            className="py-4 text-center text-gray-400 text-xs"
+                                        >
                                             No employees found.
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
-                    )}
-
-                    {/* Add Form */}
-                    {showForm && !isEditing && (
-                        <form onSubmit={handleSubmit} className="border-t pt-4 space-y-3">
-                            <div>
-                                <label className={labelClass}>Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={form.name}
-                                    onChange={handleChange}
-                                    className={inputClass}
-                                    placeholder="e.g. Juan dela Cruz"
-                                />
-                                {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
-                            </div>
-                            <div>
-                                <label className={labelClass}>Department</label>
-                                <select
-                                    name="department_tag"
-                                    value={form.department_tag}
-                                    onChange={handleChange}
-                                    className={inputClass}
-                                >
-                                    <option value="">Select Department</option>
-                                    {departments.map((dept) => (
-                                        <option key={dept.id} value={dept.tag}>
-                                            {dept.name} ({dept.tag})
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.department_tag && (
-                                    <p className={errorClass}>{errors.department_tag[0]}</p>
-                                )}
-                            </div>
-                            <div className="flex gap-2 pt-1">
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                                >
-                                    {saving ? 'Saving...' : 'Save Employee'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowForm(false); setErrors({}); }}
-                                    className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
                     )}
 
                     {/* Edit Mode Footer */}
@@ -370,7 +524,7 @@ export default function ManageEmployeesModal({ onClose }) {
                                 disabled={saving}
                                 className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                {saving ? 'Saving...' : 'Save All'}
+                                {saving ? "Saving..." : "Save All"}
                             </button>
                         </div>
                     )}

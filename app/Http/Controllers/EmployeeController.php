@@ -12,6 +12,7 @@ class EmployeeController extends Controller
         return response()->json(
             Employee::with([
                 'department',
+                'homeOffice',
                 'assignments' => function ($query) {
                     $query->whereNull('date_returned');
                 },
@@ -27,6 +28,7 @@ class EmployeeController extends Controller
         $request->validate([
             'name'           => 'required|string',
             'department_tag' => 'required|exists:departments,tag',
+            'home_office_tag' => 'required|exists:offices,tag',
         ]);
 
         $employee = Employee::create($request->only('name', 'department_tag'));
@@ -43,6 +45,7 @@ class EmployeeController extends Controller
         $request->validate([
             'name'           => 'sometimes|string',
             'department_tag' => 'sometimes|exists:departments,tag',
+            'home_office_tag' => 'sometimes|exists:offices,tag',
         ]);
 
         $employee->update($request->only('name', 'department_tag'));

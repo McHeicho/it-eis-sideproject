@@ -335,26 +335,39 @@ export default function EquipmentList() {
                                                                 .current_assignment
                                                                 .employee.name
                                                         }
+                                                        {item.current_assignment
+                                                            .employee
+                                                            .home_office?.name
+                                                            ? ` — ${item.current_assignment.employee.home_office.name}`
+                                                            : ""}
                                                     </span>
                                                 )}
                                         </div>
                                     </td>
                                     <td className="px-4 py-3 flex items-center gap-3">
                                         <button
-    onClick={() => navigate(`/equipment/${item.id}`)}
-    className="text-blue-600 hover:text-blue-800 transition-colors"
-    title="View"
->
-    <FileSearch size={15} />
-</button>
+                                            onClick={() =>
+                                                navigate(
+                                                    `/equipment/${item.id}`
+                                                )
+                                            }
+                                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                                            title="View"
+                                        >
+                                            <FileSearch size={15} />
+                                        </button>
                                         {user.role_id === 1 && (
                                             <button
-    onClick={() => navigate(`/equipment/${item.id}/edit`)}
-    className="text-amber-600 hover:text-amber-800 transition-colors"
-    title="Edit"
->
-    <Pencil size={15} />
-</button>
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/equipment/${item.id}/edit`
+                                                    )
+                                                }
+                                                className="text-amber-600 hover:text-amber-800 transition-colors"
+                                                title="Edit"
+                                            >
+                                                <Pencil size={15} />
+                                            </button>
                                         )}
                                     </td>
                                 </tr>

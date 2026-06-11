@@ -205,6 +205,10 @@ export default function EquipmentDetail() {
                                             equipment.current_assignment
                                                 .employee.name
                                         }
+                                        {equipment.current_assignment.employee
+                                            .home_office?.name
+                                            ? ` — ${equipment.current_assignment.employee.home_office.name}`
+                                            : ""}
                                     </span>
                                 )}
                         </div>

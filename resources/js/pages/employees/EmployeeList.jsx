@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Laptop } from "lucide-react";
 import api from "../../api/axios";
+import EmployeeListHead from "./EmployeeList-HO";
+import EmployeeListExt from "./EmployeeList-Ext";
 
 export default function EmployeeList() {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [view, setView] = useState("head");
 
     useEffect(() => {
         const fetchEmployees = async () => {
@@ -20,17 +22,12 @@ export default function EmployeeList() {
         fetchEmployees();
     }, []);
 
-    // Group employees by department
-    const groupedByDepartment = employees.reduce((groups, employee) => {
-        const dept = employee.department?.name || "Unassigned";
-        if (!groups[dept]) groups[dept] = [];
-        groups[dept].push(employee);
-        return groups;
-    }, {});
-
-    const hasActiveAssignment = (employee) => {
-        return employee.assignments && employee.assignments.length > 0;
-    };
+    const headEmployees = employees.filter(
+        (e) => e.home_office_tag === "HO"
+    );
+    const extEmployees = employees.filter(
+        (e) => e.home_office_tag !== "HO"
+    );
 
     // Loading skeleton
     if (loading) {
@@ -66,96 +63,41 @@ export default function EmployeeList() {
                 </p>
             </div>
 
-            {/* Grouped Tables */}
-            <div className="space-y-6">
-                {Object.entries(groupedByDepartment).map(
-                    ([deptName, deptEmployees]) => (
-                        <div
-                            key={deptName}
-                            className="bg-white rounded-lg shadow overflow-hidden"
-                        >
-                            {/* Department Header */}
-                            <div className="bg-gray-50 px-4 py-3 border-b">
-                                <h2 className="text-sm font-semibold text-gray-700">
-                                    {deptName}
-                                </h2>
-                                <p className="text-xs text-gray-400 mt-0.5">
-                                    {deptEmployees.length} employee
-                                    {deptEmployees.length !== 1 ? "s" : ""}
-                                </p>
-                            </div>
-
-                            {/* Employee Table */}
-                            <table className="w-full text-sm">
-                                <thead className="text-gray-500 uppercase text-xs border-b">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left">
-                                            Name
-                                        </th>
-                                        <th className="px-4 py-3 text-left">
-                                            Department
-                                        </th>
-                                        <th className="px-4 py-3 text-center">
-                                            Assigned Unit
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {deptEmployees
-                                        .slice(0, 20)
-                                        .map((employee) => (
-                                            <tr
-                                                key={employee.id}
-                                                className="hover:bg-gray-50 transition-colors"
-                                            >
-                                                <td className="px-4 py-3 font-medium text-gray-800">
-                                                    {employee.name}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-500">
-                                                    {employee.department?.tag}
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <div className="flex justify-center gap-1">
-                                                        {employee.assignments
-                                                            .length === 0 ? (
-                                                            <Laptop
-                                                                size={18}
-                                                                className="text-gray-300"
-                                                            />
-                                                        ) : (
-                                                            employee.assignments.map(
-                                                                (
-                                                                    assignment
-                                                                ) => (
-                                                                    <Laptop
-                                                                        key={
-                                                                            assignment.id
-                                                                        }
-                                                                        size={
-                                                                            18
-                                                                        }
-                                                                        className="text-blue-500"
-                                                                    />
-                                                                )
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )
-                )}
-
-                {/* Empty State */}
-                {employees.length === 0 && (
-                    <div className="text-center py-16 text-gray-400">
-                        <p className="text-sm">No employees found.</p>
-                    </div>
-                )}
+            {/* View Toggle */}
+            <div className="flex items-center gap-4 mb-6">
+                <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+                    <button
+                        onClick={() => setView("head")}
+                        className={`px-4 py-1.5 transition-colors ${
+                            view === "head"
+                                ? "bg-blue-600 text-white"
+                                : "bg-white text-gray-600 hover:bg-gray-50"
+                        }`}
+                    >
+                        Head Office
+                    </button>
+                    <button
+                        onClick={() => setView("ext")}
+                        className={`px-4 py-1.5 transition-colors ${
+                            view === "ext"
+                                ? "bg-blue-600 text-white"
+                                : "bg-white text-gray-600 hover:bg-gray-50"
+                        }`}
+                    >
+                        Extension Office
+                    </button>
+                </div>
+                <p className="text-xs text-gray-400">
+                    {view === "head" ? headEmployees.length : extEmployees.length} employee
+                    {(view === "head" ? headEmployees.length : extEmployees.length) !== 1 ? "s" : ""}
+                </p>
             </div>
+
+            {/* Active View */}
+            {view === "head"
+                ? <EmployeeListHead employees={headEmployees} />
+                : <EmployeeListExt employees={extEmployees} />
+            }
         </div>
     );
 }

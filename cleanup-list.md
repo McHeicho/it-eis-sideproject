@@ -79,6 +79,40 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   error vs. silent coercion to Available) to be decided when picked up.
   Pairs conceptually with the now-closed #2 structural fix.
 
+- [ ] **#27 — Office & Branch assignment tracking**
+  Add home office to employees (Head Office / Extension Office). Add branch
+  assignment path for equipment held by a branch with no named assignee.
+  Piece 1 (offices on employees) — backend complete. Frontend + Piece 2
+  (branches) pending.
+
+- [ ] **#28 — AssignmentList: Location-aware redesign (blocked on Piece 2 / branches)**
+  Rework `AssignmentList.jsx` to surface equipment held by offices AND branches.
+  BLOCKED: branch-held assignments don't exist until Piece 2 (branches table +
+  branch holder on assignments) ships. Do not touch this file before then —
+  any office-display tweak added now gets torn out by this redesign.
+
+  Filters:
+  1. All Branches — Head Office (1st), Extension Office (2nd), then branches
+     alphabetized after
+  2. All Status
+  3. All Departments
+
+  Table columns:
+  1. Equipment
+  2. Serial No.
+  3. Branch — offices (HO/Ext) + branches
+  4. Department — empty for branch rows
+  5. Employee — empty for branch rows
+  6. Date Assigned
+  7. Date Returned
+  8. Status
+  9. Actions
+
+  Naming decision to make at build time: "Branch" column/filter actually spans
+  offices + branches — consider "Location" or "Site" as the header instead,
+  since it answers "where does this equipment live," not just "which branch."
+  > This feature is being planned — proposed design subject to change.
+
 ---
 
 ## Closed Items

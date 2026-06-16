@@ -25,6 +25,7 @@ import ManageDepartmentsModal from "./ManageDepartmentsModal";
 import ManageBrandsModelsModal from "./ManageBrandsModelsModal";
 import ManageSuppliersModal from "./ManageSuppliersModal";
 import ManageEmployeesModal from "./ManageEmployeesModal";
+import ManageBranchesModal from "./ManageBranchesModal";
 
 export default function Layout() {
     const navigate = useNavigate();
@@ -32,12 +33,12 @@ export default function Layout() {
     const isAdmin = user.role_id === 1;
 
     const [equipmentOpen, setEquipmentOpen] = useState(false);
-    const [employeesOpen, setEmployeesOpen] = useState(false);
     const [maintenanceOpen, setMaintenanceOpen] = useState(false);
     const [showDepartmentsModal, setShowDepartmentsModal] = useState(false);
     const [showBrandsModelsModal, setShowBrandsModelsModal] = useState(false);
     const [showSuppliersModal, setShowSuppliersModal] = useState(false);
     const [showEmployeesModal, setShowEmployeesModal] = useState(false);
+    const [showBranchesModal, setShowBranchesModal] = useState(false);
     const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
     const [reportsOpen, setReportsOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -80,7 +81,6 @@ export default function Layout() {
                             setSidebarCollapsed(!sidebarCollapsed);
                             if (!sidebarCollapsed) {
                                 setEquipmentOpen(false);
-                                setEmployeesOpen(false);
                                 setMaintenanceOpen(false);
                                 setBulkActionsOpen(false);
                                 setReportsOpen(false);
@@ -191,57 +191,24 @@ export default function Layout() {
                         )}
                     </div>
 
-                    {/* Employees Section */}
-                    <div>
-                        <button
-                            onClick={() => setEmployeesOpen(!employeesOpen)}
-                            className={`flex items-center w-full py-2 rounded text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors ${
-                                sidebarCollapsed
-                                    ? "justify-center"
-                                    : "justify-between px-3"
-                            }`}
+                    {/* Employees */}
+                    <NavLink
+                    to="/employees"
+                    className={({ isActive }) =>
+                        `flex items-center py-2 rounded text-sm font-medium transition-colors ${
+                            sidebarCollapsed
+                            ? "justify-center"
+                            : "gap-3 px-3"
+                            } ${
+                                isActive
+                                ? "bg-blue-50 text-blue-600"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`
+                        }
                         >
-                            <div
-                                className={`flex items-center ${
-                                    sidebarCollapsed ? "" : "gap-3"
-                                }`}
-                            >
-                                <Users size={18} />
-                                {!sidebarCollapsed && "Employees"}
-                            </div>
-                            {!sidebarCollapsed &&
-                                (employeesOpen ? (
-                                    <ChevronDown size={14} />
-                                ) : (
-                                    <ChevronRight size={14} />
-                                ))}
-                        </button>
-
-                        {employeesOpen && !sidebarCollapsed && (
-                            <div className="mt-1 ml-4 space-y-1">
-                                <NavLink
-                                    to="/employees"
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${
-                                            isActive
-                                                ? "bg-blue-50 text-blue-600"
-                                                : "text-gray-600 hover:bg-gray-100"
-                                        }`
-                                    }
-                                >
-                                    <Building2 size={16} />
-                                    Head Office / Extension
-                                </NavLink>
-                                <button
-                                    disabled
-                                    className="flex items-center gap-3 w-full px-3 py-2 rounded text-sm text-gray-300 cursor-not-allowed"
-                                >
-                                    <Building size={16} />
-                                    Branches
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            <Users size={18} />
+                            {!sidebarCollapsed && "Employees"}
+                        </NavLink>
 
                     {/* Maintenance Section — Admin Only */}
                     {isAdmin && (
@@ -276,6 +243,15 @@ export default function Layout() {
                             {/* Dropdown Items */}
                             {maintenanceOpen && (
                                 <div className="mt-1 ml-4 space-y-1">
+                                    <button
+                                    onClick={() =>
+                                        setShowBranchesModal(true)
+                                    }
+                                    className="flex items-center gap-3 w-full px-3 py-2 rounded text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+                                    >
+                                        <Building size={16} />
+                                        Manage Branches
+                                    </button>
                                     <button
                                         onClick={() =>
                                             setShowDepartmentsModal(true)
@@ -449,6 +425,11 @@ export default function Layout() {
             {showEmployeesModal && (
                 <ManageEmployeesModal
                     onClose={() => setShowEmployeesModal(false)}
+                />
+            )}
+            {showBranchesModal && (
+                <ManageBranchesModal
+                    onClose={() => setShowBranchesModal(false)}
                 />
             )}
         </div>

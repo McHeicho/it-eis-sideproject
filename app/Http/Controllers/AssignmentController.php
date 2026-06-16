@@ -15,6 +15,8 @@ class AssignmentController extends Controller
                 "equipment.brand",
                 "equipment.model",
                 "employee.department",
+                "employee.homeOffice",
+                "branch",
             ])->get(),
         );
     }
@@ -22,10 +24,11 @@ class AssignmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            "equipment_id" => "required|exists:equipment,id",
-            "employee_id" => "required|exists:employees,id",
+            "equipment_id"  => "required|exists:equipment,id",
+            "employee_id"   => "nullable|required_without:branch_id|prohibits:branch_id|exists:employees,id",
+            "branch_id"     => "nullable|required_without:employee_id|prohibits:employee_id|exists:branches,id",
             "date_assigned" => "required|date",
-            "notes" => "nullable|string",
+            "notes"         => "nullable|string",
         ]);
 
         // Make sure equipment is Available before assigning
@@ -44,6 +47,7 @@ class AssignmentController extends Controller
             $request->only(
                 "equipment_id",
                 "employee_id",
+                "branch_id",
                 "date_assigned",
                 "notes",
             ),
@@ -53,7 +57,7 @@ class AssignmentController extends Controller
         $equipment->update(["status" => "Assigned"]);
 
         return response()->json(
-            $assignment->load(["equipment", "employee"]),
+            $assignment->load(["equipment", "employee", "branch"]),
             201,
         );
     }
@@ -73,11 +77,11 @@ class AssignmentController extends Controller
         // Set equipment back to Available
         $assignment->equipment->update(["status" => "Available"]);
 
-        return response()->json($assignment->load(["equipment", "employee"]));
+        return response()->json($assignment->load(["equipment", "employee", "branch"]));
     }
 
     public function show(Assignment $assignment)
     {
-        return response()->json($assignment->load(["equipment", "employee"]));
+        return response()->json($assignment->load(["equipment", "employee", "branch"]));
     }
 }

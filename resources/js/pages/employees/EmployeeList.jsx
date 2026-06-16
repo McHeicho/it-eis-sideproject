@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
 import EmployeeListHead from "./EmployeeList-HO";
 import EmployeeListExt from "./EmployeeList-Ext";
+import axios from "axios";
 
 export default function EmployeeList() {
     const [employees, setEmployees] = useState([]);

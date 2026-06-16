@@ -111,7 +111,6 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   Naming decision to make at build time: "Branch" column/filter actually spans
   offices + branches — consider "Location" or "Site" as the header instead,
   since it answers "where does this equipment live," not just "which branch."
-  > This feature is being planned — proposed design subject to change.
 
 ---
 

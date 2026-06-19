@@ -7,7 +7,8 @@ import {
     Upload,
     Paperclip,
 } from "lucide-react";
-import api from "../../api/axios";
+import api from "@/api/axios";
+import AppDialog from "@/components/ui/AppDialog";
 
 export default function BulkImport() {
     const [eqDownloading, setEqDownloading] = useState(false);
@@ -351,14 +352,14 @@ export default function BulkImport() {
                     </div>
 
                     {/* Result Area */}
-                    {eqImportResult && (
-                        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-                            <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
-                                {/* Title */}
-                                <h2 className="text-base font-bold text-gray-800">
-                                    Import Complete
-                                </h2>
-
+                    <AppDialog
+                        open={!!eqImportResult}
+                        onOpenChange={(o) => { if (!o) { setEqImportResult(null); setEqCountdown(null); } }}
+                        title="Import Complete"
+                        size="sm"
+                    >
+                        {eqImportResult && (
+                            <div className="space-y-4">
                                 {/* Summary */}
                                 <p className="text-sm text-gray-700">
                                     {eqImportResult.imported} record
@@ -452,8 +453,8 @@ export default function BulkImport() {
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </AppDialog>
                 </div>
 
                 {/* Employees */}

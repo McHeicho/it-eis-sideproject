@@ -79,38 +79,21 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   error vs. silent coercion to Available) to be decided when picked up.
   Pairs conceptually with the now-closed #2 structural fix.
 
-- [ ] **#27 — Office & Branch assignment tracking**
-  Add home office to employees (Head Office / Extension Office). Add branch
-  assignment path for equipment held by a branch with no named assignee.
-  Piece 1 (offices on employees) — backend complete. Frontend + Piece 2
-  (branches) pending.
+ - [ ] **#29 — Evaluate Inertia.js adoption (exploratory, no urgency)**
+  Other internal IT systems use Inertia.js, likely scaffolded via Laravel's
+  Breeze/Jetstream + Inertia starter kits from day one. Adopting it here would
+  mean replacing react-router-dom, the Sanctum bearer-token auth flow, and
+  every controller's JSON responses with Inertia's session-based, prop-driven
+  model — a full rewrite, not an additive change. Not connected to the shadcn
+  UI migration; shadcn works fine on the current REST + SPA setup. Revisit
+  only as its own deliberate initiative, with concrete reasons beyond
+  "other systems have it."
 
-- [ ] **#28 — AssignmentList: Location-aware redesign (blocked on Piece 2 / branches)**
-  Rework `AssignmentList.jsx` to surface equipment held by offices AND branches.
-  BLOCKED: branch-held assignments don't exist until Piece 2 (branches table +
-  branch holder on assignments) ships. Do not touch this file before then —
-  any office-display tweak added now gets torn out by this redesign.
-
-  Filters:
-  1. All Branches — Head Office (1st), Extension Office (2nd), then branches
-     alphabetized after
-  2. All Status
-  3. All Departments
-
-  Table columns:
-  1. Equipment
-  2. Serial No.
-  3. Branch — offices (HO/Ext) + branches
-  4. Department — empty for branch rows
-  5. Employee — empty for branch rows
-  6. Date Assigned
-  7. Date Returned
-  8. Status
-  9. Actions
-
-  Naming decision to make at build time: "Branch" column/filter actually spans
-  offices + branches — consider "Location" or "Site" as the header instead,
-  since it answers "where does this equipment live," not just "which branch."
+- [ ] **#30 — Create a dark mode**
+  Self-explanatory. This is a QoL update. There are no progress yet made
+  regarding a dark mode integration. This will start as a planning phase
+  which will then be integrated through the help of rewriting the frontend
+  code and through the current installed UI framework.
 
 ---
 
@@ -136,6 +119,35 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 
 - [x] **#23 — `destroy()` in EquipmentController contradicted the no-delete policy** *(CHK#7)*
   Method now returns 403 with a rejection message instead of performing a hard delete.
+
+- [x] **#27 — Office & Branch assignment tracking** *(closed 2026-06-17)*
+  Piece 1 (home office on employees, Head Office / Extension Office) was already
+  complete. Piece 2 (branches) shipped this session: a `branches` table
+  (code/name/optional manager, auto-uppercased code), full CRUD via
+  `BranchController` + `ManageBranchesModal`, and the holder model on
+  `assignments` — `employee_id` made nullable, a new nullable `branch_id` FK
+  added, with exactly-one-holder enforced both by a DB `CHECK` constraint and
+  by Laravel's `required_without`/`prohibits` validation pair. The Assign
+  modal gained an Employee/Branch toggle (with a further Head Office/Extension
+  Office sub-filter narrowing the employee list) so equipment can now be
+  assigned directly to a branch with no named employee, fixing the original
+  bug where branch-purchased equipment defaulted to Lost/Missing.
+
+- [x] **#28 — AssignmentList: Location-aware redesign** *(closed 2026-06-17)*
+  All three filters and nine table columns from the spec are in: Branches
+  (All Branches → Head Office → Extension Office → branches alphabetically),
+  Status (dynamically built from statuses actually present in the data,
+  Assigned listed first), and Departments; table columns Equipment, Serial
+  No., Branch, Department, Employee, Date Assigned, Date Returned, Status,
+  and Actions, with Department/Employee correctly blank on branch-held rows.
+  Naming decision resolved: kept "Branch" for both the filter and column
+  header rather than switching to "Location"/"Site". The Department/Employee
+  filters auto-hide when a literal branch is selected, since neither applies.
+  The Actions column also gained a per-row "Assign" quick action for
+  Available/Spare Unit/Lost/Missing equipment, pre-selecting that item in the
+  modal. Along the way, the file was split into a shell plus
+  `AssignmentAssignModal.jsx` / `AssignmentReturnModal.jsx`, addressing the
+  separately-parked monolith-navigability concern as a side effect.
 
 ---
 

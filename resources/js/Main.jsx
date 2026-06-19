@@ -10,7 +10,7 @@ import EmployeeList from './pages/employees/EmployeeList';
 import AssignmentList from './pages/assignments/AssignmentList';
 import BulkImport from './pages/bulk/BulkImport';
 import EquipmentReports from './pages/reports/EquipmentReports';
-import Layout from './components/Layout';
+import Layout from './pages/menu/Layout';
 
 const isAuthenticated = () => !!localStorage.getItem('token');
 

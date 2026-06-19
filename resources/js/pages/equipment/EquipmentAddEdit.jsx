@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Laptop } from "lucide-react";
-import api from "../../api/axios";
+import api from "@/api/axios";
 
 export default function EquipmentAdd() {
     const navigate = useNavigate();

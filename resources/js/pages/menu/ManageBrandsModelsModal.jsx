@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { X, Plus, Pencil, ChevronRight, ArrowLeft } from 'lucide-react';
-import api from '../api/axios';
+import { Plus, Pencil, ChevronRight, ArrowLeft } from 'lucide-react';
+import api from '@/api/axios';
+import AppDialog from "@/components/ui/AppDialog";
 
 export default function ManageBrandsModelsModal({ onClose }) {
     const [view, setView] = useState('menu');
@@ -22,33 +23,19 @@ export default function ManageBrandsModelsModal({ onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b">
-                    <div className="flex items-center gap-3">
-                        {view !== 'menu' && (
-                            <button
-                                onClick={handleBack}
-                                disabled={isEditing}
-                                className={`transition-colors ${
-                                    isEditing
-                                        ? 'text-gray-200 cursor-not-allowed'
-                                        : 'text-gray-400 hover:text-gray-600'
-                                }`}
-                            >
-                                <ArrowLeft size={16} />
-                            </button>
-                        )}
-                        <h2 className="text-base font-bold text-gray-800">
-                            {view === 'menu'   && 'Brands & Models'}
-                            {view === 'brands' && 'Manage Brands'}
-                            {view === 'models' && 'Manage Models'}
-                        </h2>
-                    </div>
+        <AppDialog
+            open
+            onOpenChange={(o) => { if (!o) onClose(); }}
+            title={
+                view === 'menu' ? 'Brands & Models' :
+                view === 'brands' ? 'Manage Brands' :
+                'Manage Models'
+            }
+            dismissible={!isEditing}
+            leftAction={
+                view !== 'menu' ? (
                     <button
-                        onClick={onClose}
+                        onClick={handleBack}
                         disabled={isEditing}
                         className={`transition-colors ${
                             isEditing
@@ -56,35 +43,14 @@ export default function ManageBrandsModelsModal({ onClose }) {
                                 : 'text-gray-400 hover:text-gray-600'
                         }`}
                     >
-                        <X size={18} />
+                        <ArrowLeft size={16} />
                     </button>
-                </div>
-
-                {/* Body */}
-                <div className="px-6 py-4 max-h-96 overflow-y-auto">
-                    {view === 'menu' && <MainMenu setView={setView} />}
-                    {view === 'brands' && (
-                        <BrandsView
-                            setBrandsEditing={setBrandsEditing}
-                            />
-                    )}
-                    {view === 'models' && (
-                        <ModelsView
-                            setModelsEditing={setModelsEditing}
-                            modelsEditing={modelsEditing}
-                            setOnSave={setOnSave}
-                            setOnCancel={setOnCancel}
-                            setSavingParent={setSaving}
-                        />
-                    )}
-                </div>
-
-                {/* Footer */}
-                {!brandsEditing && (
-                <div className="px-6 py-3 border-t flex justify-between">
-                    {/* Models edit mode — show Cancel / Save All */}
-                    {modelsEditing ? (
-                        <>
+                ) : null
+            }
+            footer={
+                brandsEditing ? null : (
+                    modelsEditing ? (
+                        <div className="flex justify-between">
                             <button
                                 onClick={() => onCancel && onCancel()}
                                 className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
@@ -98,9 +64,9 @@ export default function ManageBrandsModelsModal({ onClose }) {
                             >
                                 {saving ? 'Saving...' : 'Save All'}
                             </button>
-                        </>
+                        </div>
                     ) : (
-                        <>
+                        <div className="flex justify-between">
                             {view !== 'menu' ? (
                                 <button
                                     onClick={handleBack}
@@ -116,12 +82,27 @@ export default function ManageBrandsModelsModal({ onClose }) {
                             >
                                 Close
                             </button>
-                        </>
-                    )}
-                </div>
-                )}
-            </div>
-        </div>
+                        </div>
+                    )
+                )
+            }
+        >
+            {view === 'menu' && <MainMenu setView={setView} />}
+            {view === 'brands' && (
+                <BrandsView
+                    setBrandsEditing={setBrandsEditing}
+                    />
+            )}
+            {view === 'models' && (
+                <ModelsView
+                    setModelsEditing={setModelsEditing}
+                    modelsEditing={modelsEditing}
+                    setOnSave={setOnSave}
+                    setOnCancel={setOnCancel}
+                    setSavingParent={setSaving}
+                />
+            )}
+        </AppDialog>
     );
 
 }

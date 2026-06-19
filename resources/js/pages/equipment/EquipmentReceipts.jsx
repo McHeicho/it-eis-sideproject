@@ -6,7 +6,7 @@ import {
     Pencil,
     Laptop,
 } from "lucide-react";
-import api from "../../api/axios";
+import api from "@/api/axios";
 
 export default function EquipmentReceipts() {
     const isAdmin =

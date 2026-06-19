@@ -1,0 +1,9 @@
+// jsconfig.json
+{
+    "compilerOptions": {
+        "paths": {
+            "@/*": ["./resources/js/*"]
+        }
+    },
+    "include": ["resources/js/**/*"]
+}

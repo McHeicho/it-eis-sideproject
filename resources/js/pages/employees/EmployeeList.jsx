@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api/axios";
+import api from "@/api/axios";
 import EmployeeListHead from "./EmployeeList-HO";
 import EmployeeListExt from "./EmployeeList-Ext";
+import { Button } from "@/components/ui/button"
 import axios from "axios";
 
 export default function EmployeeList() {
@@ -67,17 +68,14 @@ export default function EmployeeList() {
             {/* View Toggle */}
             <div className="flex items-center gap-4 mb-6">
                 <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
-                    <button
+                    <Button
                         onClick={() => setView("head")}
-                        className={`px-4 py-1.5 transition-colors ${
-                            view === "head"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-gray-600 hover:bg-gray-50"
-                        }`}
+                        variant={view === "head" ? "default" : "outline"}
+                        className="px-4 py-1.5"
                     >
                         Head Office
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={() => setView("ext")}
                         className={`px-4 py-1.5 transition-colors ${
                             view === "ext"
@@ -86,7 +84,7 @@ export default function EmployeeList() {
                         }`}
                     >
                         Extension Office
-                    </button>
+                    </Button>
                 </div>
                 <p className="text-xs text-gray-400">
                     {view === "head" ? headEmployees.length : extEmployees.length} employee

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ClipboardList } from "lucide-react";
-import api from "../../api/axios";
+import api from "@/api/axios";
 import AssignmentAssignModal from "./AssignmentAssignModal";
 import AssignmentReturnModal from "./AssignmentReturnModal";
 

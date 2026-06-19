@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Laptop, FileSearch, Pencil } from "lucide-react";
-import api from "../../api/axios";
+import api from "@/api/axios";
 
 export default function EquipmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");

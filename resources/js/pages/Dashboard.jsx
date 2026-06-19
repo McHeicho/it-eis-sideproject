@@ -6,11 +6,11 @@ import {
     Wrench,
     PackageOpen,
 } from "lucide-react";
-import api from "../api/axios";
-import StatCard from "../components/dashboard/StatCard";
-import DepartmentBarChart from "../components/dashboard/DepartmentBarChart";
-import StatusDonut from "../components/dashboard/StatusDonut";
-import AlertCard from "../components/dashboard/AlertCard";
+import api from "@/api/axios";
+import StatCard from "@/components/dashboard/StatCard";
+import DepartmentBarChart from "@/components/dashboard/DepartmentBarChart";
+import StatusDonut from "@/components/dashboard/StatusDonut";
+import AlertCard from "@/components/dashboard/AlertCard";
 
 export default function Dashboard() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Pencil, ChevronRight, ArrowLeft } from 'lucide-react';
 import api from '@/api/axios';
 import AppDialog from "@/components/ui/AppDialog";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageBrandsModelsModal({ onClose }) {
     const [view, setView] = useState('menu');
@@ -66,23 +67,14 @@ export default function ManageBrandsModelsModal({ onClose }) {
                             </button>
                         </div>
                     ) : (
-                        <div className="flex justify-between">
-                            {view !== 'menu' ? (
-                                <button
-                                    onClick={handleBack}
-                                    className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                                >
-                                    <ArrowLeft size={14} />
-                                    Back
-                                </button>
-                            ) : <div />}
-                            <button
-                                onClick={onClose}
-                                className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                            >
-                                Close
-                            </button>
-                        </div>
+                       <div className="flex justify-end">
+    <button
+        onClick={onClose}
+        className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
+    >
+        Close
+    </button>
+</div>
                     )
                 )
             }
@@ -296,18 +288,18 @@ function BrandsView({ setBrandsEditing }) {
                     ))}
                 </div>
             ) : isEditing ? (
-                <table className="w-full text-sm">
-                    <thead className="text-xs uppercase text-gray-500 border-b">
-                        <tr>
-                            <th className="py-2 text-left">#</th>
-                            <th className="py-2 text-left">Brand Name</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
+                <Table>
+                    <TableHeader className="text-xs uppercase text-gray-500 border-b">
+                        <TableRow className="border-0 hover:bg-transparent">
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand Name</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className="divide-y divide-gray-50">
                         {editRows.map((row, index) => (
-                            <tr key={row.id} className="align-top">
-                                <td className="py-2 text-xs text-gray-400 pr-2">{index + 1}</td>
-                                <td className="py-2">
+                            <TableRow key={row.id} className="border-0 hover:bg-transparent">
+                                <TableCell className="py-2 px-0 align-top text-xs text-gray-400 pr-2">{index + 1}</TableCell>
+                                <TableCell className="py-2 px-0 align-top">
                                     <input
                                         type="text"
                                         value={row.name}
@@ -318,35 +310,35 @@ function BrandsView({ setBrandsEditing }) {
                                     {rowErrors[index]?.name && (
                                         <p className={errorClass}>{rowErrors[index].name}</p>
                                     )}
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ))}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             ) : (
-                <table className="w-full text-sm">
-                    <thead className="text-xs uppercase text-gray-500 border-b">
-                        <tr>
-                            <th className="py-2 text-left">#</th>
-                            <th className="py-2 text-left">Brand Name</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
+                <Table>
+                    <TableHeader className="text-xs uppercase text-gray-500 border-b">
+                        <TableRow className="border-0 hover:bg-transparent">
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand Name</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className="divide-y divide-gray-50">
                         {brands.map((brand, index) => (
-                            <tr key={brand.id} className="hover:bg-gray-50">
-                                <td className="py-2 text-xs text-gray-400">{index + 1}</td>
-                                <td className="py-2 text-gray-800">{brand.name}</td>
-                            </tr>
+                            <TableRow key={brand.id} className="border-0 hover:bg-gray-50">
+                                <TableCell className="py-2 px-0 text-xs text-gray-400">{index + 1}</TableCell>
+                                <TableCell className="py-2 px-0 text-gray-800">{brand.name}</TableCell>
+                            </TableRow>
                         ))}
                         {brands.length === 0 && (
-                            <tr>
-                                <td colSpan={2} className="py-4 text-center text-gray-400 text-xs">
+                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableCell colSpan={2} className="py-4 px-0 text-center text-gray-400 text-xs">
                                     No brands yet.
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         )}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             )}
 
             {/* Add Form */}
@@ -627,19 +619,19 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                     ))}
                 </div>
             ) : modelsEditing ? (
-                <table className="w-full text-sm">
-                    <thead className="text-xs uppercase text-gray-500 border-b">
-                        <tr>
-                            <th className="py-2 text-left">#</th>
-                            <th className="py-2 text-left">Model Name</th>
-                            <th className="py-2 text-left">Brand</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
+                <Table>
+                    <TableHeader className="text-xs uppercase text-gray-500 border-b">
+                        <TableRow className="border-0 hover:bg-transparent">
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Model Name</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className="divide-y divide-gray-50">
                         {editRows.map((row, index) => (
-                            <tr key={row.id} className="align-top">
-                                <td className="py-2 text-xs text-gray-400 pr-2">{index + 1}</td>
-                                <td className="py-2 pr-2">
+                            <TableRow key={row.id} className="border-0 hover:bg-transparent">
+                                <TableCell className="py-2 px-0 align-top text-xs text-gray-400 pr-2">{index + 1}</TableCell>
+                                <TableCell className="py-2 px-0 align-top pr-2">
                                     <input
                                         type="text"
                                         value={row.name}
@@ -650,8 +642,8 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                                     {rowErrors[index]?.name && (
                                         <p className={errorClass}>{rowErrors[index].name}</p>
                                     )}
-                                </td>
-                                <td className="py-2">
+                                </TableCell>
+                                <TableCell className="py-2 px-0 align-top">
                                     <select
                                         value={row.brand_id}
                                         onChange={(e) => handleRowChange(index, 'brand_id', e.target.value)}
@@ -665,37 +657,37 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                                     {rowErrors[index]?.brand_id && (
                                         <p className={errorClass}>{rowErrors[index].brand_id}</p>
                                     )}
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ))}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             ) : (
-                <table className="w-full text-sm">
-                    <thead className="text-xs uppercase text-gray-500 border-b">
-                        <tr>
-                            <th className="py-2 text-left">#</th>
-                            <th className="py-2 text-left">Model Name</th>
-                            <th className="py-2 text-left">Brand</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
+                <Table>
+                    <TableHeader className="text-xs uppercase text-gray-500 border-b">
+                        <TableRow className="border-0 hover:bg-transparent">
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Model Name</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className="divide-y divide-gray-50">
                         {filteredModels.map((model, index) => (
-                            <tr key={model.id} className="hover:bg-gray-50">
-                                <td className="py-2 text-xs text-gray-400">{index + 1}</td>
-                                <td className="py-2 text-gray-800">{model.name}</td>
-                                <td className="py-2 text-gray-500 text-xs">{model.brand?.name}</td>
-                            </tr>
+                            <TableRow key={model.id} className="border-0 hover:bg-gray-50">
+                                <TableCell className="py-2 px-0 text-xs text-gray-400">{index + 1}</TableCell>
+                                <TableCell className="py-2 px-0 text-gray-800">{model.name}</TableCell>
+                                <TableCell className="py-2 px-0 text-gray-500 text-xs">{model.brand?.name}</TableCell>
+                            </TableRow>
                         ))}
                         {filteredModels.length === 0 && (
-                            <tr>
-                                <td colSpan={3} className="py-4 text-center text-gray-400 text-xs">
+                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableCell colSpan={3} className="py-4 px-0 text-center text-gray-400 text-xs">
                                     No models found.
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         )}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             )}
 
             {/* Add Form */}

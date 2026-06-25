@@ -1,5 +1,6 @@
 import React from "react";
 import { Laptop } from "lucide-react";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function EmployeeListExt({ employees }) {
     // Group employees by department
@@ -30,39 +31,39 @@ export default function EmployeeListExt({ employees }) {
                         </div>
 
                         {/* Employee Table */}
-                        <table className="w-full text-sm">
-                            <thead className="text-gray-500 uppercase text-xs border-b">
-                                <tr>
-                                    <th className="px-4 py-3 text-left">
+                        <Table>
+                            <TableHeader className="text-gray-500 uppercase text-xs border-b">
+                                <TableRow className="border-0 hover:bg-transparent">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Name
-                                    </th>
-                                    <th className="px-4 py-3 text-left">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Department
-                                    </th>
-                                    <th className="px-4 py-3 text-left">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Office
-                                    </th>
-                                    <th className="px-4 py-3 text-center">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit text-center">
                                         Assigned Unit
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody className="divide-y divide-gray-50">
                                 {deptEmployees.slice(0, 20).map((employee) => (
-                                    <tr
+                                    <TableRow
                                         key={employee.id}
-                                        className="hover:bg-gray-50 transition-colors"
+                                        className="border-0 hover:bg-gray-50 transition-colors"
                                     >
-                                        <td className="px-4 py-3 font-medium text-gray-800">
+                                        <TableCell className="px-4 py-3 font-medium text-gray-800">
                                             {employee.name}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-500">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-500">
                                             {employee.department?.tag}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-500 text-xs">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-500 text-xs">
                                             {employee.home_office?.name || "—"}
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-center">
                                             <div className="flex justify-center gap-1">
                                                 {employee.assignments.length ===
                                                 0 ? (
@@ -84,11 +85,11 @@ export default function EmployeeListExt({ employees }) {
                                                     )
                                                 )}
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
                 )
             )}

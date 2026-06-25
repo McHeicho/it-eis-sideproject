@@ -7,6 +7,7 @@ import {
     Laptop,
 } from "lucide-react";
 import api from "@/api/axios";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function EquipmentReceipts() {
     const isAdmin =
@@ -778,33 +779,33 @@ function ReceiptDetail({
                     </p>
                 ) : (
                     <div className="rounded border overflow-hidden">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-100 text-xs text-gray-500 uppercase">
-                                <tr>
-                                    <th className="px-4 py-2 text-left">
+                        <Table>
+                            <TableHeader className="bg-gray-100 text-xs text-gray-500 uppercase">
+                                <TableRow className="border-0 hover:bg-transparent">
+                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
                                         Type
-                                    </th>
-                                    <th className="px-4 py-2 text-left">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
                                         Brand
-                                    </th>
-                                    <th className="px-4 py-2 text-left">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
                                         Model
-                                    </th>
-                                    <th className="px-4 py-2 text-left">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
                                         Serial No.
-                                    </th>
-                                    <th className="px-4 py-2 text-left">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
                                         Condition
-                                    </th>
-                                    <th className="px-4 py-2 text-left">
+                                    </TableHead>
+                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
                                         Status
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 bg-white">
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody className="divide-y divide-gray-100 bg-white">
                                 {delivery.equipment.map((eq) => (
-                                    <tr key={eq.id}>
-                                        <td className="px-4 py-2">
+                                    <TableRow key={eq.id} className="border-0 hover:bg-transparent">
+                                        <TableCell className="px-4 py-2">
                                             {(() => {
                                                 const Icon =
                                                     TYPE_ICONS[eq.type?.name];
@@ -819,26 +820,26 @@ function ReceiptDetail({
                                                     </span>
                                                 );
                                             })()}
-                                        </td>
-                                        <td className="px-4 py-2">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-2">
                                             {eq.brand?.name || "—"}
-                                        </td>
-                                        <td className="px-4 py-2">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-2">
                                             {eq.model?.name || "—"}
-                                        </td>
-                                        <td className="px-4 py-2 font-mono text-xs">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-2 font-mono text-xs">
                                             {eq.serial_number}
-                                        </td>
-                                        <td className="px-4 py-2">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-2">
                                             {eq.condition}
-                                        </td>
-                                        <td className="px-4 py-2">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-2">
                                             {eq.status}
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
                 )}
             </div>

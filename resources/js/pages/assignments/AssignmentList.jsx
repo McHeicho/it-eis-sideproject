@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ClipboardList } from "lucide-react";
 import api from "@/api/axios";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import AssignmentAssignModal from "./AssignmentAssignModal";
 import AssignmentReturnModal from "./AssignmentReturnModal";
 
@@ -283,37 +284,37 @@ export default function AssignmentList() {
                 </div>
             ) : (
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
-                            <tr>
-                                <th className="px-4 py-3 text-left">
+                    <Table>
+                        <TableHeader className="bg-gray-50 text-gray-600 uppercase text-xs">
+                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Equipment
-                                </th>
-                                <th className="px-4 py-3 text-left">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Serial No.
-                                </th>
-                                <th className="px-4 py-3 text-left">Branch</th>
-                                <th className="px-4 py-3 text-left">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Branch</TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Department
-                                </th>
-                                <th className="px-4 py-3 text-left">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Employee
-                                </th>
-                                <th className="px-4 py-3 text-left">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Date Assigned
-                                </th>
-                                <th className="px-4 py-3 text-left">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Date Returned
-                                </th>
-                                <th className="px-4 py-3 text-left">Status</th>
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Status</TableHead>
                                 {isAdmin && (
-                                    <th className="px-4 py-3 text-left">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Actions
-                                    </th>
+                                    </TableHead>
                                 )}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-100">
                             {equipmentViewData.map((row) => {
                                 const { equipment: eq, assignment } = row;
                                 const isActive = !!assignment;
@@ -321,45 +322,45 @@ export default function AssignmentList() {
                                     !!assignment?.branch &&
                                     !assignment?.employee;
                                 return (
-                                    <tr
+                                    <TableRow
                                         key={eq.id}
-                                        className="hover:bg-gray-50 transition-colors"
+                                        className="border-0 hover:bg-gray-50 transition-colors"
                                     >
-                                        <td className="px-4 py-3 font-medium text-gray-800">
+                                        <TableCell className="px-4 py-3 font-medium text-gray-800">
                                             {eq.brand?.name} {eq.model?.name}
-                                        </td>
-                                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 font-mono text-xs text-gray-600">
                                             {eq.serial_number}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-600 text-xs">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600 text-xs">
                                             {getLocationLabel(assignment)}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-500 text-xs">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-500 text-xs">
                                             {assignment && !isBranchHeld
                                                 ? assignment.employee
                                                       ?.department?.name
                                                 : "—"}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-600">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600">
                                             {assignment && !isBranchHeld
                                                 ? assignment.employee?.name
                                                 : "—"}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-600 text-xs">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600 text-xs">
                                             {assignment
                                                 ? formatDate(
                                                       assignment.date_assigned
                                                   )
                                                 : "—"}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-600 text-xs">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600 text-xs">
                                             {assignment
                                                 ? formatDate(
                                                       assignment.date_returned
                                                   )
                                                 : "—"}
-                                        </td>
-                                        <td className="px-4 py-3">
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3">
                                             <div className="tooltip-wrapper">
                                                 <span
                                                     className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -393,9 +394,9 @@ export default function AssignmentList() {
                                                         </span>
                                                     )}
                                             </div>
-                                        </td>
+                                        </TableCell>
                                         {isAdmin && (
-                                            <td className="px-4 py-3">
+                                            <TableCell className="px-4 py-3">
                                                 {isActive && assignment ? (
                                                     <button
                                                         onClick={() =>
@@ -423,13 +424,13 @@ export default function AssignmentList() {
                                                         </button>
                                                     )
                                                 )}
-                                            </td>
+                                            </TableCell>
                                         )}
-                                    </tr>
+                                    </TableRow>
                                 );
                             })}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
 

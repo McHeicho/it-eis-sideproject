@@ -94,7 +94,19 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   regarding a dark mode integration. This will start as a planning phase
   which will then be integrated through the help of rewriting the frontend
   code and through the current installed UI framework.
-
+  
+- [ ] **#31 — Animation pass across the migrated UI (post-#25)**
+  The AppDialog overlay shipped with an entrance/exit fade that contradicted
+  the locked "static, no entrance animation" decision — caught and fixed
+  during Phase 2 review. Use that as the trigger for a dedicated future pass:
+  once the rest of the shadcn migration has landed, sweep modals, dropdowns,
+  hover/focus states, and any other transition-bearing primitives for
+  consistent, intentional motion (or deliberate absence of it) instead of
+  whatever each component shipped with by default.
+  - **Prerequisite: #25.** Don't animate-polish components that are still
+    structurally mid-migration (Table, Badge, Card, Sidebar, etc. haven't
+    been touched yet) — same diff-ambiguity reasoning as the Zustand/
+    form-fields sequencing call.
 ---
 
 ## Closed Items

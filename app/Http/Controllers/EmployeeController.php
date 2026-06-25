@@ -31,8 +31,8 @@ class EmployeeController extends Controller
             'home_office_tag' => 'required|exists:offices,tag',
         ]);
 
-        $employee = Employee::create($request->only('name', 'department_tag'));
-        return response()->json($employee->load('department'), 201);
+        $employee = Employee::create($request->only('name', 'department_tag', 'home_office_tag'));
+        return response()->json($employee->load('department', 'homeOffice'), 201);
     }
 
     public function show(Employee $employee)
@@ -48,8 +48,8 @@ class EmployeeController extends Controller
             'home_office_tag' => 'sometimes|exists:offices,tag',
         ]);
 
-        $employee->update($request->only('name', 'department_tag'));
-        return response()->json($employee->load('department'));
+        $employee->update($request->only('name', 'department_tag', 'home_office_tag'));
+        return response()->json($employee->load('department', 'homeOffice'));
     }
 
     public function destroy(Employee $employee)

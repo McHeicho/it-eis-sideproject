@@ -11,6 +11,7 @@ import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
 
 export default function BulkImport() {
+    const navigate = useNavigate();
     const [eqDownloading, setEqDownloading] = useState(false);
     const [eqUploading, setEqUploading] = useState(false);
     const [eqSelectedFile, setEqSelectedFile] = useState(null);

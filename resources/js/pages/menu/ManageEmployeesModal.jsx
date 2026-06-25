@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Plus, Pencil } from "lucide-react";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageEmployeesModal({ onClose }) {
     const [employees, setEmployees] = useState([]);
@@ -170,6 +171,7 @@ export default function ManageEmployeesModal({ onClose }) {
             open
             onOpenChange={(o) => { if (!o) onClose(); }}
             title="Employees"
+            size="lg"
             dismissible={!isEditing}
             footer={
                 isEditing ? (
@@ -359,24 +361,24 @@ export default function ManageEmployeesModal({ onClose }) {
                         ))}
                     </div>
                 ) : isEditing ? (
-                    <table className="w-full text-sm">
-                        <thead className="text-xs uppercase text-gray-500 border-b">
-                            <tr>
-                                <th className="py-2 text-left">#</th>
-                                <th className="py-2 text-left">Name</th>
-                                <th className="py-2 text-left">
+                    <Table>
+                        <TableHeader className="text-xs uppercase text-gray-500 border-b">
+                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Name</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">
                                     Department
-                                </th>
-                                <th className="py-2 text-left">Office</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
+                                </TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Office</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-50">
                             {editRows.map((row, index) => (
-                                <tr key={row.id} className="align-top">
-                                    <td className="py-2 text-xs text-gray-400 pr-2">
+                                <TableRow key={row.id} className="border-0 hover:bg-transparent">
+                                    <TableCell className="py-2 px-0 align-top text-xs text-gray-400 pr-2">
                                         {index + 1}
-                                    </td>
-                                    <td className="py-2 pr-2">
+                                    </TableCell>
+                                    <TableCell className="py-2 px-0 align-top pr-2">
                                         <input
                                             type="text"
                                             value={row.name}
@@ -399,8 +401,8 @@ export default function ManageEmployeesModal({ onClose }) {
                                                 {rowErrors[index].name}
                                             </p>
                                         )}
-                                    </td>
-                                    <td className="py-2">
+                                    </TableCell>
+                                    <TableCell className="py-2 px-0 align-top">
                                         <select
                                             value={row.department_tag}
                                             onChange={(e) =>
@@ -438,8 +440,8 @@ export default function ManageEmployeesModal({ onClose }) {
                                                 }
                                             </p>
                                         )}
-                                    </td>
-                                    <td className="py-2 pl-2">
+                                    </TableCell>
+                                    <TableCell className="py-2 px-0 align-top pl-2">
                                         <select
                                             value={row.home_office_tag}
                                             onChange={(e) =>
@@ -475,53 +477,57 @@ export default function ManageEmployeesModal({ onClose }) {
                                                 }
                                             </p>
                                         )}
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 ) : (
-                    <table className="w-full text-sm">
-                        <thead className="text-xs uppercase text-gray-500 border-b">
-                            <tr>
-                                <th className="py-2 text-left">#</th>
-                                <th className="py-2 text-left">Name</th>
-                                <th className="py-2 text-left">
+                    <Table>
+                        <TableHeader className="text-xs uppercase text-gray-500 border-b">
+                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Name</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">
                                     Department
-                                </th>
-                                <th className="py-2 text-left">Office</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
+                                </TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Office</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-50">
                             {filteredEmployees.map((emp, index) => (
-                                <tr
+                                <TableRow
                                     key={emp.id}
-                                    className="hover:bg-gray-50"
+                                    className="border-0 hover:bg-gray-50"
                                 >
-                                    <td className="py-2 text-xs text-gray-400">
+                                    <TableCell className="py-2 px-0 text-xs text-gray-400">
                                         {index + 1}
-                                    </td>
-                                    <td className="py-2 text-gray-800">
+                                    </TableCell>
+                                    <TableCell className="py-2 px-0 text-gray-800">
                                         {emp.name}
-                                    </td>
-                                    <td className="py-2 text-gray-500 text-xs">
+                                    </TableCell>
+                                    <TableCell className="py-2 px-0 text-gray-500 text-xs">
                                         {emp.department?.name} (
                                         {emp.department_tag})
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                    <TableCell className="py-2 px-0 text-gray-500 text-xs">
+                                        {emp.home_office?.name} (
+                                        {emp.home_office_tag})
+                                    </TableCell>
+                                </TableRow>
                             ))}
                             {filteredEmployees.length === 0 && (
-                                <tr>
-                                    <td
-                                        colSpan={3}
-                                        className="py-4 text-center text-gray-400 text-xs"
+                                <TableRow className="border-0 hover:bg-transparent">
+                                    <TableCell
+                                        colSpan={4}
+                                        className="py-4 px-0 text-center text-gray-400 text-xs"
                                     >
                                         No employees found.
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             )}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 )}
             </div>
         </AppDialog>

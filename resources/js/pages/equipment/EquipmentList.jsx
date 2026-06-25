@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Laptop, FileSearch, Pencil } from "lucide-react";
 import api from "@/api/axios";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function EquipmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -267,47 +268,47 @@ export default function EquipmentList() {
                 </div>
             ) : (
                 <div className="bg-white rounded-lg shadow overflow-visible">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
-                            <tr>
-                                <th className="px-4 py-3 text-left">Type</th>
-                                <th className="px-4 py-3 text-left">Brand</th>
-                                <th className="px-4 py-3 text-left">Model</th>
-                                <th className="px-4 py-3 text-left">
+                    <Table containerClassName="overflow-visible">
+                        <TableHeader className="bg-gray-50 text-gray-600 uppercase text-xs">
+                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Type</TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Brand</TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Model</TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Serial No.
-                                </th>
-                                <th className="px-4 py-3 text-left">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Supplier
-                                </th>
-                                <th className="px-4 py-3 text-left">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                     Condition
-                                </th>
-                                <th className="px-4 py-3 text-left">Status</th>
-                                <th className="px-4 py-3 text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Status</TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-100">
                             {equipment.map((item) => (
-                                <tr
+                                <TableRow
                                     key={item.id}
-                                    className="hover:bg-gray-50 transition-colors"
+                                    className="border-0 hover:bg-gray-50 transition-colors"
                                 >
-                                    <td className="px-4 py-3 text-gray-500">
+                                    <TableCell className="px-4 py-3 text-gray-500">
                                         <Laptop size={16} />
-                                    </td>
-                                    <td className="px-4 py-3 font-medium text-gray-800">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3 font-medium text-gray-800">
                                         {item.brand?.name}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3 text-gray-600">
                                         {item.model?.name}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600 font-mono">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3 text-gray-600 font-mono">
                                         {item.serial_number}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3 text-gray-600">
                                         {item.delivery?.supplier?.name || "—"}
-                                    </td>
-                                    <td className="px-4 py-3">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3">
                                         <span
                                             className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionStyle(
                                                 item.condition
@@ -315,8 +316,8 @@ export default function EquipmentList() {
                                         >
                                             {item.condition}
                                         </span>
-                                    </td>
-                                    <td className="px-4 py-3">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3">
                                         <div className="tooltip-wrapper">
                                             <span
                                                 className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
@@ -343,8 +344,8 @@ export default function EquipmentList() {
                                                     </span>
                                                 )}
                                         </div>
-                                    </td>
-                                    <td className="px-4 py-3 flex items-center gap-3">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3 flex items-center gap-3">
                                         <button
                                             onClick={() =>
                                                 navigate(
@@ -369,11 +370,11 @@ export default function EquipmentList() {
                                                 <Pencil size={15} />
                                             </button>
                                         )}
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
         </div>

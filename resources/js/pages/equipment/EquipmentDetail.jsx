@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Laptop, ArrowLeft } from "lucide-react";
 import api from "@/api/axios";
+import StatusBadge from "@/components/ui/StatusBadge";
+import ConditionBadge from "@/components/ui/ConditionBadge";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export default function EquipmentDetail() {
     const navigate = useNavigate();
@@ -24,26 +27,6 @@ export default function EquipmentDetail() {
         };
         fetchEquipment();
     }, [id]);
-
-    const getStatusStyle = (status) => {
-        const styles = {
-            Available: "bg-green-100 text-green-700",
-            Assigned: "bg-blue-100 text-blue-700",
-            "Under Repair": "bg-yellow-100 text-yellow-700",
-            "Lost/Missing": "bg-red-100 text-red-700",
-            "Retired/Disposed": "bg-gray-100 text-gray-600",
-            "Spare Unit": "bg-purple-100 text-purple-700",
-        };
-        return styles[status] || "bg-gray-100 text-gray-600";
-    };
-
-    const getConditionStyle = (condition) => {
-        const styles = {
-            Good: "bg-green-100 text-green-700",
-            Defective: "bg-red-100 text-red-700",
-        };
-        return styles[condition] || "bg-gray-100 text-gray-600";
-    };
 
     // Loading skeleton
     if (loading) {
@@ -177,41 +160,27 @@ export default function EquipmentDetail() {
 
                     <div className="flex justify-between items-center py-2 border-b border-gray-50">
                         <span className="text-sm text-gray-500">Condition</span>
-                        <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionStyle(
-                                equipment.condition
-                            )}`}
-                        >
-                            {equipment.condition}
-                        </span>
+                        <ConditionBadge condition={equipment.condition} />
                     </div>
 
                     {/* Status Row with Placeholder Buttons */}
                     <div className="flex justify-between items-center py-2">
                         <span className="text-sm text-gray-500">Status</span>
-                        <div className="tooltip-wrapper">
-                            <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                    equipment.status
-                                )}`}
-                            >
-                                {equipment.status}
-                            </span>
-                            {equipment.status === "Assigned" &&
-                                equipment.current_assignment?.employee && (
-                                    <span className="tooltip">
-                                        Assigned to:{" "}
-                                        {
-                                            equipment.current_assignment
-                                                .employee.name
-                                        }
-                                        {equipment.current_assignment.employee
-                                            .home_office?.name
-                                            ? ` — ${equipment.current_assignment.employee.home_office.name}`
-                                            : ""}
-                                    </span>
-                                )}
-                        </div>
+                        {equipment.status === "Assigned" && equipment.current_assignment?.employee ? (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <StatusBadge status={equipment.status} />
+                                </TooltipTrigger>
+                                <TooltipContent side="top" align="end">
+                                    Assigned to: {equipment.current_assignment.employee.name}
+                                    {equipment.current_assignment.employee.home_office?.name
+                                        ? ` — ${equipment.current_assignment.employee.home_office.name}`
+                                        : ""}
+                                </TooltipContent>
+                            </Tooltip>
+                        ) : (
+                            <StatusBadge status={equipment.status} />
+                        )}
                     </div>
                 </div>
             </div>

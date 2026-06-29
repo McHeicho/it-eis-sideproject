@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ClipboardList } from "lucide-react";
 import api from "@/api/axios";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import StatusBadge from "@/components/ui/StatusBadge";
 import AssignmentAssignModal from "./AssignmentAssignModal";
 import AssignmentReturnModal from "./AssignmentReturnModal";
 
@@ -361,39 +362,7 @@ export default function AssignmentList() {
                                                 : "—"}
                                         </TableCell>
                                         <TableCell className="px-4 py-3">
-                                            <div className="tooltip-wrapper">
-                                                <span
-                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        isActive
-                                                            ? "bg-green-100 text-green-700"
-                                                            : "bg-gray-100 text-gray-600"
-                                                    }`}
-                                                >
-                                                    {eq.status}
-                                                </span>
-                                                {eq.status === "Assigned" &&
-                                                    assignment?.employee && (
-                                                        <span className="tooltip">
-                                                            Assigned to:{" "}
-                                                            {
-                                                                assignment
-                                                                    .employee
-                                                                    .name
-                                                            }
-                                                        </span>
-                                                    )}
-                                                {eq.status === "Assigned" &&
-                                                    isBranchHeld && (
-                                                        <span className="tooltip">
-                                                            Held at:{" "}
-                                                            {
-                                                                assignment
-                                                                    .branch
-                                                                    .branch_name
-                                                            }
-                                                        </span>
-                                                    )}
-                                            </div>
+                                            <StatusBadge status={eq.status} />
                                         </TableCell>
                                         {isAdmin && (
                                             <TableCell className="px-4 py-3">

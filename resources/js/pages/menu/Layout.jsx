@@ -26,6 +26,7 @@ import ManageBrandsModelsModal from "./ManageBrandsModelsModal";
 import ManageSuppliersModal from "./ManageSuppliersModal";
 import ManageEmployeesModal from "./ManageEmployeesModal";
 import ManageBranchesModal from "./ManageBranchesModal";
+import { Separator } from "@/components/ui/separator";
 
 export default function Layout() {
     const navigate = useNavigate();
@@ -388,7 +389,8 @@ export default function Layout() {
                     )}
                 </nav>
 
-                <div className="p-4 border-t">
+                <Separator />
+                <div className="p-4">
                     <button
                         onClick={handleLogout}
                         className={`flex items-center w-full py-2 rounded text-sm font-medium text-red-500 hover:bg-red-50 transition-colors ${

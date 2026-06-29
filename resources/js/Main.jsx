@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { TooltipProvider } from "@/components/ui/tooltip";
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import EquipmentList from './pages/equipment/EquipmentList';
@@ -20,6 +21,7 @@ function ProtectedRoute({ children }) {
 
 export default function Main() {
     return (
+        <TooltipProvider delayDuration={100}>
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<Login />} />
@@ -45,5 +47,6 @@ export default function Main() {
                 </Route>
             </Routes>
         </BrowserRouter>
+        </TooltipProvider>
     );
 }

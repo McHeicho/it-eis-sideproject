@@ -3,6 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Laptop, FileSearch, Pencil } from "lucide-react";
 import api from "@/api/axios";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import StatusBadge from "@/components/ui/StatusBadge";
+import ConditionBadge from "@/components/ui/ConditionBadge";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export default function EquipmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -63,26 +66,6 @@ export default function EquipmentList() {
         };
         setFilterForm(empty);
         fetchEquipment();
-    };
-
-    const getStatusStyle = (status) => {
-        const styles = {
-            Available: "bg-green-100 text-green-700",
-            Assigned: "bg-blue-100 text-blue-700",
-            "Under Repair": "bg-yellow-100 text-yellow-700",
-            "Lost/Missing": "bg-red-100 text-red-700",
-            "Retired/Disposed": "bg-gray-100 text-gray-600",
-            "Spare Unit": "bg-purple-100 text-purple-700",
-        };
-        return styles[status] || "bg-gray-100 text-gray-600";
-    };
-
-    const getConditionStyle = (condition) => {
-        const styles = {
-            Good: "bg-green-100 text-green-700",
-            Defective: "bg-red-100 text-red-700",
-        };
-        return styles[condition] || "bg-gray-100 text-gray-600";
     };
 
     if (loading) {
@@ -267,8 +250,8 @@ export default function EquipmentList() {
                     <p className="text-sm">No equipment records yet.</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-lg shadow overflow-visible">
-                    <Table containerClassName="overflow-visible">
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <Table>
                         <TableHeader className="bg-gray-50 text-gray-600 uppercase text-xs">
                             <TableRow className="border-0 hover:bg-transparent">
                                 <TableHead className="px-4 py-3 h-auto font-normal text-inherit">Type</TableHead>
@@ -309,41 +292,24 @@ export default function EquipmentList() {
                                         {item.delivery?.supplier?.name || "—"}
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
-                                        <span
-                                            className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionStyle(
-                                                item.condition
-                                            )}`}
-                                        >
-                                            {item.condition}
-                                        </span>
+                                        <ConditionBadge condition={item.condition} />
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
-                                        <div className="tooltip-wrapper">
-                                            <span
-                                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                                    item.status
-                                                )}`}
-                                            >
-                                                {item.status}
-                                            </span>
-                                            {item.status === "Assigned" &&
-                                                item.current_assignment
-                                                    ?.employee && (
-                                                    <span className="tooltip">
-                                                        Assigned to:{" "}
-                                                        {
-                                                            item
-                                                                .current_assignment
-                                                                .employee.name
-                                                        }
-                                                        {item.current_assignment
-                                                            .employee
-                                                            .home_office?.name
-                                                            ? ` — ${item.current_assignment.employee.home_office.name}`
-                                                            : ""}
-                                                    </span>
-                                                )}
-                                        </div>
+                                        {item.status === "Assigned" && item.current_assignment?.employee ? (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <StatusBadge status={item.status} />
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top" align="end">
+                                                    Assigned to: {item.current_assignment.employee.name}
+                                                    {item.current_assignment.employee.home_office?.name
+                                                        ? ` — ${item.current_assignment.employee.home_office.name}`
+                                                        : ""}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        ) : (
+                                            <StatusBadge status={item.status} />
+                                        )}
                                     </TableCell>
                                     <TableCell className="px-4 py-3 flex items-center gap-3">
                                         <button

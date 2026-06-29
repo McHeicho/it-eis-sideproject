@@ -32,34 +32,6 @@
     animation: shimmer 1.5s infinite ease-in-out;
 }
 
-.tooltip-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-.tooltip-wrapper .tooltip {
-    visibility: hidden;
-    opacity: 0;
-    background-color: #1f2937;
-    color: #fff;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: auto;
-    right: 0;
-    transform: none;
-    transition: opacity 0.15s ease;
-    pointer-events: none;
-    z-index: 50;
-}
-
-.tooltip-wrapper:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
-}
 
 @theme inline {
     --font-heading: var(--font-sans);

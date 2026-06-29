@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Plus, Pencil } from "lucide-react";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
+import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageBranchesModal({ onClose }) {
@@ -402,10 +403,11 @@ export default function ManageBranchesModal({ onClose }) {
                 )}
 
                 {/* Add Form */}
-                {showForm && !isEditing && (
+                {showForm && !isEditing && (<>
+                    <Separator className="my-4" />
                     <form
                         onSubmit={handleSubmit}
-                        className="border-t pt-4 space-y-3"
+                        className="space-y-3"
                     >
                         <div>
                             <label className={labelClass}>
@@ -484,7 +486,7 @@ export default function ManageBranchesModal({ onClose }) {
                             </button>
                         </div>
                     </form>
-                )}
+                </>)}
             </div>
         </AppDialog>
     );

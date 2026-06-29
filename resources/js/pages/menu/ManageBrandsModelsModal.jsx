@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Pencil, ChevronRight, ArrowLeft } from 'lucide-react';
 import api from '@/api/axios';
 import AppDialog from "@/components/ui/AppDialog";
+import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageBrandsModelsModal({ onClose }) {
@@ -342,8 +343,9 @@ function BrandsView({ setBrandsEditing }) {
             )}
 
             {/* Add Form */}
-            {showForm && !isEditing && (
-                <form onSubmit={handleSubmit} className="border-t pt-4 space-y-3">
+            {showForm && !isEditing && (<>
+                <Separator className="my-4" />
+                <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
                         <label className={labelClass}>Brand Name</label>
                         <input
@@ -373,7 +375,7 @@ function BrandsView({ setBrandsEditing }) {
                         </button>
                     </div>
                 </form>
-            )}
+            </>)}
 
             {/* Brands Edit Footer — self-contained */}
             {isEditing && (
@@ -691,8 +693,9 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
             )}
 
             {/* Add Form */}
-            {showForm && !modelsEditing && (
-                <form onSubmit={handleSubmit} className="border-t pt-4 space-y-3">
+            {showForm && !modelsEditing && (<>
+                <Separator className="my-4" />
+                <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
                         <label className={labelClass}>Brand</label>
                         <select
@@ -737,7 +740,7 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                         </button>
                     </div>
                 </form>
-            )}
+            </>)}
         </div>
     );
 }

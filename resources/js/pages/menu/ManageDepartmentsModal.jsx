@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Pencil } from 'lucide-react';
 import api from '../../api/axios';
 import AppDialog from "@/components/ui/AppDialog";
+import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageDepartmentsModal({ onClose }) {
@@ -313,8 +314,9 @@ export default function ManageDepartmentsModal({ onClose }) {
                 )}
 
                 {/* Add Form */}
-                {showForm && !isEditing && (
-                    <form onSubmit={handleSubmit} className="border-t pt-4 space-y-3">
+                {showForm && !isEditing && (<>
+                    <Separator className="my-4" />
+                    <form onSubmit={handleSubmit} className="space-y-3">
                         <div>
                             <label className={labelClass}>Department Tag</label>
                             <input
@@ -357,7 +359,7 @@ export default function ManageDepartmentsModal({ onClose }) {
                             </button>
                         </div>
                     </form>
-                )}
+                </>)}
             </div>
         </AppDialog>
     );

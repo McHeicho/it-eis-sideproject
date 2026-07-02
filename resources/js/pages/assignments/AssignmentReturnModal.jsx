@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
+import { toast } from "sonner";
 
 const inputClass =
     "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -30,8 +31,12 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
         setReturnErrors({});
         try {
             await api.patch(`/assignments/${assignment.id}/return`, returnForm);
+            // [ZUSTAND SEAM — cleanup #6] onReturned() is the parent's manual
+            // fetchAll re-fetch; the store will supersede it. The toast is
+            // decoupled from this line and keyed to dismissal — see AssignModal.
             await onReturned();
             onClose();
+            toast.success("Equipment returned");
         } catch (error) {
             if (error.response?.status === 422) {
                 setReturnErrors(error.response.data.errors);

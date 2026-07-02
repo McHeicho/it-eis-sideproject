@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Laptop } from "lucide-react";
 import api from "@/api/axios";
+import { toast } from "sonner";
 
 export default function EquipmentAdd() {
     const navigate = useNavigate();
@@ -221,6 +222,9 @@ export default function EquipmentAdd() {
             } else {
                 await api.post("/equipment", payload);
             }
+            // Toaster is mounted at the app root (Main.jsx), above the router —
+            // this toast survives the navigation below.
+            toast.success(isEditMode ? "Equipment updated" : "Equipment added");
             navigate("/equipment");
         } catch (error) {
             if (error.response?.status === 409) {

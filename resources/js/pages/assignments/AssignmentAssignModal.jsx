@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
+import { toast } from "sonner";
 
 const inputClass =
     "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -110,8 +111,15 @@ export default function AssignmentAssignModal({
                 payload.employee_id = assignForm.employee_id;
             }
             await api.post("/assignments", payload);
+            // [ZUSTAND SEAM — cleanup #6] onAssigned() is the parent's manual
+            // fetchAll re-fetch. When the reference-data store lands, the store
+            // supersedes this refresh (modals become writers, lists readers) and
+            // this call is removed/rewritten. The toast below is intentionally
+            // decoupled from this line and keyed to dismissal, so replacing the
+            // refresh does NOT take the confirmation with it.
             await onAssigned();
             onClose();
+            toast.success("Equipment assigned");
         } catch (error) {
             if (error.response?.status === 422) {
                 setAssignErrors(error.response.data.errors);

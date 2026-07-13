@@ -21,14 +21,14 @@ import {
     FileText,
     Building
 } from "lucide-react";
-import ManageDepartmentsModal from "./ManageDepartmentsModal";
-import ManageBrandsModelsModal from "./ManageBrandsModelsModal";
-import ManageSuppliersModal from "./ManageSuppliersModal";
-import ManageEmployeesModal from "./ManageEmployeesModal";
-import ManageBranchesModal from "./ManageBranchesModal";
+import ManageDepartmentsModal from "@/layouts/menu/ManageDepartmentsModal";
+import ManageBrandsModelsModal from "@/layouts/menu/ManageBrandsModelsModal";
+import ManageSuppliersModal from "@/layouts/menu/ManageSuppliersModal";
+import ManageEmployeesModal from "@/layouts/menu/ManageEmployeesModal";
+import ManageBranchesModal from "@/layouts/menu/ManageBranchesModal";
 import { Separator } from "@/components/ui/separator";
 
-export default function Layout() {
+export default function SidebarLayout() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isAdmin = user.role_id === 1;

@@ -3,17 +3,17 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import EquipmentList from './pages/equipment/EquipmentList';
-import EquipmentReceipts from './pages/equipment/EquipmentReceipts';
-import EquipmentAddEdit from './pages/equipment/EquipmentAddEdit';
-import EquipmentDetail from './pages/equipment/EquipmentDetail';
-import EmployeeList from './pages/employees/EmployeeList';
-import AssignmentList from './pages/assignments/AssignmentList';
-import BulkImport from './pages/bulk/BulkImport';
-import EquipmentReports from './pages/reports/EquipmentReports';
-import Layout from './pages/menu/Layout';
+import Login from '@/pages/Login';
+import Dashboard from '@/pages/Dashboard';
+import EquipmentList from '@/pages/equipment/EquipmentList';
+import EquipmentReceipts from '@/pages/equipment/EquipmentReceipts';
+import EquipmentAddEdit from '@/pages/equipment/EquipmentAddEdit';
+import EquipmentDetail from '@/pages/equipment/EquipmentDetail';
+import EmployeeList from '@/pages/employees/EmployeeList';
+import AssignmentList from '@/pages/assignments/AssignmentList';
+import BulkImport from '@/pages/bulk/BulkImport';
+import EquipmentReports from '@/pages/reports/EquipmentReports';
+import SidebarLayout from '@/layouts/SidebarLayout';
 
 const isAuthenticated = () => !!localStorage.getItem('token');
 
@@ -43,7 +43,7 @@ export default function Main() {
                     path="/"
                     element={
                         <ProtectedRoute>
-                            <Layout />
+                            <SidebarLayout />
                         </ProtectedRoute>
                     }
                 >

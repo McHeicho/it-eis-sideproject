@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Laptop, FileSearch, Pencil } from "lucide-react";
 import api from "@/api/axios";
@@ -6,6 +6,16 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConditionBadge from "@/components/ui/ConditionBadge";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useLookups } from "@/queries/useLookups";
+import { useEquipmentList } from "@/queries/useEquipmentList";
+
+const EMPTY_FILTERS = {
+    status: "",
+    condition: "",
+    equipment_type_id: "",
+    supplier_id: "",
+    serial_number: "",
+};
 
 export default function EquipmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -13,59 +23,31 @@ export default function EquipmentList() {
     const [searchParams] = useSearchParams();
     // Allow deep links like /equipment?status=Lost/Missing (e.g. dashboard alerts).
     const initialStatus = searchParams.get("status") || "";
-    const [equipment, setEquipment] = useState([]);
-    const [types, setTypes] = useState([]);
-    const [suppliers, setSuppliers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [filtering, setFiltering] = useState(false);
     const [filterForm, setFilterForm] = useState({
+        ...EMPTY_FILTERS,
         status: initialStatus,
-        condition: "",
-        equipment_type_id: "",
-        supplier_id: "",
-        serial_number: "",
     });
+    const [appliedFilters, setAppliedFilters] = useState({
+        ...EMPTY_FILTERS,
+        status: initialStatus,
+    })
 
-    useEffect(() => {
-        fetchEquipment(initialStatus ? { status: initialStatus } : {});
-    }, []);
+    const { data: lookups } = useLookups();
+    const types = lookups?.types ?? [];
+    const suppliers = lookups?.suppliers ?? [];
 
-    const fetchEquipment = async (params = {}) => {
-        const isInitial = types.length === 0;
-        if (isInitial) setLoading(true);
-        else setFiltering(true);
-        try {
-            const requests = [api.get("/equipment", { params })];
-            if (isInitial) {
-                requests.push(api.get("/equipment-types"));
-                requests.push(api.get("/suppliers"));
-            }
-            const responses = await Promise.all(requests);
-            setEquipment(responses[0].data);
-            if (isInitial) {
-                setTypes(responses[1].data);
-                setSuppliers(responses[2].data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch equipment:", error);
-        } finally {
-            setLoading(false);
-            setFiltering(false);
-        }
-    };
+    const {
+        data: equipment = [],
+        isPending: loading,
+        isFetching,
+    } = useEquipmentList(appliedFilters);
+    const filtering = isFetching && !loading;
 
-    const handleFilter = () => fetchEquipment(filterForm);
+    const handleFilter = () => setAppliedFilters(filterForm);
 
     const handleReset = () => {
-        const empty = {
-            status: "",
-            condition: "",
-            equipment_type_id: "",
-            supplier_id: "",
-            serial_number: "",
-        };
-        setFilterForm(empty);
-        fetchEquipment();
+        setFilterForm(EMPTY_FILTERS);
+        setAppliedFilters(EMPTY_FILTERS);
     };
 
     if (loading) {

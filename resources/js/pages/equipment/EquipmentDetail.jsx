@@ -1,32 +1,61 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Laptop, ArrowLeft } from "lucide-react";
 import api from "@/api/axios";
+import { toast } from "sonner";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConditionBadge from "@/components/ui/ConditionBadge";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useEquipmentDetail } from "@/queries/useEquipmentDetail";
 
 export default function EquipmentDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-    const [equipment, setEquipment] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { data: live, isPending } = useEquipmentDetail(id);
 
+    const [shown, setShown] = useState(null);
+    const shownRef = useRef(null);
+
+    // A new id is a different record, not a live update to this one —
+    // reset silently (and drop any lingering toast) before it can be
+    // mistaken for a change.
     useEffect(() => {
-        const fetchEquipment = async () => {
-            try {
-                const response = await api.get(`/equipment/${id}`);
-                setEquipment(response.data);
-            } catch (error) {
-                console.error("Failed to fetch equipment:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchEquipment();
-    }, [id]);
+        shownRef.current = null;
+        setShown(null);
+        return () => toast.dismiss("equipment-detail-updated");
+        }, [id]);
+
+    // First paint for this id seeds silently. After that, compare the
+    // whole payload — a timestamp alone would miss a brand/model rename,
+    // since that touches the related row, not this one.
+    useEffect(() => {
+        if (!live) return;
+
+        if (shownRef.current === null) {
+            shownRef.current = live;
+            setShown(live);
+            return;
+        }
+
+        if (JSON.stringify(live) !== JSON.stringify(shownRef.current)) {
+            toast("This record has been updated.", {
+                id: "equipment-detail-updated",
+                action: {
+                    label: "Refresh",
+                    onClick: () => {
+                        shownRef.current = live;
+                        setShown(live);
+                    },
+                },
+                duration: Infinity,
+            });
+        }
+        }, [live]);
+
+        const equipment = shown;
+        const loading = shown === null && isPending;
 
     // Loading skeleton
     if (loading) {

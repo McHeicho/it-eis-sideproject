@@ -1,26 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Laptop } from "lucide-react";
 import api from "@/api/axios";
 import { toast } from "sonner";
+import { useLookups } from "@/queries/useLookups";
 
 export default function EquipmentAdd() {
     const navigate = useNavigate();
     const { id } = useParams();
     const isEditMode = !!id;
 
-    const [equipmentTypes, setEquipmentTypes] = useState([]);
-    const [brands, setBrands] = useState([]);
     const [models, setModels] = useState([]);
-    const [suppliers, setSuppliers] = useState([]);
-    const [allModels, setAllModels] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [dropdownsLoading, setDropdownsLoading] = useState(true);
-    const [conditionOptions, setConditionOptions] = useState([]);
-    const [statusOptions, setStatusOptions] = useState([]);
     const [lastSeenUpdatedAt, setLastSeenUpdatedAt] = useState(null);
     const [employeeId, setEmployeeId] = useState("");
     const [employeeSearch, setEmployeeSearch] = useState("");
+    const [equipmentLoading, setEquipmentLoading] = useState(isEditMode);
+
+    const { data: lookups, isPending: lookupsPending } = useLookups();
+    const dropdownsLoading = lookupsPending || equipmentLoading;
+
+    const equipmentTypes = lookups?.types ?? [];
+    const brands = lookups?.brands ?? [];
+    const suppliers = lookups?.suppliers ?? [];
+    const conditionOptions = lookups?.conditions ?? [];
+    const statusOptions = lookups?.statuses ?? [];
+    const employees = lookups?.employees ?? [];
+    const allModels = useMemo(() => lookups?.models ?? [], [lookups]);
 
     const [form, setForm] = useState({
         equipment_type_id: "",
@@ -48,76 +53,58 @@ export default function EquipmentAdd() {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
-    // Load all dropdowns at once on mount
+    // Load the existing record on mount — edit mode only. Lookups are
+    // handled separately by useLookups() above.
     useEffect(() => {
+        if (!isEditMode) return;
+
         const controller = new AbortController();
 
-        const fetchDropdowns = async () => {
+        const fetchEquipment = async () => {
             try {
-                const requests = [
-                    api.get("/equipment/form-data", {
-                        signal: controller.signal,
-                    }),
-                ];
+                const { data: eq } = await api.get(`/equipment/${id}`, {
+                    signal: controller.signal,
+                });
 
-                if (isEditMode)
-                    requests.push(
-                        api.get(`/equipment/${id}`, {
-                            signal: controller.signal,
-                        })
+                setLastSeenUpdatedAt(eq.updated_at);
+                setForm({
+                    equipment_type_id: eq.equipment_type_id,
+                    brand_id: eq.brand_id,
+                    model_id: eq.model_id,
+                    serial_number: eq.serial_number,
+                    delivery_id: eq.delivery_id,
+                    condition: eq.condition,
+                    status: eq.status,
+                });
+                if (eq.delivery) {
+                    setDeliveryMatched(true);
+                    setDeliveryMode(
+                        eq.delivery.voucher_no ? "voucher" : "invoice"
                     );
-
-                const responses = await Promise.all(requests);
-                const formData = responses[0].data;
-
-                setEquipmentTypes(formData.types);
-                setBrands(formData.brands);
-                setSuppliers(formData.suppliers);
-                setAllModels(formData.models);
-                setConditionOptions(formData.conditions);
-                setStatusOptions(formData.statuses);
-                setEmployees(formData.employees);
-
-                if (isEditMode) {
-                    const eq = responses[1].data;
-                    if (isEditMode) setLastSeenUpdatedAt(eq.updated_at);
-                    setForm({
-                        equipment_type_id: eq.equipment_type_id,
-                        brand_id: eq.brand_id,
-                        model_id: eq.model_id,
-                        serial_number: eq.serial_number,
-                        delivery_id: eq.delivery_id,
-                        condition: eq.condition,
-                        status: eq.status,
+                    setDeliveryFields({
+                        voucher_no: eq.delivery.voucher_no ?? "",
+                        invoice_no: eq.delivery.invoice_no ?? "",
+                        supplier_id: eq.delivery.supplier_id ?? "",
+                        supplier_name: eq.delivery.supplier?.name ?? "",
+                        purchase_date: eq.delivery.purchase_date
+                            ? eq.delivery.purchase_date.slice(0, 10)
+                            : "",
+                        order_no: eq.delivery.order_no ?? "",
+                        notes: eq.delivery.notes ?? "",
                     });
-                    if (eq.delivery) {
-                        setDeliveryMatched(true);
-                        setDeliveryMode(
-                            eq.delivery.voucher_no ? "voucher" : "invoice"
-                        );
-                        setDeliveryFields({
-                            voucher_no: eq.delivery.voucher_no ?? "",
-                            invoice_no: eq.delivery.invoice_no ?? "",
-                            supplier_id: eq.delivery.supplier_id ?? "",
-                            supplier_name: eq.delivery.supplier?.name ?? "",
-                            purchase_date: eq.delivery.purchase_date
-                                ? eq.delivery.purchase_date.slice(0, 10)
-                                : "",
-                            order_no: eq.delivery.order_no ?? "",
-                            notes: eq.delivery.notes ?? "",
-                        });
-                    }
                 }
             } catch (error) {
                 if (error.name === "CanceledError") return;
-                console.error("Failed to load dropdowns:", error);
+                // TODO(#6): still silent on failure — visible error
+                // surface lands in the next step.
+                console.error("Failed to load equipment record:", error);
             } finally {
                 if (!controller.signal.aborted) {
-                    setDropdownsLoading(false);
+                    setEquipmentLoading(false);
                 }
             }
         };
-        fetchDropdowns();
+        fetchEquipment();
         return () => controller.abort();
     }, []);
 
@@ -138,14 +125,14 @@ export default function EquipmentAdd() {
     }, [form.brand_id, allModels]);
 
     const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'status' && value !== 'Assigned') {
-        setEmployeeSearch('');
-        setEmployeeId('');
-    }
-    setForm({ ...form, [name]: value });
-    setErrors({ ...errors, [name]: '' });
-};
+        const { name, value } = e.target;
+        if (name === "status" && value !== "Assigned") {
+            setEmployeeSearch("");
+            setEmployeeId("");
+        }
+        setForm({ ...form, [name]: value });
+        setErrors({ ...errors, [name]: "" });
+    };
 
     const handleDeliveryBlur = async () => {
         const handle =
@@ -190,11 +177,11 @@ export default function EquipmentAdd() {
         setLoading(true);
         setErrors({});
 
-        if (!isEditMode && form.status === 'Assigned' && !employeeId) {
-    setErrors({ employee_id: ['Please select a valid employee.'] });
-    setLoading(false);
-    return;
-}
+        if (!isEditMode && form.status === "Assigned" && !employeeId) {
+            setErrors({ employee_id: ["Please select a valid employee."] });
+            setLoading(false);
+            return;
+        }
 
         const payload = {
             ...form,
@@ -208,12 +195,12 @@ export default function EquipmentAdd() {
                       order_no: deliveryFields.order_no,
                       notes: deliveryFields.notes,
                   }),
-                  ...(isEditMode && lastSeenUpdatedAt
-                    ? { last_seen_updated_at: lastSeenUpdatedAt }
-                    : {}),
-                    ...(!isEditMode && form.status === 'Assigned' && employeeId
-                        ? { employee_id: employeeId }
-                        : {}),
+            ...(isEditMode && lastSeenUpdatedAt
+                ? { last_seen_updated_at: lastSeenUpdatedAt }
+                : {}),
+            ...(!isEditMode && form.status === "Assigned" && employeeId
+                ? { employee_id: employeeId }
+                : {}),
         };
 
         try {
@@ -670,73 +657,89 @@ export default function EquipmentAdd() {
                         )}
                     </div>
                     {/* Status */}
-<div>
-    <label className={labelClass}>Status</label>
-    {isEditMode ? (
-        <>
-            <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                disabled={form.status === "Assigned"}
-                className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
-            >
-                {form.status === "Assigned" && (
-                    <option value="Assigned">Assigned</option>
-                )}
-                {statusOptions
-                    .filter((s) => s !== "Assigned")
-                    .map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                    ))}
-            </select>
-            {form.status === "Assigned" && (
-                <p className="text-xs text-gray-400 mt-1">
-                    Status is locked while equipment is assigned. Use Return Equipment to change it.
-                </p>
-            )}
-        </>
-    ) : (
-        <select
-            name="status"
-            value={form.status}
-            onChange={handleChange}
-            className={inputClass}
-        >
-            {statusOptions.map((s) => (
-                <option key={s} value={s}>{s}</option>
-            ))}
-        </select>
-    )}
-    {errors.status && <p className={errorClass}>{errors.status[0]}</p>}
-</div>
+                    <div>
+                        <label className={labelClass}>Status</label>
+                        {isEditMode ? (
+                            <>
+                                <select
+                                    name="status"
+                                    value={form.status}
+                                    onChange={handleChange}
+                                    disabled={form.status === "Assigned"}
+                                    className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
+                                >
+                                    {form.status === "Assigned" && (
+                                        <option value="Assigned">
+                                            Assigned
+                                        </option>
+                                    )}
+                                    {statusOptions
+                                        .filter((s) => s !== "Assigned")
+                                        .map((s) => (
+                                            <option key={s} value={s}>
+                                                {s}
+                                            </option>
+                                        ))}
+                                </select>
+                                {form.status === "Assigned" && (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        Status is locked while equipment is
+                                        assigned. Use Return Equipment to change
+                                        it.
+                                    </p>
+                                )}
+                            </>
+                        ) : (
+                            <select
+                                name="status"
+                                value={form.status}
+                                onChange={handleChange}
+                                className={inputClass}
+                            >
+                                {statusOptions.map((s) => (
+                                    <option key={s} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        {errors.status && (
+                            <p className={errorClass}>{errors.status[0]}</p>
+                        )}
+                    </div>
 
-{/* Employee assignment — add mode only, visible when Assigned is selected */}
-{!isEditMode && form.status === 'Assigned' && (
-    <div>
-        <label className={labelClass}>Assign to Employee</label>
-        <input
-            list="employee-list"
-            value={employeeSearch}
-            onChange={(e) => {
-                const val = e.target.value;
-                setEmployeeSearch(val);
-                const match = employees.find(emp => emp.name === val);
-                setEmployeeId(match ? match.id : "");
-            }}
-            placeholder="Type to search employee..."
-            className={inputClass}
-        />
-        <datalist id="employee-list">
-            {employees.map(emp => (
-                <option key={emp.id} value={emp.name} />
-            ))}
-        </datalist>
-        {errors.employee_id && (
-            <p className={errorClass}>{errors.employee_id[0]}</p>
-        )}
-    </div>
-)}
+                    {/* Employee assignment — add mode only, visible when Assigned is selected */}
+                    {!isEditMode && form.status === "Assigned" && (
+                        <div>
+                            <label className={labelClass}>
+                                Assign to Employee
+                            </label>
+                            <input
+                                list="employee-list"
+                                value={employeeSearch}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setEmployeeSearch(val);
+                                    const match = employees.find(
+                                        (emp) => emp.name === val
+                                    );
+                                    setEmployeeId(match ? match.id : "");
+                                }}
+                                placeholder="Type to search employee..."
+                                className={inputClass}
+                            />
+                            <datalist id="employee-list">
+                                {employees.map((emp) => (
+                                    <option key={emp.id} value={emp.name} />
+                                ))}
+                            </datalist>
+                            {errors.employee_id && (
+                                <p className={errorClass}>
+                                    {errors.employee_id[0]}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Actions */}

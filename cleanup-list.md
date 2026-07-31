@@ -19,8 +19,8 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 - [ ] **#4 — Referential-integrity guard for Brand/Model edits** *(merged with former #5)*
   Brands/Models referenced by existing equipment need protection on edit/delete. Decide the approach — warn-on-edit-with-confirmation vs. append-only — and implement one. Feedback surfaces in the Maintenance modals.
 
-- [ ] **#6 — Data freshness across pages (Zustand)**
-  Shared lookup data (brands, models, suppliers, employees, equipment types) goes stale when edited in one place while another is open. Introduce Zustand as the single source of truth — Maintenance modals as writers, form/list pages as readers. Affects Equipment Add/Edit and Assignment List dropdowns.
+- [ ] **Data freshness across pages (TanStack Query)**
+  Shared lookup data (brands, models, suppliers, employees, equipment types) goes stale when edited in one place while another is open. Introduce TanStack Query as the cache/refetch layer — Maintenance modal saves invalidateQueries the relevant keys; form/list pages read cached queries and refetch on invalidation. Also picks up cross-page fetch caching, overlapping #3/#25. Affects Equipment Add/Edit and Assignment List dropdowns.
 
 - [ ] **#8 — Bulk Return action for assignments**
   Assignments can currently only be returned one at a time.
@@ -105,8 +105,14 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   whatever each component shipped with by default.
   - **Prerequisite: #25.** Don't animate-polish components that are still
     structurally mid-migration (Table, Badge, Card, Sidebar, etc. haven't
-    been touched yet) — same diff-ambiguity reasoning as the Zustand/
+    been touched yet) — same diff-ambiguity reasoning as the state/
     form-fields sequencing call.
+
+- [ ] **#32 — Frontend hook folder conventions.**
+  Establish resources/js/queries/ for server-state (TanStack Query) hooks and resources/js/hooks/
+  for generic React utility hooks. Migrate any ad-hoc hooks into the right bucket as they appear.
+  Convention set during #6.
+
 ---
 
 ## Closed Items

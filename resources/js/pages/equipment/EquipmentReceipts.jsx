@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
     ChevronDown,
     ChevronRight,
@@ -8,55 +9,40 @@ import {
 } from "lucide-react";
 import api from "@/api/axios";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { useLookups } from "@/queries/useLookups";
+import { useDeliveries } from "@/queries/useDeliveries";
+
+const EMPTY_FILTERS = {
+    voucher_no: "",
+    invoice_no: "",
+    order_no: "",
+    supplier_id: "",
+    no_attachment: false,
+    serial_number: "",
+    status: "",
+};
 
 export default function EquipmentReceipts() {
     const isAdmin =
         JSON.parse(localStorage.getItem("user") || "{}")?.role_id === 1;
-    const [suppliers, setSuppliers] = useState([]);
-    const [statuses, setStatuses] = useState([]);
-    const [deliveries, setDeliveries] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
     const [expandedData, setExpandedData] = useState({});
     const [expandLoading, setExpandLoading] = useState(null);
-    const [filterForm, setFilterForm] = useState({
-        voucher_no: "",
-        invoice_no: "",
-        order_no: "",
-        supplier_id: "",
-        no_attachment: false,
-        serial_number: "",
-        status: "",
-    });
-    const [filtering, setFiltering] = useState(false);
+    const [filterForm, setFilterForm] = useState(EMPTY_FILTERS);
+    const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
 
-    const fetchDeliveries = async (params = {}) => {
-        const isInitial = suppliers.length === 0;
-        if (isInitial) setLoading(true);
-        else setFiltering(true);
-        try {
-            const requests = [api.get("/deliveries", { params })];
-            if (isInitial) {
-                requests.push(api.get("/suppliers"));
-                requests.push(api.get("/equipment/options"));
-            }
+    const queryClient = useQueryClient();
 
-            const responses = await Promise.all(requests);
-            setDeliveries(responses[0].data);
-            if (isInitial) {
-                setSuppliers(responses[1].data);
-                setStatuses(responses[2].data.statuses);
-            }
-        } catch (error) {
-            console.error("Failed to fetch deliveries:", error);
-        } finally {
-            setLoading(false);
-            setFiltering(false);
-        }
-    };
-    useEffect(() => {
-        fetchDeliveries();
-    }, []);
+    const { data: lookups } = useLookups();
+    const suppliers = lookups?.suppliers ?? [];
+    const statuses = lookups?.statuses ?? [];
+
+    const {
+        data: deliveries = [],
+        isPending: loading,
+        isFetching,
+    } = useDeliveries(appliedFilters);
+    const filtering = isFetching && !loading;
 
     const handleExpand = async (id) => {
         if (expandedId === id) {
@@ -77,20 +63,22 @@ export default function EquipmentReceipts() {
     };
 
     const handleDeliveryUpdated = (updatedDelivery) => {
-        setDeliveries((prev) =>
-            prev.map((d) =>
-                d.id === updatedDelivery.id
-                    ? {
-                          ...d,
-                          voucher_no: updatedDelivery.voucher_no,
-                          invoice_no: updatedDelivery.invoice_no,
-                          purchase_date: updatedDelivery.purchase_date,
-                          supplier: updatedDelivery.supplier,
-                          supplier_id: updatedDelivery.supplier_id,
-                      }
-                    : d
-            )
-        );
+        queryClient.setQueryData(
+            ["deliveries", "list", appliedFilters],
+            (prev) =>
+                prev?.map((d) =>
+                    d.id === updatedDelivery.id
+            ? {
+                ...d,
+                voucher_no: updatedDelivery.voucher_no,
+                invoice_no: updatedDelivery.invoice_no,
+                purchase_date: updatedDelivery.purchase_date,
+                supplier: updatedDelivery.supplier,
+                supplier_id: updatedDelivery.supplier_id,
+            }
+            : d
+        )
+    );
         setExpandedData((prev) => ({
             ...prev,
             [updatedDelivery.id]: {
@@ -103,22 +91,14 @@ export default function EquipmentReceipts() {
     const handleFilter = () => {
         setExpandedId(null);
         setExpandedData({});
-        fetchDeliveries(filterForm);
+        setAppliedFilters(filterForm);
     };
 
     const handleReset = () => {
-        setFilterForm({
-            voucher_no: "",
-            invoice_no: "",
-            order_no: "",
-            supplier_id: "",
-            no_attachment: false,
-            serial_number: "",
-            status: "",
-        });
+        setFilterForm(EMPTY_FILTERS);
         setExpandedId(null);
         setExpandedData({});
-        fetchDeliveries();
+        setAppliedFilters(EMPTY_FILTERS);
     };
 
     const labelClass = "text-xs text-gray-500";

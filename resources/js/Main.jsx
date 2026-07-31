@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,6 +16,10 @@ import BulkImport from '@/pages/bulk/BulkImport';
 import EquipmentReports from '@/pages/reports/EquipmentReports';
 import SidebarLayout from '@/layouts/SidebarLayout';
 
+// Plumbing only — no defaultOptions yet. staleTime/refetch behavior is a
+// deliberate call once the first real query wires in (cleanup #6).
+const queryClient = new QueryClient();
+
 const isAuthenticated = () => !!localStorage.getItem('token');
 
 function ProtectedRoute({ children }) {
@@ -28,6 +33,7 @@ export default function Main() {
         // defaultTheme="light" + enableSystem={false} (no OS following, no toggle).
         // When #30 lands, enable system/add the toggle here. attribute="class"
         // toggles the `.dark` class already defined in app.css.
+        <QueryClientProvider client={queryClient}>
         <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -63,5 +69,6 @@ export default function Main() {
         </BrowserRouter>
         </TooltipProvider>
         </ThemeProvider>
+        </QueryClientProvider>
     );
 }

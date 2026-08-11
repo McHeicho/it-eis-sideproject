@@ -31,9 +31,10 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
         setReturnErrors({});
         try {
             await api.patch(`/assignments/${assignment.id}/return`, returnForm);
-            // [ZUSTAND SEAM — cleanup #6] onReturned() is the parent's manual
-            // fetchAll re-fetch; the store will supersede it. The toast is
-            // decoupled from this line and keyed to dismissal — see AssignModal.
+            // onReturned() triggers the parent's invalidateAssignmentData now —
+            // cleanup #6 landed as TanStack Query, not the originally-planned
+            // Zustand store. Toast stays decoupled from this line, keyed to
+            // dismissal — see AssignModal.
             await onReturned();
             onClose();
             toast.success("Equipment returned");

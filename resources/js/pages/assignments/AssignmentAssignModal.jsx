@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useEquipmentList } from "@/queries/useEquipmentList";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
 import { toast } from "sonner";
@@ -7,6 +8,14 @@ const inputClass =
     "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
 const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 const errorClass = "text-red-500 text-xs mt-1";
+
+const LOST_EQUIPMENT_FILTERS = {
+    status: "Lost/Missing",
+    condition: "",
+    equipment_type_id: "",
+    supplier_id: "",
+    serial_number: "",
+};
 
 export default function AssignmentAssignModal({
     equipment,
@@ -35,8 +44,10 @@ export default function AssignmentAssignModal({
     const [lostOnly, setLostOnly] = useState(
         preselectedEquipment?.status === "Lost/Missing"
     );
-    const [lostEquipment, setLostEquipment] = useState([]);
-    const [loadingLost, setLoadingLost] = useState(false);
+    const {
+        data: lostEquipment = [],
+        isFetching: loadingLost,
+    } = useEquipmentList(LOST_EQUIPMENT_FILTERS, { enabled: lostOnly });
     const [noLaptopOnly, setNoLaptopOnly] = useState(false);
 
     const availableEquipment = equipment.filter(
@@ -71,30 +82,6 @@ export default function AssignmentAssignModal({
         a.branch_name.localeCompare(b.branch_name)
     );
 
-    const fetchLostEquipment = async () => {
-        setLoadingLost(true);
-        setLostEquipment([]);
-        try {
-            const res = await api.get("/equipment", {
-                params: { status: "Lost/Missing" },
-            });
-            setLostEquipment(res.data);
-        } catch (error) {
-            console.error("Failed to fetch lost equipment:", error);
-        } finally {
-            setLoadingLost(false);
-        }
-    };
-
-    // Opened via the table's per-row action on a Lost/Missing item — the
-    // checkbox's own onChange only fires on a manual toggle, so the lost
-    // list needs loading explicitly here.
-    useEffect(() => {
-        if (preselectedEquipment?.status === "Lost/Missing") {
-            fetchLostEquipment();
-        }
-    }, []);
-
     const handleAssign = async (e) => {
         e.preventDefault();
         setAssigning(true);
@@ -111,12 +98,10 @@ export default function AssignmentAssignModal({
                 payload.employee_id = assignForm.employee_id;
             }
             await api.post("/assignments", payload);
-            // [ZUSTAND SEAM — cleanup #6] onAssigned() is the parent's manual
-            // fetchAll re-fetch. When the reference-data store lands, the store
-            // supersedes this refresh (modals become writers, lists readers) and
-            // this call is removed/rewritten. The toast below is intentionally
-            // decoupled from this line and keyed to dismissal, so replacing the
-            // refresh does NOT take the confirmation with it.
+            // onAssigned() triggers the parent's invalidateAssignmentData now —
+            // cleanup #6 landed as TanStack Query, not the originally-planned
+            // Zustand store. Toast stays decoupled from this line, keyed to
+            // dismissal, so it wasn't affected by the refresh swap.
             await onAssigned();
             onClose();
             toast.success("Equipment assigned");
@@ -134,7 +119,9 @@ export default function AssignmentAssignModal({
     return (
         <AppDialog
             open
-            onOpenChange={(o) => { if (!o) onClose(); }}
+            onOpenChange={(o) => {
+                if (!o) onClose();
+            }}
             title="Assign Equipment"
             footer={
                 <div className="flex justify-between">
@@ -166,14 +153,11 @@ export default function AssignmentAssignModal({
                                     type="checkbox"
                                     checked={lostOnly}
                                     onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setLostOnly(checked);
+                                        setLostOnly(e.target.checked);
                                         setAssignForm({
                                             ...assignForm,
                                             equipment_id: "",
                                         });
-                                        if (checked) fetchLostEquipment();
-                                        else setLostEquipment([]);
                                     }}
                                 />
                                 Show Lost/Missing only
@@ -270,8 +254,7 @@ export default function AssignmentAssignModal({
                                             })
                                         }
                                         className={`px-4 py-1.5 text-xs font-medium transition-colors ${
-                                            assignForm.office_filter ===
-                                            "HO"
+                                            assignForm.office_filter === "HO"
                                                 ? "bg-blue-600 text-white"
                                                 : "bg-white text-gray-600 hover:bg-gray-50"
                                         }`}
@@ -288,8 +271,7 @@ export default function AssignmentAssignModal({
                                             })
                                         }
                                         className={`px-4 py-1.5 text-xs font-medium transition-colors ${
-                                            assignForm.office_filter ===
-                                            "EXT"
+                                            assignForm.office_filter === "EXT"
                                                 ? "bg-blue-600 text-white"
                                                 : "bg-white text-gray-600 hover:bg-gray-50"
                                         }`}
@@ -304,9 +286,7 @@ export default function AssignmentAssignModal({
                     {assignForm.holderType === "employee" ? (
                         <>
                             <div>
-                                <label className={labelClass}>
-                                    Department
-                                </label>
+                                <label className={labelClass}>Department</label>
                                 <select
                                     value={assignForm.department_tag}
                                     onChange={(e) =>
@@ -318,14 +298,9 @@ export default function AssignmentAssignModal({
                                     }
                                     className={inputClass}
                                 >
-                                    <option value="">
-                                        All Departments
-                                    </option>
+                                    <option value="">All Departments</option>
                                     {departments.map((dept) => (
-                                        <option
-                                            key={dept.id}
-                                            value={dept.tag}
-                                        >
+                                        <option key={dept.id} value={dept.tag}>
                                             {dept.name} ({dept.tag})
                                         </option>
                                     ))}
@@ -363,13 +338,10 @@ export default function AssignmentAssignModal({
                                     }
                                     className={inputClass}
                                 >
-                                    <option value="">
-                                        Select Employee
-                                    </option>
+                                    <option value="">Select Employee</option>
                                     {filteredEmployees.map((emp) => (
                                         <option key={emp.id} value={emp.id}>
-                                            {emp.name} ({emp.department_tag}
-                                            )
+                                            {emp.name} ({emp.department_tag})
                                         </option>
                                     ))}
                                 </select>
@@ -395,10 +367,7 @@ export default function AssignmentAssignModal({
                             >
                                 <option value="">Select Branch</option>
                                 {sortedBranches.map((branch) => (
-                                    <option
-                                        key={branch.id}
-                                        value={branch.id}
-                                    >
+                                    <option key={branch.id} value={branch.id}>
                                         {branch.branch_name} (
                                         {branch.branch_code})
                                     </option>

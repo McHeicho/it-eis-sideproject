@@ -10,6 +10,8 @@ use App\Models\EquipmentType;
 use App\Models\Assignment;
 use App\Models\Supplier;
 use App\Models\Employee;
+use App\Models\Department;
+use App\Models\Branch;
 use App\Exports\EquipmentExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
@@ -27,6 +29,8 @@ class EquipmentController extends Controller
             "conditions" => Equipment::CONDITIONS,
             "statuses" => Equipment::STATUSES,
             "employees"  => Employee::orderBy('name')->get(['id', 'name']),
+            "departments" => Department::all(),
+            "branches" => Branch::all(),
         ]);
     }
 

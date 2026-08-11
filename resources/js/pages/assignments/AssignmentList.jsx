@@ -1,21 +1,37 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ClipboardList } from "lucide-react";
-import api from "@/api/axios";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import StatusBadge from "@/components/ui/StatusBadge";
 import AssignmentAssignModal from "./AssignmentAssignModal";
 import AssignmentReturnModal from "./AssignmentReturnModal";
+import { useLookups } from "@/queries/useLookups";
+import { useEquipmentList } from "@/queries/useEquipmentList";
+import { useAssignmentsList } from "@/queries/useAssignmentsList";
+
+const ASSIGNMENT_EQUIPMENT_FILTERS = {
+    status: "",
+    condition: "",
+    equipment_type_id: "",
+    supplier_id: "",
+    serial_number: "",
+};
 
 export default function AssignmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isAdmin = user.role_id === 1;
 
-    const [assignments, setAssignments] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [equipment, setEquipment] = useState([]);
-    const [departments, setDepartments] = useState([]);
-    const [branches, setBranches] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
+
+    const { data: lookups, isPending: lookupsPending } = useLookups();
+    const { data: equipment = [], isPending: equipmentPending } = useEquipmentList(ASSIGNMENT_EQUIPMENT_FILTERS);
+    const { data: assignments = [], isPending: assignmentsPending } = useAssignmentsList();
+
+    const employees = lookups?.employees ?? [];
+    const departments = lookups?.departments ?? [];
+    const branches = lookups?.branches ?? [];
+
+    const loading = lookupsPending || equipmentPending || assignmentsPending;
 
     // Filters
     const [statusFilter, setStatusFilter] = useState("all");
@@ -28,37 +44,6 @@ export default function AssignmentList() {
     const [showReturnModal, setShowReturnModal] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
     const [preselectedEquipment, setPreselectedEquipment] = useState(null);
-
-    useEffect(() => {
-        fetchAll();
-    }, []);
-
-    const fetchAll = async () => {
-        try {
-            const [
-                assignRes,
-                empRes,
-                eqRes,
-                deptRes,
-                branchRes,
-            ] = await Promise.all([
-                api.get("/assignments"),
-                api.get("/employees"),
-                api.get("/equipment"),
-                api.get("/departments"),
-                api.get("/branches"),
-            ]);
-            setAssignments(assignRes.data);
-            setEmployees(empRes.data);
-            setEquipment(eqRes.data);
-            setDepartments(deptRes.data);
-            setBranches(branchRes.data);
-        } catch (error) {
-            console.error("Failed to fetch data:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Resolves a row's location for the Branches filter: "HO", "EXT", or
     // "branch:<id>". Equipment with no current holder has no location.
@@ -151,6 +136,11 @@ export default function AssignmentList() {
     const handleOpenReturn = (assignment) => {
         setSelectedAssignment(assignment);
         setShowReturnModal(true);
+    };
+
+    const invalidateAssignmentData = () => {
+        queryClient.invalidateQueries({ queryKey: ["assignments"] });
+        queryClient.invalidateQueries({ queryKey: ["equipment"] });
     };
 
     // Loading skeleton
@@ -415,14 +405,14 @@ export default function AssignmentList() {
                         setShowAssignModal(false);
                         setPreselectedEquipment(null);
                     }}
-                    onAssigned={fetchAll}
+                    onAssigned={invalidateAssignmentData}
                 />
             )}
             {showReturnModal && selectedAssignment && (
                 <AssignmentReturnModal
                     assignment={selectedAssignment}
                     onClose={() => setShowReturnModal(false)}
-                    onReturned={fetchAll}
+                    onReturned={invalidateAssignmentData}
                 />
             )}
         </div>

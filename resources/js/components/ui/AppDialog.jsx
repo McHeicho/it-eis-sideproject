@@ -39,6 +39,10 @@ export default function AppDialog({
                 onInteractOutside={blockIfLocked}
                 className={cn(
                     "gap-0 p-0 overflow-hidden",
+                    // Radix sets pointer-events: none inline on lower dismissable
+                    // layers when a Select opens, killing every control inside
+                    // this dialog — pointer-events-auto! beats that inline style.
+                    "pointer-events-auto!",
                     SIZE_CLASSES[size] || SIZE_CLASSES.default,
                     className
                 )}

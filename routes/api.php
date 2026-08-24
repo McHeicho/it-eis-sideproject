@@ -8,7 +8,6 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\EquipmentModelController;
 use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\DeliveryController;
@@ -31,10 +30,7 @@ Route::middleware("auth:sanctum")->group(function () {
     // Departments
     Route::apiResource("departments", DepartmentController::class);
 
-    // Offices
-    Route::apiResource("offices", OfficeController::class);
-
-    // Offices
+    // Branches
     Route::apiResource("branches", BranchController::class);
 
     // Equipment Types

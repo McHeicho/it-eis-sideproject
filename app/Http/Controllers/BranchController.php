@@ -42,6 +42,24 @@ class BranchController extends Controller
             'branch_manager' => 'nullable|string',
         ]);
 
+        // Head Office and Manila Office are identified by branch_code elsewhere
+        // (employee location validation, branch display ordering), so their
+        // codes are fixed. Name and manager remain editable.
+        $lockedCodeIds = [1, 2];
+
+        if (
+            in_array($branch->id, $lockedCodeIds, true) &&
+            $request->filled('branch_code') &&
+            strtoupper($request->branch_code) !== $branch->branch_code
+        ) {
+            return response()->json([
+                'message' => 'The branch code for Head Office and Manila Office cannot be changed.',
+                'errors'  => [
+                    'branch_code' => ['This branch code cannot be changed.'],
+                ],
+            ], 422);
+        }
+
         $branch->update([
             'branch_code'    => strtoupper($request->branch_code ?? $branch->branch_code),
             'branch_name'    => $request->branch_name ?? $branch->branch_name,

@@ -2,7 +2,7 @@ import React from "react";
 import { Laptop } from "lucide-react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
-export default function EmployeeListExt({ employees }) {
+export default function EmployeeListManila({ employees }) {
     // Group employees by department
     const groupedByDepartment = employees.reduce((groups, employee) => {
         const dept = employee.department?.name || "Unassigned";
@@ -61,7 +61,7 @@ export default function EmployeeListExt({ employees }) {
                                             {employee.department?.tag}
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-gray-500 text-xs">
-                                            {employee.home_office?.name || "—"}
+                                            {employee.branch?.branch_name || "—"}
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-center">
                                             <div className="flex justify-center gap-1">
@@ -97,7 +97,7 @@ export default function EmployeeListExt({ employees }) {
             {/* Empty State */}
             {employees.length === 0 && (
                 <div className="text-center py-16 text-gray-400">
-                    <p className="text-sm">No employees in Extension Office.</p>
+                    <p className="text-sm">No employees in Manila Office.</p>
                 </div>
             )}
         </div>

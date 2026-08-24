@@ -8,6 +8,19 @@ import ConditionBadge from "@/components/ui/ConditionBadge";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useEquipmentDetail } from "@/queries/useEquipmentDetail";
 
+// Tooltip text for an Assigned record's current holder. Employee-held records
+// name the person and their office; branch-held records name the branch.
+// Returns null when neither resolves, so the caller can skip the tooltip.
+const holderLabel = (assignment) => {
+    if (!assignment) return null;
+    if (assignment.employee) {
+        const branch = assignment.employee.branch?.branch_name;
+        return `Assigned to: ${assignment.employee.name}${branch ? ` — ${branch}` : ""}`;
+    }
+    const branch = assignment.branch?.branch_name;
+    return branch ? `Located at: ${branch}` : null;
+};
+
 export default function EquipmentDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -195,16 +208,13 @@ export default function EquipmentDetail() {
                     {/* Status Row with Placeholder Buttons */}
                     <div className="flex justify-between items-center py-2">
                         <span className="text-sm text-gray-500">Status</span>
-                        {equipment.status === "Assigned" && equipment.current_assignment?.employee ? (
+                        {equipment.status === "Assigned" && holderLabel(equipment.current_assignment) ? (
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <StatusBadge status={equipment.status} />
                                 </TooltipTrigger>
                                 <TooltipContent side="top" align="end">
-                                    Assigned to: {equipment.current_assignment.employee.name}
-                                    {equipment.current_assignment.employee.home_office?.name
-                                        ? ` — ${equipment.current_assignment.employee.home_office.name}`
-                                        : ""}
+                                    {holderLabel(equipment.current_assignment)}
                                 </TooltipContent>
                             </Tooltip>
                         ) : (

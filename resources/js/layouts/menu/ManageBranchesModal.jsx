@@ -4,6 +4,7 @@ import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { sortBranches } from "@/lib/branches";
 
 export default function ManageBranchesModal({ onClose }) {
     const [branches, setBranches] = useState([]);
@@ -30,7 +31,7 @@ export default function ManageBranchesModal({ onClose }) {
     const fetchBranches = async () => {
         try {
             const response = await api.get("/branches");
-            setBranches(response.data);
+            setBranches(sortBranches(response.data));
         } catch (error) {
             console.error("Failed to fetch branches:", error);
         } finally {

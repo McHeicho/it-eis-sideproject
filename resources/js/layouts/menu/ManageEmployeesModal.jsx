@@ -5,9 +5,16 @@ import AppDialog from "@/components/ui/AppDialog";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
+// Employees are only ever based at Head Office or Manila Office — the two
+// rows in branches whose code is HO or MLA, never the full branch list.
+const ALLOWED_BRANCH_CODES = ["HO", "MLA"];
+
+const defaultBranchId = (branches) =>
+    branches.find((b) => b.branch_code === "HO")?.id ?? "";
+
 export default function ManageEmployeesModal({ onClose }) {
     const [employees, setEmployees] = useState([]);
-    const [offices, setOffices] = useState([]);
+    const [branches, setBranches] = useState([]);
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedDeptTag, setSelectedDeptTag] = useState("");
@@ -15,7 +22,7 @@ export default function ManageEmployeesModal({ onClose }) {
     const [form, setForm] = useState({
         name: "",
         department_tag: "",
-        home_office_tag: "HO",
+        branch_id: "",
     });
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
@@ -29,18 +36,21 @@ export default function ManageEmployeesModal({ onClose }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [
-                    employeesRes,
-                    departmentsRes,
-                    officesRes,
-                ] = await Promise.all([
+                const [employeesRes, departmentsRes, branchesRes] = await Promise.all([
                     api.get("/employees"),
                     api.get("/departments"),
-                    api.get("/offices"),
+                    api.get("/branches"),
                 ]);
                 setEmployees(employeesRes.data);
                 setDepartments(departmentsRes.data);
-                setOffices(officesRes.data);
+                const allowedBranches = branchesRes.data.filter((b) =>
+                    ALLOWED_BRANCH_CODES.includes(b.branch_code)
+                );
+                setBranches(allowedBranches);
+                setForm((f) => ({
+                    ...f,
+                    branch_id: defaultBranchId(allowedBranches),
+                }));
             } catch (error) {
                 console.error("Failed to fetch data:", error);
             } finally {
@@ -65,7 +75,11 @@ export default function ManageEmployeesModal({ onClose }) {
         setErrors({});
         try {
             await api.post("/employees", form);
-            setForm({ name: "", department_tag: "", home_office_tag: "HO" });
+            setForm({
+                name: "",
+                department_tag: "",
+                branch_id: defaultBranchId(branches),
+            });
             setSuccess(true);
             setShowForm(false);
             const res = await api.get("/employees");
@@ -86,7 +100,7 @@ export default function ManageEmployeesModal({ onClose }) {
                 id: e.id,
                 name: e.name,
                 department_tag: e.department_tag,
-                home_office_tag: e.home_office_tag,
+                branch_id: e.branch_id,
             }))
         );
         setRowErrors({});
@@ -103,8 +117,8 @@ export default function ManageEmployeesModal({ onClose }) {
             if (!row.name.trim()) rowErr.name = "This field is required.";
             if (!row.department_tag)
                 rowErr.department_tag = "This field is required.";
-            if (!row.home_office_tag)
-                rowErr.home_office_tag = "This field is required.";
+            if (!row.branch_id)
+                rowErr.branch_id = "This field is required.";
             if (Object.keys(rowErr).length > 0) newErrors[index] = rowErr;
         });
         return newErrors;
@@ -124,7 +138,7 @@ export default function ManageEmployeesModal({ onClose }) {
                     api.put(`/employees/${row.id}`, {
                         name: row.name,
                         department_tag: row.department_tag,
-                        home_office_tag: row.home_office_tag,
+                        branch_id: row.branch_id,
                     })
                 )
             );
@@ -307,25 +321,25 @@ export default function ManageEmployeesModal({ onClose }) {
                         </div>
 
                         <div>
-                            <label className={labelClass}>Office</label>
+                            <label className={labelClass}>Branch</label>
                             <select
-                                name="home_office_tag"
-                                value={form.home_office_tag}
+                                name="branch_id"
+                                value={form.branch_id}
                                 onChange={handleChange}
                                 className={inputClass}
                             >
-                                {offices.map((office) => (
+                                {branches.map((branch) => (
                                     <option
-                                        key={office.id}
-                                        value={office.tag}
+                                        key={branch.id}
+                                        value={branch.id}
                                     >
-                                        {office.name} ({office.tag})
+                                        {branch.branch_name} ({branch.branch_code})
                                     </option>
                                 ))}
                             </select>
-                            {errors.home_office_tag && (
+                            {errors.branch_id && (
                                 <p className={errorClass}>
-                                    {errors.home_office_tag[0]}
+                                    {errors.branch_id[0]}
                                 </p>
                             )}
                         </div>
@@ -371,7 +385,7 @@ export default function ManageEmployeesModal({ onClose }) {
                                 <TableHead className="py-2 px-0 h-auto font-normal text-inherit">
                                     Department
                                 </TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Office</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Branch</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-50">
@@ -445,37 +459,37 @@ export default function ManageEmployeesModal({ onClose }) {
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top pl-2">
                                         <select
-                                            value={row.home_office_tag}
+                                            value={row.branch_id}
                                             onChange={(e) =>
                                                 handleRowChange(
                                                     index,
-                                                    "home_office_tag",
+                                                    "branch_id",
                                                     e.target.value
                                                 )
                                             }
                                             className={
                                                 rowErrors[index]
-                                                    ?.home_office_tag
+                                                    ?.branch_id
                                                     ? errorInputClass
                                                     : inputClass
                                             }
                                         >
-                                            {offices.map((office) => (
+                                            {branches.map((branch) => (
                                                 <option
-                                                    key={office.id}
-                                                    value={office.tag}
+                                                    key={branch.id}
+                                                    value={branch.id}
                                                 >
-                                                    {office.name} (
-                                                    {office.tag})
+                                                    {branch.branch_name} (
+                                                    {branch.branch_code})
                                                 </option>
                                             ))}
                                         </select>
                                         {rowErrors[index]
-                                            ?.home_office_tag && (
+                                            ?.branch_id && (
                                             <p className={errorClass}>
                                                 {
                                                     rowErrors[index]
-                                                        .home_office_tag
+                                                        .branch_id
                                                 }
                                             </p>
                                         )}
@@ -493,7 +507,7 @@ export default function ManageEmployeesModal({ onClose }) {
                                 <TableHead className="py-2 px-0 h-auto font-normal text-inherit">
                                     Department
                                 </TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Office</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Branch</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-50">
@@ -513,8 +527,8 @@ export default function ManageEmployeesModal({ onClose }) {
                                         {emp.department_tag})
                                     </TableCell>
                                     <TableCell className="py-2 px-0 text-gray-500 text-xs">
-                                        {emp.home_office?.name} (
-                                        {emp.home_office_tag})
+                                        {emp.branch?.branch_name} (
+                                        {emp.branch?.branch_code})
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "@/api/axios";
 import EmployeeListHead from "./EmployeeList-HO";
-import EmployeeListExt from "./EmployeeList-Ext";
-import { Button } from "@/components/ui/button"
-import axios from "axios";
+import EmployeeListManila from "./EmployeeList-Manila";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/custom/custom-tabs"
 
 export default function EmployeeList() {
     const [employees, setEmployees] = useState([]);
@@ -25,10 +24,10 @@ export default function EmployeeList() {
     }, []);
 
     const headEmployees = employees.filter(
-        (e) => e.home_office_tag === "HO"
+        (e) => e.branch?.branch_code === "HO"
     );
-    const extEmployees = employees.filter(
-        (e) => e.home_office_tag !== "HO"
+    const manilaEmployees = employees.filter(
+        (e) => e.branch?.branch_code === "MLA"
     );
 
     // Loading skeleton
@@ -65,38 +64,26 @@ export default function EmployeeList() {
                 </p>
             </div>
 
-            {/* View Toggle */}
-            <div className="flex items-center gap-4 mb-6">
-                <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
-                    <Button
-                        onClick={() => setView("head")}
-                        variant={view === "head" ? "default" : "outline"}
-                        className="px-4 py-1.5"
-                    >
-                        Head Office
-                    </Button>
-                    <Button
-                        onClick={() => setView("ext")}
-                        className={`px-4 py-1.5 transition-colors ${
-                            view === "ext"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-gray-600 hover:bg-gray-50"
-                        }`}
-                    >
-                        Extension Office
-                    </Button>
+            <Tabs value={view} onValueChange={setView}>
+                {/* View Toggle */}
+                <div className="flex items-center gap-4 mb-6">
+                    <TabsList>
+                        <TabsTrigger value="head">Head Office</TabsTrigger>
+                        <TabsTrigger value="manila">Manila Office</TabsTrigger>
+                    </TabsList>
+                    <p className="text-xs text-gray-400">
+                        {view === "head" ? headEmployees.length : manilaEmployees.length} employee
+                        {(view === "head" ? headEmployees.length : manilaEmployees.length) !== 1 ? "s" : ""}
+                    </p>
                 </div>
-                <p className="text-xs text-gray-400">
-                    {view === "head" ? headEmployees.length : extEmployees.length} employee
-                    {(view === "head" ? headEmployees.length : extEmployees.length) !== 1 ? "s" : ""}
-                </p>
-            </div>
 
-            {/* Active View */}
-            {view === "head"
-                ? <EmployeeListHead employees={headEmployees} />
-                : <EmployeeListExt employees={extEmployees} />
-            }
+                <TabsContent value="head">
+                    <EmployeeListHead employees={headEmployees} />
+                </TabsContent>
+                <TabsContent value="manila">
+                    <EmployeeListManila employees={manilaEmployees} />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

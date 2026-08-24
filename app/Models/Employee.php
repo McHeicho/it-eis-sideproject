@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
-    protected $fillable = ['name', 'department_tag', 'home_office_tag'];
+    protected $fillable = ['name', 'department_tag', 'branch_id'];
 
     public function department()
     {
@@ -17,10 +17,9 @@ class Employee extends Model
     {
         return $this->hasMany(Assignment::class);
     }
-    
-    public function homeOffice()
-    {
-        return $this->belongsTo(Office::class, 'home_office_tag', 'tag');
-    }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

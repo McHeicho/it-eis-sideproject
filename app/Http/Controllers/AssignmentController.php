@@ -15,7 +15,7 @@ class AssignmentController extends Controller
                 "equipment.brand",
                 "equipment.model",
                 "employee.department",
-                "employee.homeOffice",
+                "employee.branch",
                 "branch",
             ])->get(),
         );

@@ -28,7 +28,11 @@ class EquipmentController extends Controller
             "models" => EquipmentModel::with("brand")->get(),
             "conditions" => Equipment::CONDITIONS,
             "statuses" => Equipment::STATUSES,
-            "employees"  => Employee::orderBy('name')->get(['id', 'name']),
+            // department_tag and branch_id are what AssignmentList and
+            // AssignmentAssignModal narrow their employee dropdowns by —
+            // dropping either here silently empties those dropdowns.
+            "employees"  => Employee::orderBy('name')
+                ->get(['id', 'name', 'department_tag', 'branch_id']),
             "departments" => Department::all(),
             "branches" => Branch::all(),
         ]);
@@ -49,7 +53,8 @@ public function index(Request $request)
         "brand",
         "model",
         "delivery.supplier",
-        "currentAssignment.employee.homeOffice",
+        "currentAssignment.employee.branch",
+        "currentAssignment.branch",
     ]);
 
     if ($request->filled('status')) {
@@ -138,7 +143,8 @@ public function index(Request $request)
                 "model",
                 "delivery.supplier",
                 "assignments.employee",
-                "currentAssignment.employee.homeOffice",
+                "currentAssignment.employee.branch",
+                "currentAssignment.branch",
             ]),
         );
     }

@@ -8,6 +8,7 @@ import AssignmentReturnModal from "./AssignmentReturnModal";
 import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
 import { useAssignmentsList } from "@/queries/useAssignmentsList";
+import { sortBranches } from "@/lib/branches";
 
 const ASSIGNMENT_EQUIPMENT_FILTERS = {
     status: "",
@@ -45,24 +46,26 @@ export default function AssignmentList() {
     const [selectedAssignment, setSelectedAssignment] = useState(null);
     const [preselectedEquipment, setPreselectedEquipment] = useState(null);
 
-    // Resolves a row's location for the Branches filter: "HO", "EXT", or
-    // "branch:<id>". Equipment with no current holder has no location.
+    // Resolves a row's location for the Branches filter as "branch:<id>" —
+    // the assignment's own branch when branch-held, otherwise the holder
+    // employee's. Equipment with no current holder has no location.
     const getLocationKey = (assignment) => {
         if (!assignment) return null;
         if (assignment.branch_id) return `branch:${assignment.branch_id}`;
-        const officeTag = assignment.employee?.home_office?.tag;
-        if (!officeTag) return null;
-        return officeTag === "HO" ? "HO" : "EXT";
+        const employeeBranchId = assignment.employee?.branch_id;
+        if (!employeeBranchId) return null;
+        return `branch:${employeeBranchId}`;
     };
 
     // Human-readable location for the Branch column — shown for every row,
     // not just branch-held ones.
     const getLocationLabel = (assignment) => {
         if (!assignment) return "—";
-        if (assignment.branch) return assignment.branch.branch_name;
-        const officeTag = assignment.employee?.home_office?.tag;
-        if (!officeTag) return "—";
-        return officeTag === "HO" ? "Head Office" : "Extension Office";
+        return (
+            assignment.branch?.branch_name ??
+            assignment.employee?.branch?.branch_name ??
+            "—"
+        );
     };
 
     // Equipment statuses actually present in the data, in canonical order —
@@ -115,9 +118,7 @@ export default function AssignmentList() {
         return true;
     });
 
-    const sortedBranches = [...branches].sort((a, b) =>
-        a.branch_name.localeCompare(b.branch_name)
-    );
+    const sortedBranches = sortBranches(branches);
 
     const formatDate = (date) =>
         date
@@ -208,19 +209,10 @@ export default function AssignmentList() {
                 {/* Branches Filter */}
                 <select
                     value={branchFilter}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        setBranchFilter(value);
-                        if (value.startsWith("branch:")) {
-                            setDeptFilter("");
-                            setEmployeeFilter("");
-                        }
-                    }}
+                    onChange={(e) => setBranchFilter(e.target.value)}
                     className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="">All Branches</option>
-                    <option value="HO">Head Office</option>
-                    <option value="EXT">Extension Office</option>
                     {sortedBranches.map((branch) => (
                         <option key={branch.id} value={`branch:${branch.id}`}>
                             {branch.branch_name} ({branch.branch_code})
@@ -228,40 +220,36 @@ export default function AssignmentList() {
                     ))}
                 </select>
 
-                {!branchFilter.startsWith("branch:") && (
-                    <>
-                        {/* Department Filter */}
-                        <select
-                            value={deptFilter}
-                            onChange={(e) => {
-                                setDeptFilter(e.target.value);
-                                setEmployeeFilter("");
-                            }}
-                            className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Departments</option>
-                            {departments.map((dept) => (
-                                <option key={dept.id} value={dept.tag}>
-                                    {dept.name} ({dept.tag})
-                                </option>
-                            ))}
-                        </select>
+                {/* Department Filter */}
+                <select
+                    value={deptFilter}
+                    onChange={(e) => {
+                        setDeptFilter(e.target.value);
+                        setEmployeeFilter("");
+                    }}
+                    className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">All Departments</option>
+                    {departments.map((dept) => (
+                        <option key={dept.id} value={dept.tag}>
+                            {dept.name} ({dept.tag})
+                        </option>
+                    ))}
+                </select>
 
-                        {/* Employee Filter */}
-                        <select
-                            value={employeeFilter}
-                            onChange={(e) => setEmployeeFilter(e.target.value)}
-                            className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Employees</option>
-                            {employeeFilterOptions.map((emp) => (
-                                <option key={emp.id} value={emp.id}>
-                                    {emp.name} ({emp.department_tag})
-                                </option>
-                            ))}
-                        </select>
-                    </>
-                )}
+                {/* Employee Filter */}
+                <select
+                    value={employeeFilter}
+                    onChange={(e) => setEmployeeFilter(e.target.value)}
+                    className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">All Employees</option>
+                    {employeeFilterOptions.map((emp) => (
+                        <option key={emp.id} value={emp.id}>
+                            {emp.name} ({emp.department_tag})
+                        </option>
+                    ))}
+                </select>
             </div>
 
             {/* Table */}

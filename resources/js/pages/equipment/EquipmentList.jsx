@@ -9,6 +9,19 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
 
+// Tooltip text for an Assigned row's current holder. Employee-held rows name
+// the person and their office; branch-held rows name the branch. Returns null
+// when neither resolves, so the caller can skip the tooltip entirely.
+const holderLabel = (assignment) => {
+    if (!assignment) return null;
+    if (assignment.employee) {
+        const branch = assignment.employee.branch?.branch_name;
+        return `Assigned to: ${assignment.employee.name}${branch ? ` — ${branch}` : ""}`;
+    }
+    const branch = assignment.branch?.branch_name;
+    return branch ? `Located at: ${branch}` : null;
+};
+
 const EMPTY_FILTERS = {
     status: "",
     condition: "",
@@ -277,16 +290,13 @@ export default function EquipmentList() {
                                         <ConditionBadge condition={item.condition} />
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
-                                        {item.status === "Assigned" && item.current_assignment?.employee ? (
+                                        {item.status === "Assigned" && holderLabel(item.current_assignment) ? (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <StatusBadge status={item.status} />
                                                 </TooltipTrigger>
                                                 <TooltipContent side="top" align="end">
-                                                    Assigned to: {item.current_assignment.employee.name}
-                                                    {item.current_assignment.employee.home_office?.name
-                                                        ? ` — ${item.current_assignment.employee.home_office.name}`
-                                                        : ""}
+                                                    {holderLabel(item.current_assignment)}
                                                 </TooltipContent>
                                             </Tooltip>
                                         ) : (

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
 {
@@ -12,7 +13,7 @@ class EmployeeController extends Controller
         return response()->json(
             Employee::with([
                 'department',
-                'homeOffice',
+                'branch',
                 'assignments' => function ($query) {
                     $query->whereNull('date_returned');
                 },
@@ -28,11 +29,14 @@ class EmployeeController extends Controller
         $request->validate([
             'name'           => 'required|string',
             'department_tag' => 'required|exists:departments,tag',
-            'home_office_tag' => 'required|exists:offices,tag',
+            'branch_id' => [
+                'required',
+                Rule::exists('branches', 'id')->whereIn('branch_code', ['HO', 'MLA']),
+            ],
         ]);
 
-        $employee = Employee::create($request->only('name', 'department_tag', 'home_office_tag'));
-        return response()->json($employee->load('department', 'homeOffice'), 201);
+        $employee = Employee::create($request->only('name', 'department_tag', 'branch_id'));
+        return response()->json($employee->load('department', 'branch'), 201);
     }
 
     public function show(Employee $employee)
@@ -45,11 +49,14 @@ class EmployeeController extends Controller
         $request->validate([
             'name'           => 'sometimes|string',
             'department_tag' => 'sometimes|exists:departments,tag',
-            'home_office_tag' => 'sometimes|exists:offices,tag',
+            'branch_id' => [
+                'sometimes',
+                Rule::exists('branches', 'id')->whereIn('branch_code', ['HO', 'MLA']),
+            ],
         ]);
 
-        $employee->update($request->only('name', 'department_tag', 'home_office_tag'));
-        return response()->json($employee->load('department', 'homeOffice'));
+        $employee->update($request->only('name', 'department_tag', 'branch_id'));
+        return response()->json($employee->load('department', 'branch'));
     }
 
     public function destroy(Employee $employee)

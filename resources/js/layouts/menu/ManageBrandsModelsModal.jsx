@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, ChevronRight, ArrowLeft } from 'lucide-react';
 import api from '@/api/axios';
 import AppDialog from "@/components/ui/AppDialog";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
@@ -53,29 +55,25 @@ export default function ManageBrandsModelsModal({ onClose }) {
                 brandsEditing ? null : (
                     modelsEditing ? (
                         <div className="flex justify-between">
-                            <button
+                            <Button
+                                variant="outline"
                                 onClick={() => onCancel && onCancel()}
-                                className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
                             >
                                 Cancel
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={() => onSave && onSave()}
                                 disabled={saving}
-                                className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 {saving ? 'Saving...' : 'Save All'}
-                            </button>
+                            </Button>
                         </div>
                     ) : (
-                       <div className="flex justify-end">
-    <button
-        onClick={onClose}
-        className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-    >
-        Close
-    </button>
-</div>
+                        <div className="flex justify-end">
+                            <Button variant="outline" onClick={onClose}>
+                                Close
+                            </Button>
+                        </div>
                     )
                 )
             }
@@ -129,12 +127,13 @@ function MainMenu({ setView }) {
 // ─── Brands View ──────────────────────────────────────────────────────────────
 // Fully self-contained — manages its own editing state and footer buttons
 function BrandsView({ setBrandsEditing }) {
+    const queryClient = useQueryClient();
+
     const [brands, setBrands] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ name: '' });
     const [errors, setErrors] = useState({});
-    const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editRows, setEditRows] = useState([]);
@@ -153,6 +152,32 @@ function BrandsView({ setBrandsEditing }) {
         }
     };
 
+    const invalidateMaintenanceData = () => {
+        ["lookups", "employees", "assignments", "equipment", "deliveries"]
+            .forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+    };
+
+    const addBrandMutation = useMutation({
+        mutationFn: (payload) => api.post('/brands', payload),
+        onSuccess: async () => {
+            await fetchBrands();
+            invalidateMaintenanceData();
+        },
+    });
+
+    const saveAllMutation = useMutation({
+        mutationFn: (rows) =>
+            Promise.all(
+                rows.map((row) =>
+                    api.put(`/brands/${row.id}`, { name: row.name })
+                )
+            ),
+        onSuccess: async () => {
+            await fetchBrands();
+            invalidateMaintenanceData();
+        },
+    });
+
     const handleChange = (e) => {
         setForm({ name: e.target.value });
         setErrors({});
@@ -160,20 +185,16 @@ function BrandsView({ setBrandsEditing }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSaving(true);
         setErrors({});
         try {
-            await api.post('/brands', form);
+            await addBrandMutation.mutateAsync(form);
             setForm({ name: '' });
             setSuccess(true);
             setShowForm(false);
-            fetchBrands();
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             }
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -209,21 +230,13 @@ function BrandsView({ setBrandsEditing }) {
             setRowErrors(validationErrors);
             return;
         }
-        setSaving(true);
         try {
-            await Promise.all(
-                editRows.map((row) =>
-                    api.put(`/brands/${row.id}`, { name: row.name })
-                )
-            );
-            await fetchBrands();
+            await saveAllMutation.mutateAsync(editRows);
             setIsEditing(false);
             setBrandsEditing(false);
             setSuccess(true);
         } catch (error) {
             console.error('Failed to save brands:', error);
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -235,9 +248,9 @@ function BrandsView({ setBrandsEditing }) {
     };
 
     const handleRowChange = (index, value) => {
-        const updated = [...editRows];
-        updated[index].name = value;
-        setEditRows(updated);
+        setEditRows(editRows.map((row, i) =>
+            i === index ? { ...row, name: value } : row
+        ));
         if (rowErrors[index]) {
             const updatedErrors = { ...rowErrors };
             delete updatedErrors[index];
@@ -256,21 +269,21 @@ function BrandsView({ setBrandsEditing }) {
             {/* Action Buttons */}
             {!isEditing && (
                 <div className="flex gap-2">
-                    <button
+                    <Button
                         onClick={() => { setShowForm(!showForm); setSuccess(false); }}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-blue-700 transition-colors"
                     >
                         <Plus size={14} />
                         Add
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        variant="secondary"
                         onClick={handleEditClick}
                         disabled={brands.length === 0}
-                        className="flex items-center gap-2 bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="bg-amber-500 text-white hover:bg-amber-600"
                     >
                         <Pencil size={14} />
                         Edit
-                    </button>
+                    </Button>
                 </div>
             )}
 
@@ -359,20 +372,16 @@ function BrandsView({ setBrandsEditing }) {
                         {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
                     </div>
                     <div className="flex gap-2 pt-1">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                        >
-                            {saving ? 'Saving...' : 'Save Brand'}
-                        </button>
-                        <button
+                        <Button type="submit" disabled={addBrandMutation.isPending}>
+                            {addBrandMutation.isPending ? 'Saving...' : 'Save Brand'}
+                        </Button>
+                        <Button
                             type="button"
+                            variant="outline"
                             onClick={() => { setShowForm(false); setErrors({}); }}
-                            className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
                         >
                             Cancel
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </>)}
@@ -380,19 +389,12 @@ function BrandsView({ setBrandsEditing }) {
             {/* Brands Edit Footer — self-contained */}
             {isEditing && (
                 <div className="flex justify-between border-t pt-3">
-                    <button
-                        onClick={handleCancel}
-                        className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                    >
+                    <Button variant="outline" onClick={handleCancel}>
                         Cancel
-                    </button>
-                    <button
-                        onClick={handleSaveAll}
-                        disabled={saving}
-                        className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        {saving ? 'Saving...' : 'Save All'}
-                    </button>
+                    </Button>
+                    <Button onClick={handleSaveAll} disabled={saveAllMutation.isPending}>
+                        {saveAllMutation.isPending ? 'Saving...' : 'Save All'}
+                    </Button>
                 </div>
             )}
         </div>
@@ -402,6 +404,8 @@ function BrandsView({ setBrandsEditing }) {
 // ─── Models View ──────────────────────────────────────────────────────────────
 // Uses parent footer for Cancel / Save All
 function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, setSavingParent }) {
+    const queryClient = useQueryClient();
+
     const [brands, setBrands] = useState([]);
     const [allModels, setAllModels] = useState([]);
     const [filteredModels, setFilteredModels] = useState([]);
@@ -410,7 +414,6 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ brand_id: '', name: '' });
     const [errors, setErrors] = useState({});
-    const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
     const [editRows, setEditRows] = useState([]);
     const [rowErrors, setRowErrors] = useState({});
@@ -433,6 +436,40 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
         };
         fetchData();
     }, []);
+
+    const fetchModels = async () => {
+        const modelsRes = await api.get('/equipment-models');
+        setAllModels(modelsRes.data);
+    };
+
+    const invalidateMaintenanceData = () => {
+        ["lookups", "employees", "assignments", "equipment", "deliveries"]
+            .forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+    };
+
+    const addModelMutation = useMutation({
+        mutationFn: (payload) => api.post('/equipment-models', payload),
+        onSuccess: async () => {
+            await fetchModels();
+            invalidateMaintenanceData();
+        },
+    });
+
+    const saveAllMutation = useMutation({
+        mutationFn: (rows) =>
+            Promise.all(
+                rows.map((row) =>
+                    api.put(`/equipment-models/${row.id}`, {
+                        name: row.name,
+                        brand_id: row.brand_id,
+                    })
+                )
+            ),
+        onSuccess: async () => {
+            await fetchModels();
+            invalidateMaintenanceData();
+        },
+    });
 
     useEffect(() => {
         if (!selectedBrandId) {
@@ -486,25 +523,14 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
             setRowErrors(validationErrors);
             return;
         }
-        setSaving(true);
         setSavingParent(true);
         try {
-            await Promise.all(
-                editRows.map((row) =>
-                    api.put(`/equipment-models/${row.id}`, {
-                        name: row.name,
-                        brand_id: row.brand_id,
-                    })
-                )
-            );
-            const modelsRes = await api.get('/equipment-models');
-            setAllModels(modelsRes.data);
+            await saveAllMutation.mutateAsync(editRows);
             setModelsEditing(false);
             setSuccess(true);
         } catch (error) {
             console.error('Failed to save models:', error);
         } finally {
-            setSaving(false);
             setSavingParent(false);
         }
     };
@@ -521,11 +547,12 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
     }, [editRows]);
 
     const handleRowChange = (index, field, value) => {
-        const updated = [...editRows];
-        updated[index][field] = value;
-        setEditRows(updated);
+        setEditRows(editRows.map((row, i) =>
+            i === index ? { ...row, [field]: value } : row
+        ));
         if (rowErrors[index]) {
             const updatedErrors = { ...rowErrors };
+            updatedErrors[index] = { ...updatedErrors[index] };
             delete updatedErrors[index][field];
             if (Object.keys(updatedErrors[index]).length === 0) {
                 delete updatedErrors[index];
@@ -536,21 +563,16 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSaving(true);
         setErrors({});
         try {
-            await api.post('/equipment-models', form);
+            await addModelMutation.mutateAsync(form);
             setForm({ brand_id: selectedBrandId || '', name: '' });
             setSuccess(true);
             setShowForm(false);
-            const modelsRes = await api.get('/equipment-models');
-            setAllModels(modelsRes.data);
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             }
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -585,21 +607,21 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
             {/* Action Buttons */}
             {!modelsEditing && (
                 <div className="flex gap-2">
-                    <button
+                    <Button
                         onClick={() => { setShowForm(!showForm); setSuccess(false); }}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-blue-700 transition-colors"
                     >
                         <Plus size={14} />
                         Add
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        variant="secondary"
                         onClick={handleEditClick}
                         disabled={filteredModels.length === 0}
-                        className="flex items-center gap-2 bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="bg-amber-500 text-white hover:bg-amber-600"
                     >
                         <Pencil size={14} />
                         Edit
-                    </button>
+                    </Button>
                 </div>
             )}
 
@@ -724,20 +746,16 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                         {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
                     </div>
                     <div className="flex gap-2 pt-1">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                        >
-                            {saving ? 'Saving...' : 'Save Model'}
-                        </button>
-                        <button
+                        <Button type="submit" disabled={addModelMutation.isPending}>
+                            {addModelMutation.isPending ? 'Saving...' : 'Save Model'}
+                        </Button>
+                        <Button
                             type="button"
+                            variant="outline"
                             onClick={() => { setShowForm(false); setErrors({}); }}
-                            className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
                         >
                             Cancel
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </>)}

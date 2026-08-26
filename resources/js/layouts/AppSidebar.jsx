@@ -96,6 +96,23 @@ function NavSubItem({ to, end, icon: Icon, label, onNavigate }) {
     );
 }
 
+// Sub-items that trigger an action (e.g. opening a modal) instead of navigating.
+// Renders a real <button>, not an <a> — SidebarMenuSubButton defaults to an
+// anchor tag, and an anchor with no href isn't keyboard-focusable and isn't
+// announced as interactive by assistive tech.
+function NavSubAction({ icon: Icon, label, onClick }) {
+    return (
+        <SidebarMenuSubItem>
+            <SidebarMenuSubButton asChild className="w-full gap-1.5 py-2 cursor-pointer">
+                <button type="button" onClick={onClick}>
+                    <Icon />
+                    <span>{label}</span>
+                </button>
+            </SidebarMenuSubButton>
+        </SidebarMenuSubItem>
+    );
+}
+
 function NavSection({ icon: Icon, label, open, onOpenChange, children }) {
     return (
         <Collapsible
@@ -212,46 +229,11 @@ export function AppSidebar(props) {
                                 open={sections.maintenance}
                                 onOpenChange={toggleSection("maintenance")}
                             >
-                                <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                        onClick={() => setShowBranchesModal(true)}
-                                    >
-                                        <Building />
-                                        <span>Branches</span>
-                                    </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                                <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                        onClick={() => setShowDepartmentsModal(true)}
-                                    >
-                                        <Building2 />
-                                        <span>Departments</span>
-                                    </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                                <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                        onClick={() => setShowBrandsModelsModal(true)}
-                                    >
-                                        <Tag />
-                                        <span>Brands & Models</span>
-                                    </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                                <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                        onClick={() => setShowSuppliersModal(true)}
-                                    >
-                                        <Truck />
-                                        <span>Suppliers</span>
-                                    </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                                <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                        onClick={() => setShowEmployeesModal(true)}
-                                    >
-                                        <UserRoundCog />
-                                        <span>Employees</span>
-                                    </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
+                                <NavSubAction icon={Building} label="Branches" onClick={() => setShowBranchesModal(true)} />
+                                <NavSubAction icon={Building2} label="Departments" onClick={() => setShowDepartmentsModal(true)} />
+                                <NavSubAction icon={Tag} label="Brands & Models" onClick={() => setShowBrandsModelsModal(true)} />
+                                <NavSubAction icon={Truck} label="Suppliers" onClick={() => setShowSuppliersModal(true)} />
+                                <NavSubAction icon={UserRoundCog} label="Employees" onClick={() => setShowEmployeesModal(true)} />
                             </NavSection>
                         )}
 

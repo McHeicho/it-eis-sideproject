@@ -1,27 +1,12 @@
-import React, { useEffect, useState } from "react";
-import api from "@/api/axios";
-import EmployeeListHead from "./EmployeeList-HO";
-import EmployeeListManila from "./EmployeeList-Manila";
+import React, { useState } from "react";
+import { useEmployees } from "@/queries/useEmployees";
+import EmployeeListTable from "./EmployeeList-Table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/custom/custom-tabs"
 
 export default function EmployeeList() {
-    const [employees, setEmployees] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [view, setView] = useState("head");
 
-    useEffect(() => {
-        const fetchEmployees = async () => {
-            try {
-                const response = await api.get("/employees");
-                setEmployees(response.data);
-            } catch (error) {
-                console.error("Failed to fetch employees:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchEmployees();
-    }, []);
+    const { data: employees = [], isLoading } = useEmployees();
 
     const headEmployees = employees.filter(
         (e) => e.branch?.branch_code === "HO"
@@ -31,7 +16,7 @@ export default function EmployeeList() {
     );
 
     // Loading skeleton
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="p-6">
                 <div className="skeleton h-6 w-36 rounded mb-2"></div>
@@ -78,10 +63,16 @@ export default function EmployeeList() {
                 </div>
 
                 <TabsContent value="head">
-                    <EmployeeListHead employees={headEmployees} />
+                    <EmployeeListTable
+                        employees={headEmployees}
+                        emptyMessage="No employees in Head Office."
+                    />
                 </TabsContent>
                 <TabsContent value="manila">
-                    <EmployeeListManila employees={manilaEmployees} />
+                    <EmployeeListTable
+                        employees={manilaEmployees}
+                        emptyMessage="No employees in Manila Office."
+                    />
                 </TabsContent>
             </Tabs>
         </div>

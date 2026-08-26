@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
+import { Button } from "@/components/ui/custom/custom-button";
 import { toast } from "sonner";
 
 const inputClass =
@@ -56,21 +57,16 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
             title="Return Equipment"
             footer={
                 <div className="flex justify-between">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                    >
+                    <Button type="button" variant="outline" onClick={onClose}>
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="submit"
                         form="return-form"
                         disabled={returning}
-                        className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         {returning ? "Processing..." : "Confirm Return"}
-                    </button>
+                    </Button>
                 </div>
             }
         >

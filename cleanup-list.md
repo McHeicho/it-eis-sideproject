@@ -19,15 +19,17 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 - [ ] **#4 — Referential-integrity guard for Brand/Model edits** *(merged with former #5)*
   Brands/Models referenced by existing equipment need protection on edit/delete. Decide the approach — warn-on-edit-with-confirmation vs. append-only — and implement one. Feedback surfaces in the Maintenance modals.
 
-- [ ] **Data freshness across pages (TanStack Query)**
-  Shared lookup data (brands, models, suppliers, employees, equipment types) goes stale when edited in one place while another is open. Introduce TanStack Query as the cache/refetch layer — Maintenance modal saves invalidateQueries the relevant keys; form/list pages read cached queries and refetch on invalidation. Also picks up cross-page fetch caching, overlapping #3/#25. Affects Equipment Add/Edit and Assignment List dropdowns.
-
 - [ ] **#8 — Bulk Return action for assignments**
   Assignments can currently only be returned one at a time.
 
 - [ ] **#11 — Validate Brand names against special characters**
   Brand names become Excel named ranges in the import template; special chars (hyphens, ampersands) silently break the `INDIRECT()` dependent Model dropdown. Models, Suppliers, Employees, and Types are unaffected (never named ranges). Scope: `BrandController` validation + Maintenance modal feedback.
   - ⏳ Defer to #6 — Maintenance modals will be touched anyway.
+  - #11 revisit — Brand name special-character validation
+  Originally deferred to #6 on "Maintenance modals will be touched anyway."
+  They were — but #6's scope was cache wiring, not validation, so the actual
+  `BrandController` + modal-feedback work #11 describes never happened. Fold
+  in now while the modal's still warm, or re-open #11 standalone.
 
 - [ ] **#12 — Highlight just-imported records in Equipment List**
   Narrowed: the post-import success dialog already delivers the "navigate to what was created" half. Remaining piece is visually highlighting the newly imported rows on the list itself. (Prerequisite #13 now closed.)
@@ -113,6 +115,18 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   for generic React utility hooks. Migrate any ad-hoc hooks into the right bucket as they appear.
   Convention set during #6.
 
+- [ ] **#33 — QueryClient defaults (`staleTime` etc.)**
+  `Main.jsx`'s `QueryClient` has carried this comment since it was created:
+  *"Plumbing only — no defaultOptions yet. staleTime/refetch behavior is a
+  deliberate call once the first real query wires in (cleanup #6)."* That
+  condition is now met. Every hook currently defaults to `staleTime: 0`. Decide
+  app-wide default vs. per-hook tuning.
+
+- [ ] **#34 — `ManageBranchesModal` — silent failure on the `branch_code` guard**
+  The 422 blocking edits to ids 1/2 lands in a batch `console.error`,
+  indistinguishable from a dropped connection. Likely wants prevention
+  (disable the code field on those two rows client-side) over better error
+  display, since the restriction is permanent, not conditional.
 ---
 
 ## Closed Items
@@ -122,6 +136,40 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 
 - [x] **#2 — Add `Assigned` status back to Equipment Add/Edit with guard logic** *(MiscFixes02)*
   Resolved in MiscFixes02 session — approach inverted from original intent. Rather than re-adding 'Assigned' to the manual status dropdown with a guard, the status is now action-driven: selecting 'Assigned' in add mode surfaces an employee picker, and the backend atomically creates both the Equipment and an Assignment row in a single DB::transaction(). 'Assigned' remains unreachable via the edit-mode dropdown, keeping the orphaned-status problem structurally impossible. Date defaults to record creation date; note defaults to 'Assigned upon record creation'. Frontend guard prevents submission if no valid employee is selected.
+
+- [x] **#6 — Data freshness across pages (TanStack Query)**
+  Shared reference data (branches, departments, suppliers, brands, models, employees)
+  flows through TanStack Query on both the read and write side. Maintenance modal
+  saves invalidate the relevant query prefixes; list/detail pages hold cached queries
+  and refetch on invalidation.
+
+  **Write side, closed this session:**
+  - All five Maintenance modals (`ManageBranchesModal`, `ManageDepartmentsModal`,
+    `ManageSuppliersModal`, `ManageBrandsModelsModal` — Brands + Models views —
+    `ManageEmployeesModal`) migrated to `useMutation`.
+  - Single `invalidateMaintenanceData()` helper, prefix-invalidating `lookups` /
+    `employees` / `assignments` / `equipment` / `deliveries` — chosen over a
+    per-entity map once recon showed the entity→cache matrix is close to
+    universal, and app-wide `staleTime: 0` makes finer-grained invalidation a
+    no-op for anything not currently mounted.
+  - Writes-only by design: each modal's own local list stays on local state,
+    refreshed by its existing fetch function inside `onSuccess`, alongside the
+    invalidation call — both required, confirmed the hard way on the pilot
+    (cutting the local refetch makes a save look like it silently reverted).
+  - Picked up along the way: `handleRowChange`'s shallow-copy state mutation,
+    fixed in all five modals; a second shallow-copy in the `rowErrors`-clearing
+    block, fixed in the four multi-field surfaces (Departments, Branches,
+    Employees, ModelsView).
+  - Verified in-browser per modal: a rename in the modal's own table, and the
+    same rename showing up on the page behind it, with no manual refresh.
+
+  **Explicitly out of scope, not regressions:**
+  - `Dashboard.jsx` and `BulkImport.jsx` — both still plain `useEffect` / local
+    state, not in the TQ cache, unreachable by invalidation. Known, deliberate,
+    tracked separately.
+  - Save All's `Promise.all` fan-out (every row PUT, not just dirty ones) —
+    untouched by design. Wants a dirty-row diff, which wants the error-UI pass
+    first (per-row failure reporting has nowhere to go otherwise).
 
 - [x] **#9 — Build Dashboard page** *(closed 2026-06-10)*
   Replaced placeholder with a role-aware dashboard. Admin view: KPI stat cards (total equipment + by type), department bar chart, status donut, and a 4-up alert grid (employees with no laptop, Lost/Missing, Under Repair, idle stock) each with a top-5 preview and "View all" link. User/viewer view: KPI cards + department bar only — trimmed payload gated server-side, not just hidden in the UI. Backed by a dedicated `GET /api/dashboard` endpoint (`DashboardController::index()`) returning pre-aggregated SQL. Recharts added as a dependency (v3.8.1); resolved a Vite/esbuild pre-bundling issue — fix is Vite ≥ 8.0.16, no package overrides required. Admin path verified live; non-admin path built and server-gated but unverifiable until a `role_id = 2` account exists in the DB.

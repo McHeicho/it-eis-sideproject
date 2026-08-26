@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil } from "lucide-react";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
@@ -13,6 +15,8 @@ const defaultBranchId = (branches) =>
     branches.find((b) => b.branch_code === "HO")?.id ?? "";
 
 export default function ManageEmployeesModal({ onClose }) {
+    const queryClient = useQueryClient();
+
     const [employees, setEmployees] = useState([]);
     const [branches, setBranches] = useState([]);
     const [departments, setDepartments] = useState([]);
@@ -25,7 +29,6 @@ export default function ManageEmployeesModal({ onClose }) {
         branch_id: "",
     });
     const [errors, setErrors] = useState({});
-    const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
 
     // Inline edit state
@@ -60,9 +63,44 @@ export default function ManageEmployeesModal({ onClose }) {
         fetchData();
     }, []);
 
+    const fetchEmployees = async () => {
+        const res = await api.get("/employees");
+        setEmployees(res.data);
+    };
+
     const filteredEmployees = selectedDeptTag
         ? employees.filter((e) => e.department_tag === selectedDeptTag)
         : employees;
+
+    const invalidateMaintenanceData = () => {
+        ["lookups", "employees", "assignments", "equipment", "deliveries"]
+            .forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+    };
+
+    const addEmployeeMutation = useMutation({
+        mutationFn: (payload) => api.post("/employees", payload),
+        onSuccess: async () => {
+            await fetchEmployees();
+            invalidateMaintenanceData();
+        },
+    });
+
+    const saveAllMutation = useMutation({
+        mutationFn: (rows) =>
+            Promise.all(
+                rows.map((row) =>
+                    api.put(`/employees/${row.id}`, {
+                        name: row.name,
+                        department_tag: row.department_tag,
+                        branch_id: row.branch_id,
+                    })
+                )
+            ),
+        onSuccess: async () => {
+            await fetchEmployees();
+            invalidateMaintenanceData();
+        },
+    });
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -71,10 +109,9 @@ export default function ManageEmployeesModal({ onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSaving(true);
         setErrors({});
         try {
-            await api.post("/employees", form);
+            await addEmployeeMutation.mutateAsync(form);
             setForm({
                 name: "",
                 department_tag: "",
@@ -82,14 +119,10 @@ export default function ManageEmployeesModal({ onClose }) {
             });
             setSuccess(true);
             setShowForm(false);
-            const res = await api.get("/employees");
-            setEmployees(res.data);
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             }
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -131,25 +164,12 @@ export default function ManageEmployeesModal({ onClose }) {
             setRowErrors(validationErrors);
             return;
         }
-        setSaving(true);
         try {
-            await Promise.all(
-                editRows.map((row) =>
-                    api.put(`/employees/${row.id}`, {
-                        name: row.name,
-                        department_tag: row.department_tag,
-                        branch_id: row.branch_id,
-                    })
-                )
-            );
-            const res = await api.get("/employees");
-            setEmployees(res.data);
+            await saveAllMutation.mutateAsync(editRows);
             setIsEditing(false);
             setSuccess(true);
         } catch (error) {
             console.error("Failed to save employees:", error);
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -161,11 +181,12 @@ export default function ManageEmployeesModal({ onClose }) {
     };
 
     const handleRowChange = (index, field, value) => {
-        const updated = [...editRows];
-        updated[index][field] = value;
-        setEditRows(updated);
+        setEditRows(editRows.map((row, i) =>
+            i === index ? { ...row, [field]: value } : row
+        ));
         if (rowErrors[index]) {
             const updatedErrors = { ...rowErrors };
+            updatedErrors[index] = { ...updatedErrors[index] };
             delete updatedErrors[index][field];
             if (Object.keys(updatedErrors[index]).length === 0) {
                 delete updatedErrors[index];
@@ -191,28 +212,18 @@ export default function ManageEmployeesModal({ onClose }) {
             footer={
                 isEditing ? (
                     <div className="flex justify-between">
-                        <button
-                            onClick={handleCancel}
-                            className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                        >
+                        <Button variant="outline" onClick={handleCancel}>
                             Cancel
-                        </button>
-                        <button
-                            onClick={handleSaveAll}
-                            disabled={saving}
-                            className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {saving ? "Saving..." : "Save All"}
-                        </button>
+                        </Button>
+                        <Button onClick={handleSaveAll} disabled={saveAllMutation.isPending}>
+                            {saveAllMutation.isPending ? "Saving..." : "Save All"}
+                        </Button>
                     </div>
                 ) : (
                     <div className="flex justify-end">
-                        <button
-                            onClick={onClose}
-                            className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                        >
+                        <Button variant="outline" onClick={onClose}>
                             Close
-                        </button>
+                        </Button>
                     </div>
                 )
             }
@@ -245,24 +256,24 @@ export default function ManageEmployeesModal({ onClose }) {
                 {/* Action Buttons */}
                 {!isEditing && (
                     <div className="flex gap-2">
-                        <button
+                        <Button
                             onClick={() => {
                                 setShowForm(!showForm);
                                 setSuccess(false);
                             }}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-blue-700 transition-colors"
                         >
                             <Plus size={14} />
                             Add
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="secondary"
                             onClick={handleEditClick}
                             disabled={filteredEmployees.length === 0}
-                            className="flex items-center gap-2 bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="bg-amber-500 text-white hover:bg-amber-600"
                         >
                             <Pencil size={14} />
                             Edit
-                        </button>
+                        </Button>
                     </div>
                 )}
 
@@ -345,23 +356,19 @@ export default function ManageEmployeesModal({ onClose }) {
                         </div>
 
                         <div className="flex gap-2 pt-1">
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                            >
-                                {saving ? "Saving..." : "Save Employee"}
-                            </button>
-                            <button
+                            <Button type="submit" disabled={addEmployeeMutation.isPending}>
+                                {addEmployeeMutation.isPending ? "Saving..." : "Save Employee"}
+                            </Button>
+                            <Button
                                 type="button"
+                                variant="outline"
                                 onClick={() => {
                                     setShowForm(false);
                                     setErrors({});
                                 }}
-                                className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
                             >
                                 Cancel
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 </>)}

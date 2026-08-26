@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil } from 'lucide-react';
 import api from '@/api/axios';
 import AppDialog from "@/components/ui/AppDialog";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageSuppliersModal({ onClose }) {
+    const queryClient = useQueryClient();
+
     const [suppliers, setSuppliers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ name: '' });
     const [errors, setErrors] = useState({});
-    const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
 
     // Inline edit state
@@ -34,6 +37,28 @@ export default function ManageSuppliersModal({ onClose }) {
         }
     };
 
+    const invalidateMaintenanceData = () => {
+        ["lookups", "employees", "assignments", "equipment", "deliveries"]
+            .forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+    };
+
+    const addSupplierMutation = useMutation({
+        mutationFn: (payload) => api.post('/suppliers', payload),
+        onSuccess: async () => {
+            await fetchSuppliers();
+            invalidateMaintenanceData();
+        },
+    });
+
+    const saveAllMutation = useMutation({
+        mutationFn: (rows) =>
+            Promise.all(rows.map((row) => api.put(`/suppliers/${row.id}`, { name: row.name }))),
+        onSuccess: async () => {
+            await fetchSuppliers();
+            invalidateMaintenanceData();
+        },
+    });
+
     const handleChange = (e) => {
         setForm({ name: e.target.value });
         setErrors({});
@@ -41,23 +66,19 @@ export default function ManageSuppliersModal({ onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSaving(true);
         setErrors({});
 
         try {
-            await api.post('/suppliers', form);
+            await addSupplierMutation.mutateAsync(form);
             setForm({ name: '' });
             setSuccess(true);
             setShowForm(false);
-            fetchSuppliers();
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             } else {
                 console.error('Failed to save supplier:', error);
             }
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -108,20 +129,12 @@ export default function ManageSuppliersModal({ onClose }) {
             return;
         }
 
-        setSaving(true);
         try {
-            await Promise.all(
-                editRows.map((row) =>
-                    api.put(`/suppliers/${row.id}`, { name: row.name })
-                )
-            );
-            await fetchSuppliers();
-            setIsEditing(false);
+            await saveAllMutation.mutateAsync(editRows);
             setSuccess(true);
+            setIsEditing(false);
         } catch (error) {
             console.error('Failed to save suppliers:', error);
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -133,9 +146,9 @@ export default function ManageSuppliersModal({ onClose }) {
     };
 
     const handleRowChange = (index, value) => {
-        const updated = [...editRows];
-        updated[index].name = value;
-        setEditRows(updated);
+        setEditRows(editRows.map((row, i) =>
+            i === index ? { ...row, name: value } : row
+    ));
 
         if (rowErrors[index]) {
             const updatedErrors = { ...rowErrors };
@@ -158,28 +171,18 @@ export default function ManageSuppliersModal({ onClose }) {
             footer={
                 isEditing ? (
                     <div className="flex justify-between">
-                        <button
-                            onClick={handleCancel}
-                            className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                        >
+                        <Button variant="outline" onClick={handleCancel}>
                             Cancel
-                        </button>
-                        <button
-                            onClick={handleSaveAll}
-                            disabled={saving}
-                            className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {saving ? 'Saving...' : 'Save All'}
-                        </button>
+                        </Button>
+                        <Button onClick={handleSaveAll} disabled={saveAllMutation.isPending}>
+                            {saveAllMutation.isPending ? 'Saving...' : 'Save All'}
+                        </Button>
                     </div>
                 ) : (
                     <div className="flex justify-end w-full">
-                        <button
-                            onClick={onClose}
-                            className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                        >
+                        <Button variant="outline" onClick={onClose}>
                             Close
-                        </button>
+                        </Button>
                     </div>
                 )
             }
@@ -188,21 +191,21 @@ export default function ManageSuppliersModal({ onClose }) {
                 {/* Action Buttons */}
                 {!isEditing && (
                     <div className="flex gap-2">
-                        <button
+                        <Button
                             onClick={() => { setShowForm(!showForm); setSuccess(false); }}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-blue-700 transition-colors"
                         >
                             <Plus size={14} />
                             Add
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="secondary"
                             onClick={handleEditClick}
                             disabled={suppliers.length === 0}
-                            className="flex items-center gap-2 bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="bg-amber-500 text-white hover:bg-amber-600"
                         >
                             <Pencil size={14} />
                             Edit
-                        </button>
+                        </Button>
                     </div>
                 )}
 
@@ -291,20 +294,16 @@ export default function ManageSuppliersModal({ onClose }) {
                             {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
                         </div>
                         <div className="flex gap-2 pt-1">
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                            >
-                                {saving ? 'Saving...' : 'Save Supplier'}
-                            </button>
-                            <button
+                            <Button type="submit" disabled={addSupplierMutation.isPending}>
+                                {addSupplierMutation.isPending ? 'Saving...' : 'Save Supplier'}
+                            </Button>
+                            <Button
                                 type="button"
+                                variant="outline"
                                 onClick={() => { setShowForm(false); setErrors({}); }}
-                                className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
                             >
                                 Cancel
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 </>)}

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil } from 'lucide-react';
 import api from '../../api/axios';
 import AppDialog from "@/components/ui/AppDialog";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageDepartmentsModal({ onClose }) {
+    const queryClient = useQueryClient();
+
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ tag: '', name: '' });
     const [errors, setErrors] = useState({});
-    const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
 
     // Inline edit state
@@ -34,6 +37,35 @@ export default function ManageDepartmentsModal({ onClose }) {
         }
     };
 
+    const invalidateMaintenanceData = () => {
+        ["lookups", "employees", "assignments", "equipment", "deliveries"]
+            .forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+    };
+
+    const addDepartmentMutation = useMutation({
+        mutationFn: (payload) => api.post('/departments', payload),
+        onSuccess: async () => {
+            await fetchDepartments();
+            invalidateMaintenanceData();
+        },
+    });
+
+    const saveAllMutation = useMutation({
+        mutationFn: (rows) =>
+            Promise.all(
+                rows.map((row) =>
+                    api.put(`/departments/${row.id}`, {
+                        tag: row.tag,
+                        name: row.name,
+                    })
+                )
+            ),
+        onSuccess: async () => {
+            await fetchDepartments();
+            invalidateMaintenanceData();
+        },
+    });
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm({
@@ -45,23 +77,19 @@ export default function ManageDepartmentsModal({ onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSaving(true);
         setErrors({});
 
         try {
-            await api.post('/departments', form);
+            await addDepartmentMutation.mutateAsync(form);
             setForm({ tag: '', name: '' });
             setSuccess(true);
             setShowForm(false);
-            fetchDepartments();
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             } else {
                 console.error('Failed to save department:', error);
             }
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -124,23 +152,12 @@ export default function ManageDepartmentsModal({ onClose }) {
             return;
         }
 
-        setSaving(true);
         try {
-            await Promise.all(
-                editRows.map((row) =>
-                    api.put(`/departments/${row.id}`, {
-                        tag: row.tag,
-                        name: row.name,
-                    })
-                )
-            );
-            await fetchDepartments();
+            await saveAllMutation.mutateAsync(editRows);
             setIsEditing(false);
             setSuccess(true);
         } catch (error) {
             console.error('Failed to save departments:', error);
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -152,12 +169,14 @@ export default function ManageDepartmentsModal({ onClose }) {
     };
 
     const handleRowChange = (index, field, value) => {
-        const updated = [...editRows];
-        updated[index][field] = field === 'tag' ? value.toUpperCase() : value;
-        setEditRows(updated);
+        const newValue = field === 'tag' ? value.toUpperCase() : value;
+        setEditRows(editRows.map((row, i) =>
+            i === index ? { ...row, [field]: newValue } : row
+        ));
 
         if (rowErrors[index]) {
             const updatedErrors = { ...rowErrors };
+            updatedErrors[index] = { ...updatedErrors[index] };
             delete updatedErrors[index][field];
             if (Object.keys(updatedErrors[index]).length === 0) {
                 delete updatedErrors[index];
@@ -180,28 +199,18 @@ export default function ManageDepartmentsModal({ onClose }) {
             footer={
                 isEditing ? (
                     <div className="flex justify-between">
-                        <button
-                            onClick={handleCancel}
-                            className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                        >
+                        <Button variant="outline" onClick={handleCancel}>
                             Cancel
-                        </button>
-                        <button
-                            onClick={handleSaveAll}
-                            disabled={saving}
-                            className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {saving ? 'Saving...' : 'Save All'}
-                        </button>
+                        </Button>
+                        <Button onClick={handleSaveAll} disabled={saveAllMutation.isPending}>
+                            {saveAllMutation.isPending ? 'Saving...' : 'Save All'}
+                        </Button>
                     </div>
                 ) : (
                     <div className="flex justify-end w-full">
-                        <button
-                            onClick={onClose}
-                            className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
-                        >
+                        <Button variant="outline" onClick={onClose}>
                             Close
-                        </button>
+                        </Button>
                     </div>
                 )
             }
@@ -210,21 +219,21 @@ export default function ManageDepartmentsModal({ onClose }) {
                 {/* Action Buttons */}
                 {!isEditing && (
                     <div className="flex gap-2">
-                        <button
+                        <Button
                             onClick={() => { setShowForm(!showForm); setSuccess(false); }}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-blue-700 transition-colors"
                         >
                             <Plus size={14} />
                             Add
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="secondary"
                             onClick={handleEditClick}
                             disabled={departments.length === 0}
-                            className="flex items-center gap-2 bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="bg-amber-500 text-white hover:bg-amber-600"
                         >
                             <Pencil size={14} />
                             Edit
-                        </button>
+                        </Button>
                     </div>
                 )}
 
@@ -343,20 +352,16 @@ export default function ManageDepartmentsModal({ onClose }) {
                             {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
                         </div>
                         <div className="flex gap-2 pt-1">
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                            >
-                                {saving ? 'Saving...' : 'Save Department'}
-                            </button>
-                            <button
+                            <Button type="submit" disabled={addDepartmentMutation.isPending}>
+                                {addDepartmentMutation.isPending ? 'Saving...' : 'Save Department'}
+                            </Button>
+                            <Button
                                 type="button"
+                                variant="outline"
                                 onClick={() => { setShowForm(false); setErrors({}); }}
-                                className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-xs font-medium hover:bg-gray-200 transition-colors"
                             >
                                 Cancel
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 </>)}

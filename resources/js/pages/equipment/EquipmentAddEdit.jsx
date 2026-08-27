@@ -4,6 +4,14 @@ import { Laptop } from "lucide-react";
 import api from "@/api/axios";
 import { toast } from "sonner";
 import { useLookups } from "@/queries/useLookups";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxList,
+    ComboboxItem,
+} from "@/components/ui/combobox";
 
 export default function EquipmentAdd() {
     const navigate = useNavigate();
@@ -12,8 +20,7 @@ export default function EquipmentAdd() {
 
     const [models, setModels] = useState([]);
     const [lastSeenUpdatedAt, setLastSeenUpdatedAt] = useState(null);
-    const [employeeId, setEmployeeId] = useState("");
-    const [employeeSearch, setEmployeeSearch] = useState("");
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [equipmentLoading, setEquipmentLoading] = useState(isEditMode);
 
     const { data: lookups, isPending: lookupsPending } = useLookups();
@@ -127,8 +134,7 @@ export default function EquipmentAdd() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === "status" && value !== "Assigned") {
-            setEmployeeSearch("");
-            setEmployeeId("");
+            setSelectedEmployee(null);
         }
         setForm({ ...form, [name]: value });
         setErrors({ ...errors, [name]: "" });
@@ -177,7 +183,7 @@ export default function EquipmentAdd() {
         setLoading(true);
         setErrors({});
 
-        if (!isEditMode && form.status === "Assigned" && !employeeId) {
+        if (!isEditMode && form.status === "Assigned" && !selectedEmployee) {
             setErrors({ employee_id: ["Please select a valid employee."] });
             setLoading(false);
             return;
@@ -198,8 +204,8 @@ export default function EquipmentAdd() {
             ...(isEditMode && lastSeenUpdatedAt
                 ? { last_seen_updated_at: lastSeenUpdatedAt }
                 : {}),
-            ...(!isEditMode && form.status === "Assigned" && employeeId
-                ? { employee_id: employeeId }
+            ...(!isEditMode && form.status === "Assigned" && selectedEmployee
+                ? { employee_id: selectedEmployee.id }
                 : {}),
         };
 
@@ -714,25 +720,32 @@ export default function EquipmentAdd() {
                             <label className={labelClass}>
                                 Assign to Employee
                             </label>
-                            <input
-                                list="employee-list"
-                                value={employeeSearch}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setEmployeeSearch(val);
-                                    const match = employees.find(
-                                        (emp) => emp.name === val
-                                    );
-                                    setEmployeeId(match ? match.id : "");
-                                }}
-                                placeholder="Type to search employee..."
-                                className={inputClass}
-                            />
-                            <datalist id="employee-list">
-                                {employees.map((emp) => (
-                                    <option key={emp.id} value={emp.name} />
-                                ))}
-                            </datalist>
+                            <Combobox
+                                items={employees}
+                                itemToStringValue={(emp) => emp.name}
+                                value={selectedEmployee}
+                                onValueChange={setSelectedEmployee}
+                            >
+                                <ComboboxInput placeholder="Type to search employee..." />
+                                <ComboboxContent>
+                                    <ComboboxEmpty>
+                                        No employees found.
+                                    </ComboboxEmpty>
+                                    <ComboboxList>
+                                        {(emp) => (
+                                            <ComboboxItem
+                                                key={emp.id}
+                                                value={emp}
+                                            >
+                                                <span>{emp.name}</span>
+                                                <span className="ml-auto text-xs text-muted-foreground">
+                                                    {emp.department_tag}
+                                                </span>
+                                            </ComboboxItem>
+                                        )}
+                                    </ComboboxList>
+                                </ComboboxContent>
+                            </Combobox>
                             {errors.employee_id && (
                                 <p className={errorClass}>
                                     {errors.employee_id[0]}

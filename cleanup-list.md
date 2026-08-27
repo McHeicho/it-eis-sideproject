@@ -64,7 +64,8 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
 - [ ] **#25 — Audit for "reinventing the wheel": replace hand-rolled UI with library equivalents**
   Sweep the whole frontend for components we built from scratch that have mature, accessible library alternatives — prioritizing cases where our version likely misses keyboard navigation, ARIA/screen-reader support, or cross-browser consistency. Known first targets:
   - Native `<input list>` + `<datalist>` employee picker in `EquipmentAddEdit.jsx` (Assigned-on-creation) and the per-file delivery-match datalist in Bulk Attach Documents.
-    → Candidate: Headless UI Combobox (`@headlessui/react`) — headless/unstyled, pairs with Tailwind, stays configurable per location. Headless UI is on v2; build against current syntax. Decision pending on adding the dependency.
+    → ~~Candidate: Headless UI Combobox (`@headlessui/react`) — headless/unstyled, pairs with Tailwind, stays configurable per location. Headless UI is on v2; build against current syntax. Decision pending on adding the dependency.~~
+    → After pondering: Finally chosen shadcn as main UI design principle.
   - Re-evaluate other custom selects, modals, and dropdowns the same way.
   - Collapsed sidebar icon alignment in `Layout.jsx` — current implementation uses manual 
     `justify-center` / `gap-3 px-3` className toggles per nav item. Brittle and repetitive. 

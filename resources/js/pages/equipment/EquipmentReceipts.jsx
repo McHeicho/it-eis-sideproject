@@ -118,9 +118,6 @@ export default function EquipmentReceipts() {
         setAppliedFilters(EMPTY_FILTERS);
     };
 
-    const labelClass = "text-xs text-gray-500";
-    const valueClass = "text-sm font-medium text-gray-800";
-
     if (loading) {
         return (
             <div className="p-6 max-w-4xl space-y-3">

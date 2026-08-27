@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { toast } from "sonner";
-
-const inputClass =
-    "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-const errorClass = "text-red-500 text-xs mt-1";
 
 const formatDate = (date) =>
     date
@@ -108,9 +106,10 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
 
             <form id="return-form" onSubmit={handleReturn}>
                 <div className="space-y-4">
-                    <div>
-                        <label className={labelClass}>Date Returned</label>
-                        <input
+                    <Field>
+                        <FieldLabel htmlFor="date-returned">Date Returned</FieldLabel>
+                        <Input
+                            id="date-returned"
                             type="date"
                             value={returnForm.date_returned}
                             onChange={(e) =>
@@ -119,17 +118,17 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
                                     date_returned: e.target.value,
                                 })
                             }
-                            className={inputClass}
                         />
                         {returnErrors.date_returned && (
-                            <p className={errorClass}>
+                            <FieldError>
                                 {returnErrors.date_returned[0]}
-                            </p>
+                            </FieldError>
                         )}
-                    </div>
-                    <div>
-                        <label className={labelClass}>Notes</label>
-                        <textarea
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="return-notes">Notes</FieldLabel>
+                        <Textarea
+                            id="return-notes"
                             value={returnForm.notes}
                             onChange={(e) =>
                                 setReturnForm({
@@ -137,11 +136,10 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
                                     notes: e.target.value,
                                 })
                             }
-                            className={`${inputClass} resize-none`}
                             rows={3}
                             placeholder="Optional notes on return condition..."
                         />
-                    </div>
+                    </Field>
                 </div>
             </form>
         </AppDialog>

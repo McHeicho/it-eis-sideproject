@@ -5,6 +5,8 @@ import api from '@/api/axios';
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageSuppliersModal({ onClose }) {
@@ -157,11 +159,6 @@ export default function ManageSuppliersModal({ onClose }) {
         }
     };
 
-    const inputClass = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const errorInputClass = "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-    const errorClass = "text-red-500 text-xs mt-1";
-
     return (
         <AppDialog
             open
@@ -236,16 +233,20 @@ export default function ManageSuppliersModal({ onClose }) {
                                 <TableRow key={row.id} className="border-0 hover:bg-transparent">
                                     <TableCell className="py-2 px-0 align-top text-xs text-gray-400 pr-2">{index + 1}</TableCell>
                                     <TableCell className="py-2 px-0 align-top">
-                                        <input
-                                            type="text"
-                                            value={row.name}
-                                            onChange={(e) => handleRowChange(index, e.target.value)}
-                                            className={rowErrors[index]?.name ? errorInputClass : inputClass}
-                                            placeholder="Supplier name"
-                                        />
-                                        {rowErrors[index]?.name && (
-                                            <p className={errorClass}>{rowErrors[index].name}</p>
-                                        )}
+                                        <Field>
+                                            <Input
+                                                id={`supplier-name-${index}`}
+                                                type="text"
+                                                value={row.name}
+                                                onChange={(e) => handleRowChange(index, e.target.value)}
+                                                aria-invalid={!!rowErrors[index]?.name}
+                                                aria-label="Supplier name"
+                                                placeholder="Supplier name"
+                                            />
+                                            {rowErrors[index]?.name && (
+                                                <FieldError>{rowErrors[index].name}</FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -281,18 +282,18 @@ export default function ManageSuppliersModal({ onClose }) {
                 {showForm && !isEditing && (<>
                     <Separator className="my-4" />
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        <div>
-                            <label className={labelClass}>Supplier Name</label>
-                            <input
+                        <Field>
+                            <FieldLabel htmlFor="supplier-name">Supplier Name</FieldLabel>
+                            <Input
+                                id="supplier-name"
                                 type="text"
                                 name="name"
                                 value={form.name}
                                 onChange={handleChange}
-                                className={inputClass}
                                 placeholder="e.g. ProVantage"
                             />
-                            {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
-                        </div>
+                            {errors.name && <FieldError>{errors.name[0]}</FieldError>}
+                        </Field>
                         <div className="flex gap-2 pt-1">
                             <Button type="submit" disabled={addSupplierMutation.isPending}>
                                 {addSupplierMutation.isPending ? 'Saving...' : 'Save Supplier'}

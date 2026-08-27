@@ -5,11 +5,27 @@ import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/custom/custom-select";
 
 // Employees are only ever based at Head Office or Manila Office — the two
 // rows in branches whose code is HO or MLA, never the full branch list.
 const ALLOWED_BRANCH_CODES = ["HO", "MLA"];
+
+// Sentinels for the Selects below — Radix throws on an empty-string item
+// value, so these stand in for "" at the component boundary and get
+// translated back in each onValueChange/handleRowChange call.
+const DEPT_ALL = "all";
+const DEPT_NONE = "none";
+const BRANCH_NONE = "none";
 
 const defaultBranchId = (branches) =>
     branches.find((b) => b.branch_code === "HO")?.id ?? "";
@@ -195,13 +211,6 @@ export default function ManageEmployeesModal({ onClose }) {
         }
     };
 
-    const inputClass =
-        "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const errorInputClass =
-        "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-    const errorClass = "text-red-500 text-xs mt-1";
-
     return (
         <AppDialog
             open
@@ -230,28 +239,32 @@ export default function ManageEmployeesModal({ onClose }) {
         >
             <div className="space-y-4">
                 {/* Department Filter */}
-                <div>
-                    <label className={labelClass}>
+                <Field>
+                    <FieldLabel htmlFor="employee-department-filter">
                         Filter by Department
-                    </label>
-                    <select
-                        value={selectedDeptTag}
-                        onChange={(e) => {
-                            setSelectedDeptTag(e.target.value);
+                    </FieldLabel>
+                    <Select
+                        value={selectedDeptTag || DEPT_ALL}
+                        onValueChange={(value) => {
+                            setSelectedDeptTag(value === DEPT_ALL ? "" : value);
                             setSuccess(false);
                             if (isEditing) handleCancel();
                         }}
                         disabled={isEditing}
-                        className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                     >
-                        <option value="">Show All</option>
-                        {departments.map((dept) => (
-                            <option key={dept.id} value={dept.tag}>
-                                {dept.name} ({dept.tag})
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                        <SelectTrigger id="employee-department-filter" className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={DEPT_ALL}>Show All</SelectItem>
+                            {departments.map((dept) => (
+                                <SelectItem key={dept.id} value={dept.tag}>
+                                    {dept.name} ({dept.tag})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </Field>
 
                 {/* Action Buttons */}
                 {!isEditing && (
@@ -293,67 +306,97 @@ export default function ManageEmployeesModal({ onClose }) {
                         onSubmit={handleSubmit}
                         className="space-y-3"
                     >
-                        <div>
-                            <label className={labelClass}>Name</label>
-                            <input
+                        <Field>
+                            <FieldLabel htmlFor="employee-name">Name</FieldLabel>
+                            <Input
+                                id="employee-name"
                                 type="text"
                                 name="name"
                                 value={form.name}
                                 onChange={handleChange}
-                                className={inputClass}
                                 placeholder="e.g. Juan dela Cruz"
                             />
                             {errors.name && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.name[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
-                        <div>
-                            <label className={labelClass}>Department</label>
-                            <select
-                                name="department_tag"
-                                value={form.department_tag}
-                                onChange={handleChange}
-                                className={inputClass}
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="employee-department">Department</FieldLabel>
+                            <Select
+                                value={form.department_tag || DEPT_NONE}
+                                onValueChange={(value) => {
+                                    setForm({
+                                        ...form,
+                                        department_tag:
+                                            value === DEPT_NONE ? "" : value,
+                                    });
+                                    setErrors({ ...errors, department_tag: "" });
+                                }}
                             >
-                                <option value="">Select Department</option>
-                                {departments.map((dept) => (
-                                    <option key={dept.id} value={dept.tag}>
-                                        {dept.name} ({dept.tag})
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger
+                                    id="employee-department"
+                                    className="w-full"
+                                    aria-invalid={!!errors.department_tag}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={DEPT_NONE}>
+                                        Select Department
+                                    </SelectItem>
+                                    {departments.map((dept) => (
+                                        <SelectItem key={dept.id} value={dept.tag}>
+                                            {dept.name} ({dept.tag})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             {errors.department_tag && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.department_tag[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
+                        </Field>
 
-                        <div>
-                            <label className={labelClass}>Branch</label>
-                            <select
-                                name="branch_id"
-                                value={form.branch_id}
-                                onChange={handleChange}
-                                className={inputClass}
+                        <Field>
+                            <FieldLabel htmlFor="employee-branch">Branch</FieldLabel>
+                            <Select
+                                value={String(form.branch_id || BRANCH_NONE)}
+                                onValueChange={(value) => {
+                                    setForm({
+                                        ...form,
+                                        branch_id:
+                                            value === BRANCH_NONE ? "" : value,
+                                    });
+                                    setErrors({ ...errors, branch_id: "" });
+                                }}
                             >
-                                {branches.map((branch) => (
-                                    <option
-                                        key={branch.id}
-                                        value={branch.id}
-                                    >
-                                        {branch.branch_name} ({branch.branch_code})
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger
+                                    id="employee-branch"
+                                    className="w-full"
+                                    aria-invalid={!!errors.branch_id}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {branches.map((branch) => (
+                                        <SelectItem
+                                            key={branch.id}
+                                            value={String(branch.id)}
+                                        >
+                                            {branch.branch_name} ({branch.branch_code})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             {errors.branch_id && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.branch_id[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
+                        </Field>
 
                         <div className="flex gap-2 pt-1">
                             <Button type="submit" disabled={addEmployeeMutation.isPending}>
@@ -384,15 +427,15 @@ export default function ManageEmployeesModal({ onClose }) {
                         ))}
                     </div>
                 ) : isEditing ? (
-                    <Table>
+                    <Table className="table-fixed">
                         <TableHeader className="text-xs uppercase text-gray-500 border-b">
                             <TableRow className="border-0 hover:bg-transparent">
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Name</TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[8%]">#</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[32%]">Name</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[35%]">
                                     Department
                                 </TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Branch</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[25%]">Branch</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-50">
@@ -402,119 +445,141 @@ export default function ManageEmployeesModal({ onClose }) {
                                         {index + 1}
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top pr-2">
-                                        <input
-                                            type="text"
-                                            value={row.name}
-                                            onChange={(e) =>
-                                                handleRowChange(
-                                                    index,
-                                                    "name",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={
-                                                rowErrors[index]?.name
-                                                    ? errorInputClass
-                                                    : inputClass
-                                            }
-                                            placeholder="Employee name"
-                                        />
-                                        {rowErrors[index]?.name && (
-                                            <p className={errorClass}>
-                                                {rowErrors[index].name}
-                                            </p>
-                                        )}
+                                        <Field>
+                                            <Input
+                                                id={`employee-name-${index}`}
+                                                type="text"
+                                                value={row.name}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "name",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                aria-invalid={!!rowErrors[index]?.name}
+                                                aria-label="Employee name"
+                                                placeholder="Employee name"
+                                            />
+                                            {rowErrors[index]?.name && (
+                                                <FieldError>
+                                                    {rowErrors[index].name}
+                                                </FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top">
-                                        <select
-                                            value={row.department_tag}
-                                            onChange={(e) =>
-                                                handleRowChange(
-                                                    index,
-                                                    "department_tag",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={
-                                                rowErrors[index]
-                                                    ?.department_tag
-                                                    ? errorInputClass
-                                                    : inputClass
-                                            }
-                                        >
-                                            <option value="">
-                                                Select Department
-                                            </option>
-                                            {departments.map((dept) => (
-                                                <option
-                                                    key={dept.id}
-                                                    value={dept.tag}
-                                                >
-                                                    {dept.name} ({dept.tag})
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {rowErrors[index]
-                                            ?.department_tag && (
-                                            <p className={errorClass}>
-                                                {
-                                                    rowErrors[index]
-                                                        .department_tag
+                                        <Field>
+                                            <Select
+                                                value={row.department_tag || DEPT_NONE}
+                                                onValueChange={(value) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "department_tag",
+                                                        value === DEPT_NONE
+                                                            ? ""
+                                                            : value
+                                                    )
                                                 }
-                                            </p>
-                                        )}
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        !!rowErrors[index]?.department_tag
+                                                    }
+                                                    aria-label="Department"
+                                                >
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value={DEPT_NONE}>
+                                                        Select Department
+                                                    </SelectItem>
+                                                    {departments.map((dept) => (
+                                                        <SelectItem
+                                                            key={dept.id}
+                                                            value={dept.tag}
+                                                        >
+                                                            {dept.name} ({dept.tag})
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {rowErrors[index]
+                                                ?.department_tag && (
+                                                <FieldError>
+                                                    {
+                                                        rowErrors[index]
+                                                            .department_tag
+                                                    }
+                                                </FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top pl-2">
-                                        <select
-                                            value={row.branch_id}
-                                            onChange={(e) =>
-                                                handleRowChange(
-                                                    index,
-                                                    "branch_id",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={
-                                                rowErrors[index]
-                                                    ?.branch_id
-                                                    ? errorInputClass
-                                                    : inputClass
-                                            }
-                                        >
-                                            {branches.map((branch) => (
-                                                <option
-                                                    key={branch.id}
-                                                    value={branch.id}
-                                                >
-                                                    {branch.branch_name} (
-                                                    {branch.branch_code})
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {rowErrors[index]
-                                            ?.branch_id && (
-                                            <p className={errorClass}>
-                                                {
-                                                    rowErrors[index]
-                                                        .branch_id
+                                        <Field>
+                                            <Select
+                                                value={String(
+                                                    row.branch_id || BRANCH_NONE
+                                                )}
+                                                onValueChange={(value) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "branch_id",
+                                                        value === BRANCH_NONE
+                                                            ? ""
+                                                            : value
+                                                    )
                                                 }
-                                            </p>
-                                        )}
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        !!rowErrors[index]?.branch_id
+                                                    }
+                                                    aria-label="Branch"
+                                                >
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {branches.map((branch) => (
+                                                        <SelectItem
+                                                            key={branch.id}
+                                                            value={String(
+                                                                branch.id
+                                                            )}
+                                                        >
+                                                            {branch.branch_name} (
+                                                            {branch.branch_code})
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {rowErrors[index]
+                                                ?.branch_id && (
+                                                <FieldError>
+                                                    {
+                                                        rowErrors[index]
+                                                            .branch_id
+                                                    }
+                                                </FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
                 ) : (
-                    <Table>
+                    <Table className="table-fixed">
                         <TableHeader className="text-xs uppercase text-gray-500 border-b">
                             <TableRow className="border-0 hover:bg-transparent">
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Name</TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[8%]">#</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[32%]">Name</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[35%]">
                                     Department
                                 </TableHead>
-                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Branch</TableHead>
+                                <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[25%]">Branch</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-50">
@@ -526,14 +591,23 @@ export default function ManageEmployeesModal({ onClose }) {
                                     <TableCell className="py-2 px-0 text-xs text-gray-400">
                                         {index + 1}
                                     </TableCell>
-                                    <TableCell className="py-2 px-0 text-gray-800">
+                                    <TableCell
+                                        className="py-2 px-0 text-gray-800 truncate"
+                                        title={emp.name}
+                                    >
                                         {emp.name}
                                     </TableCell>
-                                    <TableCell className="py-2 px-0 text-gray-500 text-xs">
+                                    <TableCell
+                                        className="py-2 px-0 text-gray-500 text-xs truncate"
+                                        title={`${emp.department?.name || ""} (${emp.department_tag})`}
+                                    >
                                         {emp.department?.name} (
                                         {emp.department_tag})
                                     </TableCell>
-                                    <TableCell className="py-2 px-0 text-gray-500 text-xs">
+                                    <TableCell
+                                        className="py-2 px-0 text-gray-500 text-xs truncate"
+                                        title={`${emp.branch?.branch_name || ""} (${emp.branch?.branch_code || ""})`}
+                                    >
                                         {emp.branch?.branch_name} (
                                         {emp.branch?.branch_code})
                                     </TableCell>

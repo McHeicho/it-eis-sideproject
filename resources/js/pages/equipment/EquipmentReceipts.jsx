@@ -9,8 +9,25 @@ import {
 } from "lucide-react";
 import api from "@/api/axios";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { useLookups } from "@/queries/useLookups";
 import { useDeliveries } from "@/queries/useDeliveries";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/custom/custom-select";
+
+// Sentinels for the filter-bar Selects — Radix throws on an empty-string item
+// value, so these stand in for "" ("All X") at the component boundary and get
+// translated back in each onValueChange.
+const SUPPLIER_ALL = "all";
+const STATUS_ALL = "all";
+// Used only by ReceiptDetail's inline-edit Supplier Select below, in case
+// editForm.supplier_id is ever "" (delivery.supplier_id ?? "").
+const SUPPLIER_NONE = "none";
 
 const EMPTY_FILTERS = {
     voucher_no: "",
@@ -193,23 +210,30 @@ export default function EquipmentReceipts() {
                         <label className="text-xs text-gray-500 block mb-1">
                             Supplier
                         </label>
-                        <select
-                            value={filterForm.supplier_id}
-                            onChange={(e) =>
+                        <Select
+                            value={filterForm.supplier_id || SUPPLIER_ALL}
+                            onValueChange={(value) =>
                                 setFilterForm((prev) => ({
                                     ...prev,
-                                    supplier_id: e.target.value,
+                                    supplier_id:
+                                        value === SUPPLIER_ALL ? "" : value,
                                 }))
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full bg-white"
                         >
-                            <option value="">All Suppliers</option>
-                            {suppliers.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                    {s.name}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={SUPPLIER_ALL}>
+                                    All Suppliers
+                                </SelectItem>
+                                {suppliers.map((s) => (
+                                    <SelectItem key={s.id} value={String(s.id)}>
+                                        {s.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 {isAdmin && (
@@ -238,23 +262,30 @@ export default function EquipmentReceipts() {
                             <label className="text-xs text-gray-500 block mb-1">
                                 Equipment Status
                             </label>
-                            <select
-                                value={filterForm.status}
-                                onChange={(e) =>
+                            <Select
+                                value={filterForm.status || STATUS_ALL}
+                                onValueChange={(value) =>
                                     setFilterForm((prev) => ({
                                         ...prev,
-                                        status: e.target.value,
+                                        status:
+                                            value === STATUS_ALL ? "" : value,
                                     }))
                                 }
-                                className="border rounded px-2 py-1.5 text-sm w-full bg-white"
                             >
-                                <option value="">All Statuses</option>
-                                {statuses.map((s) => (
-                                    <option key={s} value={s}>
-                                        {s}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={STATUS_ALL}>
+                                        All Statuses
+                                    </SelectItem>
+                                    {statuses.map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                            {s}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 )}
@@ -613,22 +644,32 @@ function ReceiptDetail({
                             Supplier
                         </span>
                         {isEditing ? (
-                            <select
-                                value={editForm.supplier_id}
-                                onChange={(e) =>
+                            <Select
+                                value={editForm.supplier_id || SUPPLIER_NONE}
+                                onValueChange={(value) =>
                                     setEditForm((prev) => ({
                                         ...prev,
-                                        supplier_id: e.target.value,
+                                        supplier_id:
+                                            value === SUPPLIER_NONE
+                                                ? ""
+                                                : value,
                                     }))
                                 }
-                                className="border rounded px-2 py-1 text-sm flex-1"
                             >
-                                {suppliers.map((s) => (
-                                    <option key={s.id} value={s.id}>
-                                        {s.name}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="flex-1">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {suppliers.map((s) => (
+                                        <SelectItem
+                                            key={s.id}
+                                            value={String(s.id)}
+                                        >
+                                            {s.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         ) : (
                             <span className="text-gray-800 flex-1">
                                 {delivery.supplier?.name || "—"}
@@ -695,7 +736,7 @@ function ReceiptDetail({
                             Notes
                         </span>
                         {isEditing ? (
-                            <textarea
+                            <Textarea
                                 value={editForm.notes}
                                 onChange={(e) =>
                                     setEditForm((prev) => ({
@@ -703,7 +744,8 @@ function ReceiptDetail({
                                         notes: e.target.value,
                                     }))
                                 }
-                                className="border rounded px-2 py-1 text-sm flex-1 resize-none"
+                                aria-label="Notes"
+                                className="flex-1"
                                 rows={3}
                             />
                         ) : (

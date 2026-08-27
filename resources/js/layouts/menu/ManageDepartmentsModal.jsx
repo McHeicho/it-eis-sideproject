@@ -5,6 +5,8 @@ import api from '../../api/axios';
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function ManageDepartmentsModal({ onClose }) {
@@ -185,11 +187,6 @@ export default function ManageDepartmentsModal({ onClose }) {
         }
     };
 
-    const inputClass = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const errorInputClass = "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-    const errorClass = "text-red-500 text-xs mt-1";
-
     return (
         <AppDialog
             open
@@ -268,29 +265,37 @@ export default function ManageDepartmentsModal({ onClose }) {
                                 <TableRow key={row.id} className="border-0 hover:bg-transparent">
                                     <TableCell className="py-2 px-0 align-top text-xs text-gray-400 pr-2">{index + 1}</TableCell>
                                     <TableCell className="py-2 px-0 align-top pr-2">
-                                        <input
-                                            type="text"
-                                            value={row.tag}
-                                            onChange={(e) => handleRowChange(index, 'tag', e.target.value)}
-                                            className={rowErrors[index]?.tag ? errorInputClass : inputClass}
-                                            placeholder="e.g. CLMS"
-                                            maxLength={10}
-                                        />
-                                        {rowErrors[index]?.tag && (
-                                            <p className={errorClass}>{rowErrors[index].tag}</p>
-                                        )}
+                                        <Field>
+                                            <Input
+                                                id={`department-tag-${index}`}
+                                                type="text"
+                                                value={row.tag}
+                                                onChange={(e) => handleRowChange(index, 'tag', e.target.value)}
+                                                aria-invalid={!!rowErrors[index]?.tag}
+                                                aria-label="Department tag"
+                                                placeholder="e.g. CLMS"
+                                                maxLength={10}
+                                            />
+                                            {rowErrors[index]?.tag && (
+                                                <FieldError>{rowErrors[index].tag}</FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top">
-                                        <input
-                                            type="text"
-                                            value={row.name}
-                                            onChange={(e) => handleRowChange(index, 'name', e.target.value)}
-                                            className={rowErrors[index]?.name ? errorInputClass : inputClass}
-                                            placeholder="e.g. Claims"
-                                        />
-                                        {rowErrors[index]?.name && (
-                                            <p className={errorClass}>{rowErrors[index].name}</p>
-                                        )}
+                                        <Field>
+                                            <Input
+                                                id={`department-name-${index}`}
+                                                type="text"
+                                                value={row.name}
+                                                onChange={(e) => handleRowChange(index, 'name', e.target.value)}
+                                                aria-invalid={!!rowErrors[index]?.name}
+                                                aria-label="Department name"
+                                                placeholder="e.g. Claims"
+                                            />
+                                            {rowErrors[index]?.name && (
+                                                <FieldError>{rowErrors[index].name}</FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -326,31 +331,31 @@ export default function ManageDepartmentsModal({ onClose }) {
                 {showForm && !isEditing && (<>
                     <Separator className="my-4" />
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        <div>
-                            <label className={labelClass}>Department Tag</label>
-                            <input
+                        <Field>
+                            <FieldLabel htmlFor="department-tag">Department Tag</FieldLabel>
+                            <Input
+                                id="department-tag"
                                 type="text"
                                 name="tag"
                                 value={form.tag}
                                 onChange={handleChange}
-                                className={inputClass}
                                 placeholder="e.g. CLMS"
                                 maxLength={10}
                             />
-                            {errors.tag && <p className={errorClass}>{errors.tag[0]}</p>}
-                        </div>
-                        <div>
-                            <label className={labelClass}>Department Name</label>
-                            <input
+                            {errors.tag && <FieldError>{errors.tag[0]}</FieldError>}
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="department-name">Department Name</FieldLabel>
+                            <Input
+                                id="department-name"
                                 type="text"
                                 name="name"
                                 value={form.name}
                                 onChange={handleChange}
-                                className={inputClass}
                                 placeholder="e.g. Claims"
                             />
-                            {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
-                        </div>
+                            {errors.name && <FieldError>{errors.name[0]}</FieldError>}
+                        </Field>
                         <div className="flex gap-2 pt-1">
                             <Button type="submit" disabled={addDepartmentMutation.isPending}>
                                 {addDepartmentMutation.isPending ? 'Saving...' : 'Save Department'}

@@ -4,9 +4,9 @@ import { sortBranches } from "@/lib/branches";
 import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/custom/custom-toggle-group";
 import {
@@ -17,8 +17,6 @@ import {
     SelectValue,
 } from "@/components/ui/custom/custom-select";
 import { toast } from "sonner";
-
-const errorClass = "text-red-500 text-xs mt-1";
 
 const LOST_EQUIPMENT_FILTERS = {
     status: "Lost/Missing",
@@ -179,9 +177,9 @@ export default function AssignmentAssignModal({
         >
             <form id="assign-form" onSubmit={handleAssign}>
                 <div className="space-y-4">
-                    <div>
-                        <div className="flex items-center justify-between mb-1">
-                            <Label htmlFor="equipment_id">Equipment</Label>
+                    <Field>
+                        <div className="flex items-center justify-between">
+                            <FieldLabel htmlFor="equipment_id">Equipment</FieldLabel>
                             <div className="flex items-center gap-1.5">
                                 <Checkbox
                                     id="lost-only"
@@ -194,12 +192,12 @@ export default function AssignmentAssignModal({
                                         });
                                     }}
                                 />
-                                <Label
+                                <FieldLabel
                                     htmlFor="lost-only"
                                     className="text-xs font-normal text-gray-500 cursor-pointer"
                                 >
                                     Show Lost/Missing only
-                                </Label>
+                                </FieldLabel>
                             </div>
                         </div>
                         <Select
@@ -213,7 +211,11 @@ export default function AssignmentAssignModal({
                             }
                             disabled={loadingLost}
                         >
-                            <SelectTrigger id="equipment_id" className="w-full">
+                            <SelectTrigger
+                                id="equipment_id"
+                                className="w-full"
+                                aria-invalid={!!assignErrors.equipment_id}
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -237,16 +239,16 @@ export default function AssignmentAssignModal({
                             </SelectContent>
                         </Select>
                         {assignErrors.equipment_id && (
-                            <p className={errorClass}>
+                            <FieldError>
                                 {assignErrors.equipment_id[0]}
-                            </p>
+                            </FieldError>
                         )}
-                    </div>
+                    </Field>
 
                     {/* Holder Type Toggle */}
                     <div className="flex gap-4">
-                        <div>
-                            <Label className="mb-1">Assign To</Label>
+                        <Field>
+                            <FieldLabel>Assign To</FieldLabel>
                             <ToggleGroup
                                 type="single"
                                 variant="outline"
@@ -281,11 +283,11 @@ export default function AssignmentAssignModal({
                                     Branch
                                 </ToggleGroupItem>
                             </ToggleGroup>
-                        </div>
+                        </Field>
 
                         {assignForm.holderType === "employee" && (
-                            <div>
-                                <Label className="mb-1">Office</Label>
+                            <Field>
+                                <FieldLabel>Office</FieldLabel>
                                 <ToggleGroup
                                     type="single"
                                     variant="outline"
@@ -320,16 +322,16 @@ export default function AssignmentAssignModal({
                                         </ToggleGroupItem>
                                     ))}
                                 </ToggleGroup>
-                            </div>
+                            </Field>
                         )}
                     </div>
 
                     {assignForm.holderType === "employee" ? (
                         <>
-                            <div>
-                                <Label htmlFor="department_tag" className="mb-1">
+                            <Field>
+                                <FieldLabel htmlFor="department_tag">
                                     Department
-                                </Label>
+                                </FieldLabel>
                                 <Select
                                     value={
                                         assignForm.department_tag ||
@@ -366,12 +368,12 @@ export default function AssignmentAssignModal({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            </div>
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <Label htmlFor="employee_id">
+                            </Field>
+                            <Field>
+                                <div className="flex items-center justify-between">
+                                    <FieldLabel htmlFor="employee_id">
                                         Employee
-                                    </Label>
+                                    </FieldLabel>
                                     <div className="flex items-center gap-1.5">
                                         <Checkbox
                                             id="no-laptop-only"
@@ -384,12 +386,12 @@ export default function AssignmentAssignModal({
                                                 });
                                             }}
                                         />
-                                        <Label
+                                        <FieldLabel
                                             htmlFor="no-laptop-only"
                                             className="text-xs font-normal text-gray-500 cursor-pointer"
                                         >
                                             No laptop assigned
-                                        </Label>
+                                        </FieldLabel>
                                     </div>
                                 </div>
                                 <Select
@@ -410,6 +412,7 @@ export default function AssignmentAssignModal({
                                     <SelectTrigger
                                         id="employee_id"
                                         className="w-full"
+                                        aria-invalid={!!assignErrors.employee_id}
                                     >
                                         <SelectValue />
                                     </SelectTrigger>
@@ -429,17 +432,17 @@ export default function AssignmentAssignModal({
                                     </SelectContent>
                                 </Select>
                                 {assignErrors.employee_id && (
-                                    <p className={errorClass}>
+                                    <FieldError>
                                         {assignErrors.employee_id[0]}
-                                    </p>
+                                    </FieldError>
                                 )}
-                            </div>
+                            </Field>
                         </>
                     ) : (
-                        <div>
-                            <Label htmlFor="branch_id" className="mb-1">
+                        <Field>
+                            <FieldLabel htmlFor="branch_id">
                                 Branch
-                            </Label>
+                            </FieldLabel>
                             <Select
                                 value={assignForm.branch_id}
                                 onValueChange={(value) =>
@@ -449,7 +452,11 @@ export default function AssignmentAssignModal({
                                     })
                                 }
                             >
-                                <SelectTrigger id="branch_id" className="w-full">
+                                <SelectTrigger
+                                    id="branch_id"
+                                    className="w-full"
+                                    aria-invalid={!!assignErrors.branch_id}
+                                >
                                     <SelectValue placeholder="Select Branch" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -465,17 +472,17 @@ export default function AssignmentAssignModal({
                                 </SelectContent>
                             </Select>
                             {assignErrors.branch_id && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {assignErrors.branch_id[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
+                        </Field>
                     )}
 
-                    <div>
-                        <Label htmlFor="date_assigned" className="mb-1">
+                    <Field>
+                        <FieldLabel htmlFor="date_assigned">
                             Date Assigned
-                        </Label>
+                        </FieldLabel>
                         <Input
                             id="date_assigned"
                             type="date"
@@ -488,16 +495,16 @@ export default function AssignmentAssignModal({
                             }
                         />
                         {assignErrors.date_assigned && (
-                            <p className={errorClass}>
+                            <FieldError>
                                 {assignErrors.date_assigned[0]}
-                            </p>
+                            </FieldError>
                         )}
-                    </div>
+                    </Field>
 
-                    <div>
-                        <Label htmlFor="notes" className="mb-1">
+                    <Field>
+                        <FieldLabel htmlFor="notes">
                             Notes
-                        </Label>
+                        </FieldLabel>
                         <Textarea
                             id="notes"
                             value={assignForm.notes}
@@ -510,7 +517,7 @@ export default function AssignmentAssignModal({
                             rows={3}
                             placeholder="Optional notes..."
                         />
-                    </div>
+                    </Field>
 
                     {assignErrors.general && (
                         <p className="text-red-500 text-xs">

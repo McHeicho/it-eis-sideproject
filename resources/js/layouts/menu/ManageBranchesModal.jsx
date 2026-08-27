@@ -5,6 +5,8 @@ import api from "@/api/axios";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { sortBranches } from "@/lib/branches";
 
@@ -194,13 +196,6 @@ export default function ManageBranchesModal({ onClose }) {
         }
     };
 
-    const inputClass =
-        "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const errorInputClass =
-        "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-    const errorClass = "text-red-500 text-xs mt-1";
-
     return (
         <AppDialog
             open
@@ -293,77 +288,82 @@ export default function ManageBranchesModal({ onClose }) {
                                         {index + 1}
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top pr-2">
-                                        <input
-                                            type="text"
-                                            value={row.branch_code}
-                                            onChange={(e) =>
-                                                handleRowChange(
-                                                    index,
-                                                    "branch_code",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={
-                                                rowErrors[index]
-                                                    ?.branch_code
-                                                    ? errorInputClass
-                                                    : inputClass
-                                            }
-                                            placeholder="e.g. CEB01"
-                                        />
-                                        {rowErrors[index]
-                                            ?.branch_code && (
-                                            <p className={errorClass}>
-                                                {
-                                                    rowErrors[index]
-                                                        .branch_code
+                                        <Field>
+                                            <Input
+                                                id={`branch-code-${index}`}
+                                                type="text"
+                                                value={row.branch_code}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "branch_code",
+                                                        e.target.value
+                                                    )
                                                 }
-                                            </p>
-                                        )}
+                                                aria-invalid={
+                                                    !!rowErrors[index]?.branch_code
+                                                }
+                                                aria-label="Branch code"
+                                                placeholder="e.g. CEB01"
+                                            />
+                                            {rowErrors[index]
+                                                ?.branch_code && (
+                                                <FieldError>
+                                                    {
+                                                        rowErrors[index]
+                                                            .branch_code
+                                                    }
+                                                </FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top pr-2">
-                                        <input
-                                            type="text"
-                                            value={row.branch_name}
-                                            onChange={(e) =>
-                                                handleRowChange(
-                                                    index,
-                                                    "branch_name",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={
-                                                rowErrors[index]
-                                                    ?.branch_name
-                                                    ? errorInputClass
-                                                    : inputClass
-                                            }
-                                            placeholder="e.g. Cebu Branch"
-                                        />
-                                        {rowErrors[index]
-                                            ?.branch_name && (
-                                            <p className={errorClass}>
-                                                {
-                                                    rowErrors[index]
-                                                        .branch_name
+                                        <Field>
+                                            <Input
+                                                id={`branch-name-${index}`}
+                                                type="text"
+                                                value={row.branch_name}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "branch_name",
+                                                        e.target.value
+                                                    )
                                                 }
-                                            </p>
-                                        )}
+                                                aria-invalid={
+                                                    !!rowErrors[index]?.branch_name
+                                                }
+                                                aria-label="Branch name"
+                                                placeholder="e.g. Cebu Branch"
+                                            />
+                                            {rowErrors[index]
+                                                ?.branch_name && (
+                                                <FieldError>
+                                                    {
+                                                        rowErrors[index]
+                                                            .branch_name
+                                                    }
+                                                </FieldError>
+                                            )}
+                                        </Field>
                                     </TableCell>
                                     <TableCell className="py-2 px-0 align-top">
-                                        <input
-                                            type="text"
-                                            value={row.branch_manager}
-                                            onChange={(e) =>
-                                                handleRowChange(
-                                                    index,
-                                                    "branch_manager",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={inputClass}
-                                            placeholder="optional"
-                                        />
+                                        <Field>
+                                            <Input
+                                                id={`branch-manager-${index}`}
+                                                type="text"
+                                                value={row.branch_manager}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "branch_manager",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                aria-label="Branch manager"
+                                                placeholder="optional"
+                                            />
+                                        </Field>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -418,63 +418,63 @@ export default function ManageBranchesModal({ onClose }) {
                         onSubmit={handleSubmit}
                         className="space-y-3"
                     >
-                        <div>
-                            <label className={labelClass}>
+                        <Field>
+                            <FieldLabel htmlFor="branch-code">
                                 Branch Code
-                            </label>
-                            <input
+                            </FieldLabel>
+                            <Input
+                                id="branch-code"
                                 type="text"
                                 name="branch_code"
                                 value={form.branch_code}
                                 onChange={handleChange}
-                                className={inputClass}
                                 placeholder="e.g. CEB01"
                             />
                             {errors.branch_code && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.branch_code[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
-                        <div>
-                            <label className={labelClass}>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="branch-name">
                                 Branch Name
-                            </label>
-                            <input
+                            </FieldLabel>
+                            <Input
+                                id="branch-name"
                                 type="text"
                                 name="branch_name"
                                 value={form.branch_name}
                                 onChange={handleChange}
-                                className={inputClass}
                                 placeholder="e.g. Cebu Branch"
                             />
                             {errors.branch_name && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.branch_name[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
-                        <div>
-                            <label className={labelClass}>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="branch-manager">
                                 Branch Manager{" "}
                                 <span className="text-gray-400">
                                     (optional)
                                 </span>
-                            </label>
-                            <input
+                            </FieldLabel>
+                            <Input
+                                id="branch-manager"
                                 type="text"
                                 name="branch_manager"
                                 value={form.branch_manager}
                                 onChange={handleChange}
-                                className={inputClass}
                                 placeholder="e.g. Maria Santos"
                             />
                             {errors.branch_manager && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.branch_manager[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
+                        </Field>
                         <div className="flex gap-2 pt-1">
                             <Button type="submit" disabled={addBranchMutation.isPending}>
                                 {addBranchMutation.isPending ? "Saving..." : "Save Branch"}

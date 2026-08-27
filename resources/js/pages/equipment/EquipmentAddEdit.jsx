@@ -4,6 +4,8 @@ import { Laptop } from "lucide-react";
 import api from "@/api/axios";
 import { toast } from "sonner";
 import { useLookups } from "@/queries/useLookups";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError, FieldGroup, FieldSet } from "@/components/ui/field";
 import {
     Combobox,
     ComboboxInput,
@@ -12,6 +14,21 @@ import {
     ComboboxList,
     ComboboxItem,
 } from "@/components/ui/combobox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/custom/custom-select";
+
+// Sentinels for the form Selects — Radix throws on an empty-string item
+// value, so these stand in for "" ("nothing chosen yet") at the component
+// boundary and get translated back in each onValueChange.
+const BRAND_NONE = "none";
+const MODEL_NONE = "none";
+const SUPPLIER_NONE = "none";
+const CONDITION_NONE = "none";
 
 export default function EquipmentAdd() {
     const navigate = useNavigate();
@@ -140,6 +157,16 @@ export default function EquipmentAdd() {
         setErrors({ ...errors, [name]: "" });
     };
 
+    // Select variant of handleChange — Radix hands onValueChange the bare
+    // value instead of an event.
+    const handleSelectChange = (name, value) => {
+        if (name === "status" && value !== "Assigned") {
+            setSelectedEmployee(null);
+        }
+        setForm({ ...form, [name]: value });
+        setErrors({ ...errors, [name]: "" });
+    };
+
     const handleDeliveryBlur = async () => {
         const handle =
             deliveryMode === "voucher"
@@ -232,11 +259,6 @@ export default function EquipmentAdd() {
             setLoading(false);
         }
     };
-
-    const inputClass =
-        "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-    const errorClass = "text-red-500 text-xs mt-1";
 
     // Loading skeleton
     if (dropdownsLoading) {
@@ -336,11 +358,12 @@ export default function EquipmentAdd() {
 
             <form
                 onSubmit={handleSubmit}
-                className="bg-white rounded-lg shadow p-6 space-y-5"
+                className="bg-white rounded-lg shadow p-6"
             >
+                <FieldGroup className="gap-5">
                 {/* Equipment Type */}
-                <div>
-                    <label className={labelClass}>Equipment Type</label>
+                <Field>
+                    <FieldLabel>Equipment Type</FieldLabel>
                     <div className="flex gap-3">
                         {equipmentTypes.map((type) => (
                             <button
@@ -364,83 +387,115 @@ export default function EquipmentAdd() {
                         ))}
                     </div>
                     {errors.equipment_type_id && (
-                        <p className={errorClass}>
+                        <FieldError>
                             {errors.equipment_type_id[0]}
-                        </p>
+                        </FieldError>
                     )}
-                </div>
+                </Field>
 
                 {/* Brand */}
-                <div>
-                    <label className={labelClass}>Brand</label>
-                    <select
-                        name="brand_id"
-                        value={form.brand_id}
-                        onChange={handleChange}
-                        className={inputClass}
+                <Field>
+                    <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
+                    <Select
+                        value={String(form.brand_id || BRAND_NONE)}
+                        onValueChange={(value) =>
+                            handleSelectChange(
+                                "brand_id",
+                                value === BRAND_NONE ? "" : value
+                            )
+                        }
                     >
-                        <option value="">Select Brand</option>
-                        {brands.map((brand) => (
-                            <option key={brand.id} value={brand.id}>
-                                {brand.name}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger
+                            id="brand_id"
+                            className="w-full"
+                            aria-invalid={!!errors.brand_id}
+                        >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={BRAND_NONE}>
+                                Select Brand
+                            </SelectItem>
+                            {brands.map((brand) => (
+                                <SelectItem
+                                    key={brand.id}
+                                    value={String(brand.id)}
+                                >
+                                    {brand.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     {errors.brand_id && (
-                        <p className={errorClass}>{errors.brand_id[0]}</p>
+                        <FieldError>{errors.brand_id[0]}</FieldError>
                     )}
-                </div>
+                </Field>
 
                 {/* Model */}
-                <div>
-                    <label className={labelClass}>Model</label>
-                    <select
-                        name="model_id"
-                        value={form.model_id}
-                        onChange={handleChange}
+                <Field>
+                    <FieldLabel htmlFor="model_id">Model</FieldLabel>
+                    <Select
+                        value={String(form.model_id || MODEL_NONE)}
+                        onValueChange={(value) =>
+                            handleSelectChange(
+                                "model_id",
+                                value === MODEL_NONE ? "" : value
+                            )
+                        }
                         disabled={!form.brand_id}
-                        className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                     >
-                        <option value="">
-                            {form.brand_id
-                                ? "Select Model"
-                                : "Select a brand first"}
-                        </option>
-                        {models.map((model) => (
-                            <option key={model.id} value={model.id}>
-                                {model.name}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger
+                            id="model_id"
+                            className="w-full"
+                            aria-invalid={!!errors.model_id}
+                        >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={MODEL_NONE}>
+                                {form.brand_id
+                                    ? "Select Model"
+                                    : "Select a brand first"}
+                            </SelectItem>
+                            {models.map((model) => (
+                                <SelectItem
+                                    key={model.id}
+                                    value={String(model.id)}
+                                >
+                                    {model.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     {errors.model_id && (
-                        <p className={errorClass}>{errors.model_id[0]}</p>
+                        <FieldError>{errors.model_id[0]}</FieldError>
                     )}
-                </div>
+                </Field>
 
                 {/* Serial Number */}
-                <div>
-                    <label className={labelClass}>Serial Number</label>
-                    <input
+                <Field>
+                    <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
+                    <Input
+                        id="serial_number"
                         type="text"
                         name="serial_number"
                         value={form.serial_number}
                         onChange={handleChange}
-                        className={inputClass}
                         placeholder="e.g. PF123456"
                     />
                     {errors.serial_number && (
-                        <p className={errorClass}>{errors.serial_number[0]}</p>
+                        <FieldError>{errors.serial_number[0]}</FieldError>
                     )}
-                </div>
+                </Field>
 
                 {/* Delivery */}
-                <div className="space-y-3">
+                <FieldSet className="gap-3">
                     <div className="flex items-center justify-between">
-                        <label className={labelClass}>
+                        <FieldLabel htmlFor="delivery-handle">
                             {deliveryMode === "voucher"
                                 ? "Voucher No."
                                 : "Sales Invoice No."}
-                        </label>
+                        </FieldLabel>
                         <div className="flex gap-1 text-xs">
                             <p className="text-xs text-gray-500">
                                 {deliveryMode === "voucher" ? (
@@ -508,7 +563,8 @@ export default function EquipmentAdd() {
 
                     {/* Handle input */}
                     <div className="relative">
-                        <input
+                        <Input
+                            id="delivery-handle"
                             type="text"
                             value={
                                 deliveryMode === "voucher"
@@ -531,7 +587,7 @@ export default function EquipmentAdd() {
                                 }));
                             }}
                             onBlur={handleDeliveryBlur}
-                            className={`${inputClass} pr-8`}
+                            className="pr-8"
                         />
                         {deliveryLoading && (
                             <span className="absolute right-2 top-2.5 text-xs text-gray-400">
@@ -547,51 +603,70 @@ export default function EquipmentAdd() {
 
                     {/* Matched / manual fields */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className={labelClass}>Supplier</label>
+                        <Field>
+                            <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
                             {deliveryMatched ? (
-                                <input
+                                <Input
+                                    id="supplier_id"
                                     type="text"
                                     value={deliveryFields.supplier_name}
                                     disabled
-                                    className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
+                                    className="disabled:bg-gray-100 disabled:text-gray-400"
                                 />
                             ) : (
-                                <select
-                                    value={deliveryFields.supplier_id}
-                                    onChange={(e) => {
+                                <Select
+                                    value={
+                                        deliveryFields.supplier_id ||
+                                        SUPPLIER_NONE
+                                    }
+                                    onValueChange={(value) => {
                                         const selected = suppliers.find(
-                                            (s) =>
-                                                s.id ===
-                                                parseInt(e.target.value)
+                                            (s) => s.id === parseInt(value)
                                         );
                                         setDeliveryFields((prev) => ({
                                             ...prev,
-                                            supplier_id: e.target.value,
+                                            supplier_id:
+                                                value === SUPPLIER_NONE
+                                                    ? ""
+                                                    : value,
                                             supplier_name: selected
                                                 ? selected.name
                                                 : "",
                                         }));
                                     }}
-                                    className={inputClass}
                                 >
-                                    <option value="">Select Supplier</option>
-                                    {suppliers.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger
+                                        id="supplier_id"
+                                        className="w-full"
+                                        aria-invalid={!!errors.supplier_id}
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={SUPPLIER_NONE}>
+                                            Select Supplier
+                                        </SelectItem>
+                                        {suppliers.map((s) => (
+                                            <SelectItem
+                                                key={s.id}
+                                                value={String(s.id)}
+                                            >
+                                                {s.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             )}
                             {errors.supplier_id && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.supplier_id[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
-                        <div>
-                            <label className={labelClass}>Purchase Date</label>
-                            <input
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="purchase_date">Purchase Date</FieldLabel>
+                            <Input
+                                id="purchase_date"
                                 type="date"
                                 value={deliveryFields.purchase_date}
                                 onChange={(e) =>
@@ -601,14 +676,14 @@ export default function EquipmentAdd() {
                                     }))
                                 }
                                 disabled={deliveryMatched}
-                                className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
+                                className="disabled:bg-gray-100 disabled:text-gray-400"
                             />
                             {errors.purchase_date && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.purchase_date[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
+                        </Field>
                     </div>
 
                     {deliveryMatched && (
@@ -639,54 +714,77 @@ export default function EquipmentAdd() {
                             </button>
                         </p>
                     )}
-                </div>
+                </FieldSet>
 
                 {/* Condition + Status */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className={labelClass}>Condition</label>
-                        <select
-                            name="condition"
-                            value={form.condition}
-                            onChange={handleChange}
-                            className={inputClass}
+                    <Field>
+                        <FieldLabel htmlFor="condition">Condition</FieldLabel>
+                        <Select
+                            value={form.condition || CONDITION_NONE}
+                            onValueChange={(value) =>
+                                handleSelectChange(
+                                    "condition",
+                                    value === CONDITION_NONE ? "" : value
+                                )
+                            }
                         >
-                            <option value="">Select Condition</option>
-                            {conditionOptions.map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger
+                                id="condition"
+                                className="w-full"
+                                aria-invalid={!!errors.condition}
+                            >
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={CONDITION_NONE}>
+                                    Select Condition
+                                </SelectItem>
+                                {conditionOptions.map((c) => (
+                                    <SelectItem key={c} value={c}>
+                                        {c}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         {errors.condition && (
-                            <p className={errorClass}>{errors.condition[0]}</p>
+                            <FieldError>{errors.condition[0]}</FieldError>
                         )}
-                    </div>
+                    </Field>
                     {/* Status */}
-                    <div>
-                        <label className={labelClass}>Status</label>
+                    <Field>
+                        <FieldLabel htmlFor="status">Status</FieldLabel>
                         {isEditMode ? (
                             <>
-                                <select
-                                    name="status"
+                                <Select
                                     value={form.status}
-                                    onChange={handleChange}
+                                    onValueChange={(value) =>
+                                        handleSelectChange("status", value)
+                                    }
                                     disabled={form.status === "Assigned"}
-                                    className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                                 >
-                                    {form.status === "Assigned" && (
-                                        <option value="Assigned">
-                                            Assigned
-                                        </option>
-                                    )}
-                                    {statusOptions
-                                        .filter((s) => s !== "Assigned")
-                                        .map((s) => (
-                                            <option key={s} value={s}>
-                                                {s}
-                                            </option>
-                                        ))}
-                                </select>
+                                    <SelectTrigger
+                                        id="status"
+                                        className="w-full"
+                                        aria-invalid={!!errors.status}
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {form.status === "Assigned" && (
+                                            <SelectItem value="Assigned">
+                                                Assigned
+                                            </SelectItem>
+                                        )}
+                                        {statusOptions
+                                            .filter((s) => s !== "Assigned")
+                                            .map((s) => (
+                                                <SelectItem key={s} value={s}>
+                                                    {s}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
                                 {form.status === "Assigned" && (
                                     <p className="text-xs text-gray-400 mt-1">
                                         Status is locked while equipment is
@@ -696,37 +794,49 @@ export default function EquipmentAdd() {
                                 )}
                             </>
                         ) : (
-                            <select
-                                name="status"
+                            <Select
                                 value={form.status}
-                                onChange={handleChange}
-                                className={inputClass}
+                                onValueChange={(value) =>
+                                    handleSelectChange("status", value)
+                                }
                             >
-                                {statusOptions.map((s) => (
-                                    <option key={s} value={s}>
-                                        {s}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger
+                                    id="status"
+                                    className="w-full"
+                                    aria-invalid={!!errors.status}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {statusOptions.map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                            {s}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         )}
                         {errors.status && (
-                            <p className={errorClass}>{errors.status[0]}</p>
+                            <FieldError>{errors.status[0]}</FieldError>
                         )}
-                    </div>
+                    </Field>
 
                     {/* Employee assignment — add mode only, visible when Assigned is selected */}
                     {!isEditMode && form.status === "Assigned" && (
-                        <div>
-                            <label className={labelClass}>
+                        <Field>
+                            <FieldLabel htmlFor="employee-combobox">
                                 Assign to Employee
-                            </label>
+                            </FieldLabel>
                             <Combobox
                                 items={employees}
                                 itemToStringValue={(emp) => emp.name}
                                 value={selectedEmployee}
                                 onValueChange={setSelectedEmployee}
                             >
-                                <ComboboxInput placeholder="Type to search employee..." />
+                                <ComboboxInput
+                                    id="employee-combobox"
+                                    placeholder="Type to search employee..."
+                                />
                                 <ComboboxContent>
                                     <ComboboxEmpty>
                                         No employees found.
@@ -747,11 +857,11 @@ export default function EquipmentAdd() {
                                 </ComboboxContent>
                             </Combobox>
                             {errors.employee_id && (
-                                <p className={errorClass}>
+                                <FieldError>
                                     {errors.employee_id[0]}
-                                </p>
+                                </FieldError>
                             )}
-                        </div>
+                        </Field>
                     )}
                 </div>
 
@@ -776,6 +886,7 @@ export default function EquipmentAdd() {
                         Cancel
                     </button>
                 </div>
+                </FieldGroup>
             </form>
         </div>
     );

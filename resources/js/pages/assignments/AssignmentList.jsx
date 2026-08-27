@@ -9,6 +9,13 @@ import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
 import { useAssignmentsList } from "@/queries/useAssignmentsList";
 import { sortBranches } from "@/lib/branches";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/custom/custom-select";
 
 const ASSIGNMENT_EQUIPMENT_FILTERS = {
     status: "",
@@ -17,6 +24,16 @@ const ASSIGNMENT_EQUIPMENT_FILTERS = {
     supplier_id: "",
     serial_number: "",
 };
+
+// Sentinels for the filter-bar Selects — Radix throws on an empty-string item
+// value, so these stand in for "" ("All X") at the component boundary and get
+// translated back in each onValueChange. statusFilter already stores "all" as
+// its own no-filter value (see line ~110's comparison) so it needs no
+// translation — it's included here only for the SelectItem constant.
+const STATUS_ALL = "all";
+const BRANCH_ALL = "all";
+const DEPT_ALL = "all";
+const EMPLOYEE_ALL = "all";
 
 export default function AssignmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -193,63 +210,85 @@ export default function AssignmentList() {
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
                 {/* Status Filter */}
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    <option value="all">All Status</option>
-                    {presentStatuses.map((s) => (
-                        <option key={s} value={s}>
-                            {s}
-                        </option>
-                    ))}
-                </select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-auto border-gray-200 text-xs text-gray-600 h-auto py-1.5">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={STATUS_ALL}>All Status</SelectItem>
+                        {presentStatuses.map((s) => (
+                            <SelectItem key={s} value={s}>
+                                {s}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
                 {/* Branches Filter */}
-                <select
-                    value={branchFilter}
-                    onChange={(e) => setBranchFilter(e.target.value)}
-                    className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <Select
+                    value={branchFilter || BRANCH_ALL}
+                    onValueChange={(value) =>
+                        setBranchFilter(value === BRANCH_ALL ? "" : value)
+                    }
                 >
-                    <option value="">All Branches</option>
-                    {sortedBranches.map((branch) => (
-                        <option key={branch.id} value={`branch:${branch.id}`}>
-                            {branch.branch_name} ({branch.branch_code})
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger className="w-auto border-gray-200 text-xs text-gray-600 h-auto py-1.5">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={BRANCH_ALL}>All Branches</SelectItem>
+                        {sortedBranches.map((branch) => (
+                            <SelectItem
+                                key={branch.id}
+                                value={`branch:${branch.id}`}
+                            >
+                                {branch.branch_name} ({branch.branch_code})
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
                 {/* Department Filter */}
-                <select
-                    value={deptFilter}
-                    onChange={(e) => {
-                        setDeptFilter(e.target.value);
+                <Select
+                    value={deptFilter || DEPT_ALL}
+                    onValueChange={(value) => {
+                        setDeptFilter(value === DEPT_ALL ? "" : value);
                         setEmployeeFilter("");
                     }}
-                    className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                    <option value="">All Departments</option>
-                    {departments.map((dept) => (
-                        <option key={dept.id} value={dept.tag}>
-                            {dept.name} ({dept.tag})
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger className="w-auto border-gray-200 text-xs text-gray-600 h-auto py-1.5">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={DEPT_ALL}>All Departments</SelectItem>
+                        {departments.map((dept) => (
+                            <SelectItem key={dept.id} value={dept.tag}>
+                                {dept.name} ({dept.tag})
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
                 {/* Employee Filter */}
-                <select
-                    value={employeeFilter}
-                    onChange={(e) => setEmployeeFilter(e.target.value)}
-                    className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <Select
+                    value={employeeFilter || EMPLOYEE_ALL}
+                    onValueChange={(value) =>
+                        setEmployeeFilter(value === EMPLOYEE_ALL ? "" : value)
+                    }
                 >
-                    <option value="">All Employees</option>
-                    {employeeFilterOptions.map((emp) => (
-                        <option key={emp.id} value={emp.id}>
-                            {emp.name} ({emp.department_tag})
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger className="w-auto border-gray-200 text-xs text-gray-600 h-auto py-1.5">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={EMPLOYEE_ALL}>
+                            All Employees
+                        </SelectItem>
+                        {employeeFilterOptions.map((emp) => (
+                            <SelectItem key={emp.id} value={String(emp.id)}>
+                                {emp.name} ({emp.department_tag})
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             {/* Table */}

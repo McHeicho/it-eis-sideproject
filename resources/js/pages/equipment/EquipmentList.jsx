@@ -8,6 +8,13 @@ import ConditionBadge from "@/components/ui/ConditionBadge";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/custom/custom-select";
 
 // Tooltip text for an Assigned row's current holder. Employee-held rows name
 // the person and their office; branch-held rows name the branch. Returns null
@@ -29,6 +36,14 @@ const EMPTY_FILTERS = {
     supplier_id: "",
     serial_number: "",
 };
+
+// Sentinels for the filter-bar Selects — Radix throws on an empty-string item
+// value, so these stand in for "" ("All X") at the component boundary and get
+// translated back in each onValueChange.
+const STATUS_ALL = "all";
+const CONDITION_ALL = "all";
+const TYPE_ALL = "all";
+const SUPPLIER_ALL = "all";
 
 export default function EquipmentList() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -99,96 +114,123 @@ export default function EquipmentList() {
                         <label className="text-xs text-gray-500 block mb-1">
                             Status
                         </label>
-                        <select
-                            value={filterForm.status}
-                            onChange={(e) =>
+                        <Select
+                            value={filterForm.status || STATUS_ALL}
+                            onValueChange={(value) =>
                                 setFilterForm((prev) => ({
                                     ...prev,
-                                    status: e.target.value,
+                                    status: value === STATUS_ALL ? "" : value,
                                 }))
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full bg-white"
                         >
-                            <option value="">All Statuses</option>
-                            {[
-                                "Available",
-                                "Assigned",
-                                "Under Repair",
-                                "Lost/Missing",
-                                "Retired/Disposed",
-                                "Spare Unit",
-                            ].map((s) => (
-                                <option key={s} value={s}>
-                                    {s}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={STATUS_ALL}>
+                                    All Statuses
+                                </SelectItem>
+                                {[
+                                    "Available",
+                                    "Assigned",
+                                    "Under Repair",
+                                    "Lost/Missing",
+                                    "Retired/Disposed",
+                                    "Spare Unit",
+                                ].map((s) => (
+                                    <SelectItem key={s} value={s}>
+                                        {s}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
                         <label className="text-xs text-gray-500 block mb-1">
                             Condition
                         </label>
-                        <select
-                            value={filterForm.condition}
-                            onChange={(e) =>
+                        <Select
+                            value={filterForm.condition || CONDITION_ALL}
+                            onValueChange={(value) =>
                                 setFilterForm((prev) => ({
                                     ...prev,
-                                    condition: e.target.value,
+                                    condition:
+                                        value === CONDITION_ALL ? "" : value,
                                 }))
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full bg-white"
                         >
-                            <option value="">All Conditions</option>
-                            {["Good", "Defective"].map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={CONDITION_ALL}>
+                                    All Conditions
+                                </SelectItem>
+                                {["Good", "Defective"].map((c) => (
+                                    <SelectItem key={c} value={c}>
+                                        {c}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
                         <label className="text-xs text-gray-500 block mb-1">
                             Equipment Type
                         </label>
-                        <select
-                            value={filterForm.equipment_type_id}
-                            onChange={(e) =>
+                        <Select
+                            value={filterForm.equipment_type_id || TYPE_ALL}
+                            onValueChange={(value) =>
                                 setFilterForm((prev) => ({
                                     ...prev,
-                                    equipment_type_id: e.target.value,
+                                    equipment_type_id:
+                                        value === TYPE_ALL ? "" : value,
                                 }))
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full bg-white"
                         >
-                            <option value="">All Types</option>
-                            {types.map((t) => (
-                                <option key={t.id} value={t.id}>
-                                    {t.name}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={TYPE_ALL}>
+                                    All Types
+                                </SelectItem>
+                                {types.map((t) => (
+                                    <SelectItem key={t.id} value={String(t.id)}>
+                                        {t.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
                         <label className="text-xs text-gray-500 block mb-1">
                             Supplier
                         </label>
-                        <select
-                            value={filterForm.supplier_id}
-                            onChange={(e) =>
+                        <Select
+                            value={filterForm.supplier_id || SUPPLIER_ALL}
+                            onValueChange={(value) =>
                                 setFilterForm((prev) => ({
                                     ...prev,
-                                    supplier_id: e.target.value,
+                                    supplier_id:
+                                        value === SUPPLIER_ALL ? "" : value,
                                 }))
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full bg-white"
                         >
-                            <option value="">All Suppliers</option>
-                            {suppliers.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                    {s.name}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={SUPPLIER_ALL}>
+                                    All Suppliers
+                                </SelectItem>
+                                {suppliers.map((s) => (
+                                    <SelectItem key={s.id} value={String(s.id)}>
+                                        {s.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
                         <label className="text-xs text-gray-500 block mb-1">

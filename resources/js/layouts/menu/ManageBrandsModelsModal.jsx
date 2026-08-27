@@ -5,7 +5,22 @@ import api from '@/api/axios';
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/custom/custom-select";
+
+// Sentinels for the Selects in ModelsView below — Radix throws on an
+// empty-string item value, so these stand in for "" at the component
+// boundary and get translated back in each onValueChange/handleRowChange.
+const BRAND_ALL = "all";
+const BRAND_NONE = "none";
 
 export default function ManageBrandsModelsModal({ onClose }) {
     const [view, setView] = useState('menu');
@@ -258,11 +273,6 @@ function BrandsView({ setBrandsEditing }) {
         }
     };
 
-    const inputClass = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const errorInputClass = "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-    const errorClass = "text-red-500 text-xs mt-1";
-
     return (
         <div className="space-y-4">
 
@@ -302,11 +312,11 @@ function BrandsView({ setBrandsEditing }) {
                     ))}
                 </div>
             ) : isEditing ? (
-                <Table>
+                <Table className="table-fixed">
                     <TableHeader className="text-xs uppercase text-gray-500 border-b">
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand Name</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[10%]">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[90%]">Brand Name</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody className="divide-y divide-gray-50">
@@ -314,34 +324,43 @@ function BrandsView({ setBrandsEditing }) {
                             <TableRow key={row.id} className="border-0 hover:bg-transparent">
                                 <TableCell className="py-2 px-0 align-top text-xs text-gray-400 pr-2">{index + 1}</TableCell>
                                 <TableCell className="py-2 px-0 align-top">
-                                    <input
-                                        type="text"
-                                        value={row.name}
-                                        onChange={(e) => handleRowChange(index, e.target.value)}
-                                        className={rowErrors[index]?.name ? errorInputClass : inputClass}
-                                        placeholder="Brand name"
-                                    />
-                                    {rowErrors[index]?.name && (
-                                        <p className={errorClass}>{rowErrors[index].name}</p>
-                                    )}
+                                    <Field>
+                                        <Input
+                                            id={`brand-name-${index}`}
+                                            type="text"
+                                            value={row.name}
+                                            onChange={(e) => handleRowChange(index, e.target.value)}
+                                            aria-invalid={!!rowErrors[index]?.name}
+                                            aria-label="Brand name"
+                                            placeholder="Brand name"
+                                        />
+                                        {rowErrors[index]?.name && (
+                                            <FieldError>{rowErrors[index].name}</FieldError>
+                                        )}
+                                    </Field>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             ) : (
-                <Table>
+                <Table className="table-fixed">
                     <TableHeader className="text-xs uppercase text-gray-500 border-b">
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand Name</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[10%]">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[90%]">Brand Name</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody className="divide-y divide-gray-50">
                         {brands.map((brand, index) => (
                             <TableRow key={brand.id} className="border-0 hover:bg-gray-50">
                                 <TableCell className="py-2 px-0 text-xs text-gray-400">{index + 1}</TableCell>
-                                <TableCell className="py-2 px-0 text-gray-800">{brand.name}</TableCell>
+                                <TableCell
+                                    className="py-2 px-0 text-gray-800 truncate"
+                                    title={brand.name}
+                                >
+                                    {brand.name}
+                                </TableCell>
                             </TableRow>
                         ))}
                         {brands.length === 0 && (
@@ -359,18 +378,18 @@ function BrandsView({ setBrandsEditing }) {
             {showForm && !isEditing && (<>
                 <Separator className="my-4" />
                 <form onSubmit={handleSubmit} className="space-y-3">
-                    <div>
-                        <label className={labelClass}>Brand Name</label>
-                        <input
+                    <Field>
+                        <FieldLabel htmlFor="brand-name">Brand Name</FieldLabel>
+                        <Input
+                            id="brand-name"
                             type="text"
                             name="name"
                             value={form.name}
                             onChange={handleChange}
-                            className={inputClass}
                             placeholder="e.g. Lenovo"
                         />
-                        {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
-                    </div>
+                        {errors.name && <FieldError>{errors.name[0]}</FieldError>}
+                    </Field>
                     <div className="flex gap-2 pt-1">
                         <Button type="submit" disabled={addBrandMutation.isPending}>
                             {addBrandMutation.isPending ? 'Saving...' : 'Save Brand'}
@@ -576,33 +595,34 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
         }
     };
 
-    const inputClass = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-    const errorInputClass = "w-full border border-red-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-    const errorClass = "text-red-500 text-xs mt-1";
-
     return (
         <div className="space-y-4">
 
             {/* Brand Filter */}
-            <div>
-                <label className={labelClass}>Filter by Brand</label>
-                <select
-                    value={selectedBrandId}
-                    onChange={(e) => {
-                        setSelectedBrandId(e.target.value);
+            <Field>
+                <FieldLabel htmlFor="model-brand-filter">Filter by Brand</FieldLabel>
+                <Select
+                    value={selectedBrandId || BRAND_ALL}
+                    onValueChange={(value) => {
+                        setSelectedBrandId(value === BRAND_ALL ? "" : value);
                         setSuccess(false);
                         if (modelsEditing) handleCancel();
                     }}
                     disabled={modelsEditing}
-                    className={`${inputClass} disabled:bg-gray-100 disabled:text-gray-400`}
                 >
-                    <option value="">All Brands</option>
-                    {brands.map((brand) => (
-                        <option key={brand.id} value={brand.id}>{brand.name}</option>
-                    ))}
-                </select>
-            </div>
+                    <SelectTrigger id="model-brand-filter" className="w-full">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={BRAND_ALL}>All Brands</SelectItem>
+                        {brands.map((brand) => (
+                            <SelectItem key={brand.id} value={String(brand.id)}>
+                                {brand.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </Field>
 
             {/* Action Buttons */}
             {!modelsEditing && (
@@ -643,12 +663,12 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                     ))}
                 </div>
             ) : modelsEditing ? (
-                <Table>
+                <Table className="table-fixed">
                     <TableHeader className="text-xs uppercase text-gray-500 border-b">
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Model Name</TableHead>
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[10%]">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[55%]">Model Name</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[35%]">Brand</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody className="divide-y divide-gray-50">
@@ -656,51 +676,85 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                             <TableRow key={row.id} className="border-0 hover:bg-transparent">
                                 <TableCell className="py-2 px-0 align-top text-xs text-gray-400 pr-2">{index + 1}</TableCell>
                                 <TableCell className="py-2 px-0 align-top pr-2">
-                                    <input
-                                        type="text"
-                                        value={row.name}
-                                        onChange={(e) => handleRowChange(index, 'name', e.target.value)}
-                                        className={rowErrors[index]?.name ? errorInputClass : inputClass}
-                                        placeholder="Model name"
-                                    />
-                                    {rowErrors[index]?.name && (
-                                        <p className={errorClass}>{rowErrors[index].name}</p>
-                                    )}
+                                    <Field>
+                                        <Input
+                                            id={`model-name-${index}`}
+                                            type="text"
+                                            value={row.name}
+                                            onChange={(e) => handleRowChange(index, 'name', e.target.value)}
+                                            aria-invalid={!!rowErrors[index]?.name}
+                                            aria-label="Model name"
+                                            placeholder="Model name"
+                                        />
+                                        {rowErrors[index]?.name && (
+                                            <FieldError>{rowErrors[index].name}</FieldError>
+                                        )}
+                                    </Field>
                                 </TableCell>
                                 <TableCell className="py-2 px-0 align-top">
-                                    <select
-                                        value={row.brand_id}
-                                        onChange={(e) => handleRowChange(index, 'brand_id', e.target.value)}
-                                        className={rowErrors[index]?.brand_id ? errorInputClass : inputClass}
-                                    >
-                                        <option value="">Select Brand</option>
-                                        {brands.map((brand) => (
-                                            <option key={brand.id} value={String(brand.id)}>{brand.name}</option>
-                                        ))}
-                                    </select>
-                                    {rowErrors[index]?.brand_id && (
-                                        <p className={errorClass}>{rowErrors[index].brand_id}</p>
-                                    )}
+                                    <Field>
+                                        <Select
+                                            value={row.brand_id || BRAND_NONE}
+                                            onValueChange={(value) =>
+                                                handleRowChange(
+                                                    index,
+                                                    'brand_id',
+                                                    value === BRAND_NONE ? '' : value
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger
+                                                className="w-full"
+                                                aria-invalid={!!rowErrors[index]?.brand_id}
+                                                aria-label="Brand"
+                                            >
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value={BRAND_NONE}>
+                                                    Select Brand
+                                                </SelectItem>
+                                                {brands.map((brand) => (
+                                                    <SelectItem key={brand.id} value={String(brand.id)}>
+                                                        {brand.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {rowErrors[index]?.brand_id && (
+                                            <FieldError>{rowErrors[index].brand_id}</FieldError>
+                                        )}
+                                    </Field>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             ) : (
-                <Table>
+                <Table className="table-fixed">
                     <TableHeader className="text-xs uppercase text-gray-500 border-b">
                         <TableRow className="border-0 hover:bg-transparent">
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">#</TableHead>
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Model Name</TableHead>
-                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit">Brand</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[10%]">#</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[55%]">Model Name</TableHead>
+                            <TableHead className="py-2 px-0 h-auto font-normal text-inherit w-[35%]">Brand</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody className="divide-y divide-gray-50">
                         {filteredModels.map((model, index) => (
                             <TableRow key={model.id} className="border-0 hover:bg-gray-50">
                                 <TableCell className="py-2 px-0 text-xs text-gray-400">{index + 1}</TableCell>
-                                <TableCell className="py-2 px-0 text-gray-800">{model.name}</TableCell>
-                                <TableCell className="py-2 px-0 text-gray-500 text-xs">{model.brand?.name}</TableCell>
+                                <TableCell
+                                    className="py-2 px-0 text-gray-800 truncate"
+                                    title={model.name}
+                                >
+                                    {model.name}
+                                </TableCell>
+                                <TableCell
+                                    className="py-2 px-0 text-gray-500 text-xs truncate"
+                                    title={model.brand?.name || ""}
+                                >
+                                    {model.brand?.name}
+                                </TableCell>
                             </TableRow>
                         ))}
                         {filteredModels.length === 0 && (
@@ -718,33 +772,49 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
             {showForm && !modelsEditing && (<>
                 <Separator className="my-4" />
                 <form onSubmit={handleSubmit} className="space-y-3">
-                    <div>
-                        <label className={labelClass}>Brand</label>
-                        <select
-                            name="brand_id"
-                            value={form.brand_id}
-                            onChange={(e) => setForm({ ...form, brand_id: e.target.value })}
-                            className={inputClass}
+                    <Field>
+                        <FieldLabel htmlFor="model-brand">Brand</FieldLabel>
+                        <Select
+                            value={form.brand_id || BRAND_NONE}
+                            onValueChange={(value) =>
+                                setForm({
+                                    ...form,
+                                    brand_id: value === BRAND_NONE ? '' : value,
+                                })
+                            }
                         >
-                            <option value="">Select Brand</option>
-                            {brands.map((brand) => (
-                                <option key={brand.id} value={brand.id}>{brand.name}</option>
-                            ))}
-                        </select>
-                        {errors.brand_id && <p className={errorClass}>{errors.brand_id[0]}</p>}
-                    </div>
-                    <div>
-                        <label className={labelClass}>Model Name</label>
-                        <input
+                            <SelectTrigger
+                                id="model-brand"
+                                className="w-full"
+                                aria-invalid={!!errors.brand_id}
+                            >
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={BRAND_NONE}>
+                                    Select Brand
+                                </SelectItem>
+                                {brands.map((brand) => (
+                                    <SelectItem key={brand.id} value={String(brand.id)}>
+                                        {brand.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.brand_id && <FieldError>{errors.brand_id[0]}</FieldError>}
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="model-name">Model Name</FieldLabel>
+                        <Input
+                            id="model-name"
                             type="text"
                             name="name"
                             value={form.name}
                             onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            className={inputClass}
                             placeholder="e.g. IdeaPad"
                         />
-                        {errors.name && <p className={errorClass}>{errors.name[0]}</p>}
-                    </div>
+                        {errors.name && <FieldError>{errors.name[0]}</FieldError>}
+                    </Field>
                     <div className="flex gap-2 pt-1">
                         <Button type="submit" disabled={addModelMutation.isPending}>
                             {addModelMutation.isPending ? 'Saving...' : 'Save Model'}

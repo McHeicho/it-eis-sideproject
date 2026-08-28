@@ -20,11 +20,30 @@ const DEFAULT_VARIANT =
     "text-white dark:text-primary-foreground " +
     "hover:bg-primary-hover hover:text-primary-hover-foreground"
 
+// Semantic action variants (create/assign/edit). The registry's cva doesn't
+// know these keys, so passing them through as `variant` yields no colour
+// classes from buttonVariants — these strings are the only source of colour,
+// applied via the wrapper's own className rather than by editing the
+// registry's button.jsx.
+const ACTION_VARIANTS = {
+    create:
+        "bg-action-create text-action-create-foreground hover:bg-action-create-hover",
+    assign:
+        "bg-action-assign text-action-assign-foreground hover:bg-action-assign-hover",
+    edit:
+        "bg-action-edit text-action-edit-foreground hover:bg-action-edit-hover",
+}
+
 function Button({ className, variant = "default", ...props }) {
     return (
         <BaseButton
             variant={variant}
-            className={cn(BOX, variant === "default" && DEFAULT_VARIANT, className)}
+            className={cn(
+                BOX,
+                variant === "default" && DEFAULT_VARIANT,
+                ACTION_VARIANTS[variant],
+                className
+            )}
             {...props}
         />
     )

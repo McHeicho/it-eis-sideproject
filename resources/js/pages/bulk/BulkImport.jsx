@@ -8,6 +8,7 @@ import {
     Paperclip,
 } from "lucide-react";
 import api from "@/api/axios";
+import { Button } from "@/components/ui/custom/custom-button";
 import AppDialog from "@/components/ui/AppDialog";
 
 export default function BulkImport() {
@@ -303,16 +304,17 @@ export default function BulkImport() {
 
                     {/* Actions Row */}
                     <div className="flex items-center gap-3 flex-wrap">
-                        <button
+                        <Button
+                            variant="create"
+                            size="lg"
                             onClick={handleDownloadTemplate}
                             disabled={eqDownloading || eqUploading}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <FileSpreadsheet size={16} />
                             {eqDownloading
                                 ? "Generating..."
                                 : "Generate Template"}
-                        </button>
+                        </Button>
 
                         {/* File Picker */}
                         <label
@@ -342,13 +344,14 @@ export default function BulkImport() {
 
                         {/* Upload Button */}
                         {eqSelectedFile && (
-                            <button
+                            <Button
+                                variant="assign"
+                                size="lg"
                                 onClick={handleUpload}
                                 disabled={eqUploading}
-                                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 {eqUploading ? "Importing..." : "Import"}
-                            </button>
+                            </Button>
                         )}
                     </div>
 
@@ -431,27 +434,33 @@ export default function BulkImport() {
 
                                 {/* Actions */}
                                 <div className="flex flex-col gap-2">
-                                    <button
+                                    <Button
+                                        variant="create"
+                                        size="lg"
+                                        className="w-full"
                                         onClick={() => navigate("/equipment")}
-                                        className="w-full bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
                                     >
                                         Go to Equipment List
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="assign"
+                                        size="lg"
+                                        className="w-full"
                                         onClick={() => navigate("/assignments")}
-                                        className="w-full bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 transition-colors"
                                     >
                                         Go to Assignment List
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        className="w-full"
                                         onClick={() => {
                                             setEqImportResult(null);
                                             setEqCountdown(null);
                                         }}
-                                        className="w-full border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 transition-colors"
                                     >
                                         OK — dismiss ({eqCountdown}s)
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         )}
@@ -473,16 +482,17 @@ export default function BulkImport() {
 
                     {/* Actions Row */}
                     <div className="flex items-center gap-3 flex-wrap">
-                        <button
+                        <Button
+                            variant="create"
+                            size="lg"
                             onClick={handleEmpDownloadTemplate}
                             disabled={empDownloading || empUploading}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <FileSpreadsheet size={16} />
                             {empDownloading
                                 ? "Generating..."
                                 : "Generate Template"}
-                        </button>
+                        </Button>
 
                         <label
                             className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
@@ -511,13 +521,14 @@ export default function BulkImport() {
                         </label>
 
                         {empSelectedFile && (
-                            <button
+                            <Button
+                                variant="assign"
+                                size="lg"
                                 onClick={handleEmpUpload}
                                 disabled={empUploading}
-                                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 {empUploading ? "Importing..." : "Import"}
-                            </button>
+                            </Button>
                         )}
                     </div>
 
@@ -670,40 +681,45 @@ export default function BulkImport() {
 
                                     {/* Action Buttons */}
                                     <div className="flex justify-end gap-2">
-                                        <button
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="text-xs"
                                             onClick={handleCancelDuplicates}
-                                            className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded"
                                         >
                                             Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleDuplicateDecision}
-                                            className={`text-xs text-white px-3 py-1.5 rounded ${
+                                        </Button>
+                                        <Button
+                                            variant="create"
+                                            size="sm"
+                                            className={`text-xs ${
                                                 !empCurrentChecks.left &&
                                                 !empCurrentChecks.right
                                                     ? "bg-gray-400 hover:bg-gray-500"
-                                                    : "bg-blue-600 hover:bg-blue-700"
+                                                    : ""
                                             }`}
+                                            onClick={handleDuplicateDecision}
                                         >
                                             {!empCurrentChecks.left &&
                                             !empCurrentChecks.right
                                                 ? "Skip"
                                                 : "OK"}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             )}
 
                             {empDuplicates.length === 0 && (
-                                <button
+                                <Button
+                                    variant="link"
+                                    className="h-auto p-0 mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
                                     onClick={() => {
                                         setEmpImportResult(null);
                                         setEmpDuplicates([]);
                                     }}
-                                    className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
                                 >
                                     OK
-                                </button>
+                                </Button>
                             )}
                         </div>
                     )}
@@ -851,7 +867,9 @@ export default function BulkImport() {
                                     ))}
 
                                     <div className="flex items-center gap-2">
-                                        <button
+                                        <Button
+                                            variant="assign"
+                                            size="lg"
                                             onClick={handleDocUploadAll}
                                             disabled={
                                                 docUploading ||
@@ -859,21 +877,21 @@ export default function BulkImport() {
                                                     (f) => !f.deliveryId
                                                 )
                                             }
-                                            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             {docUploading
                                                 ? "Uploading..."
                                                 : "Upload All"}
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="lg"
                                             onClick={() =>
                                                 window.location.reload()
                                             }
                                             disabled={docUploading}
-                                            className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
                                         >
                                             Cancel
-                                        </button>
+                                        </Button>
                                     </div>
                                 </>
                             )}
@@ -900,12 +918,13 @@ export default function BulkImport() {
                                         : r.message}
                                 </p>
                             ))}
-                            <button
+                            <Button
+                                variant="link"
+                                className="h-auto p-0 mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
                                 onClick={() => setDocResults([])}
-                                className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
                             >
                                 OK
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>

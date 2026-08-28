@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/api/axios';
+import { Button } from '@/components/ui/custom/custom-button';
 
 export default function Login() {
     const navigate = useNavigate();
@@ -70,13 +71,15 @@ export default function Login() {
                         />
                     </div>
 
-                    <button
+                    <Button
                         type="submit"
+                        variant="create"
+                        size="lg"
+                        className="w-full"
                         disabled={loading}
-                        className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
                     >
                         {loading ? 'Signing in...' : 'Sign In'}
-                    </button>
+                    </Button>
                 </form>
             </div>
         </div>

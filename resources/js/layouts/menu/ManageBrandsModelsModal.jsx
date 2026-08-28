@@ -53,17 +53,15 @@ export default function ManageBrandsModelsModal({ onClose }) {
             dismissible={!isEditing}
             leftAction={
                 view !== 'menu' ? (
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-gray-400 hover:bg-transparent hover:text-gray-600"
                         onClick={handleBack}
                         disabled={isEditing}
-                        className={`transition-colors ${
-                            isEditing
-                                ? 'text-gray-200 cursor-not-allowed'
-                                : 'text-gray-400 hover:text-gray-600'
-                        }`}
                     >
                         <ArrowLeft size={16} />
-                    </button>
+                    </Button>
                 ) : null
             }
             footer={

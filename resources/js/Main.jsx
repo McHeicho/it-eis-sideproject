@@ -16,9 +16,31 @@ import BulkImport from '@/pages/bulk/BulkImport';
 import EquipmentReports from '@/pages/reports/EquipmentReports';
 import SidebarLayout from '@/layouts/SidebarLayout';
 
-// Plumbing only — no defaultOptions yet. staleTime/refetch behavior is a
-// deliberate call once the first real query wires in (cleanup #6).
-const queryClient = new QueryClient();
+// Queries retry on the assumption that a failure might be transient. That's
+// true for a dropped connection or a 5xx, and false for anything the server
+// answered deliberately — a 404 will still be a 404 four attempts later.
+// Mutations are unaffected; TanStack already defaults them to retry: 0.
+const RETRY_LIMIT = 3;
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: (failureCount, error) => {
+                const status = error?.response?.status;
+
+                // No response at all — network blip, server unreachable, DNS.
+                if (status === undefined) return failureCount < RETRY_LIMIT;
+
+                // 4xx — the server answered and said no. Retrying can't change that.
+                // NOTE: if API throttling is ever added, 429 must escape this branch.
+                if (status >= 400 && status < 500) return false;
+
+                // 5xx and anything else — could be transient.
+                return failureCount < RETRY_LIMIT;
+            },
+        },
+    },
+});
 
 const isAuthenticated = () => !!localStorage.getItem('token');
 

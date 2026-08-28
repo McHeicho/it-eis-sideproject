@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ClipboardList } from "lucide-react";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import StatusBadge from "@/components/ui/StatusBadge";
 import AssignmentAssignModal from "./AssignmentAssignModal";
@@ -197,13 +198,14 @@ export default function AssignmentList() {
                     </p>
                 </div>
                 {isAdmin && (
-                    <button
+                    <Button
+                        variant="assign"
+                        size="lg"
                         onClick={() => handleOpenAssign()}
-                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 transition-colors"
                     >
                         <ClipboardList size={16} />
                         Assign Equipment
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -384,30 +386,32 @@ export default function AssignmentList() {
                                         {isAdmin && (
                                             <TableCell className="px-4 py-3">
                                                 {isActive && assignment ? (
-                                                    <button
+                                                    <Button
+                                                        variant="link"
+                                                        className="h-auto p-0 text-xs text-action-create hover:text-action-create"
                                                         onClick={() =>
                                                             handleOpenReturn(
                                                                 assignment
                                                             )
                                                         }
-                                                        className="text-blue-600 hover:underline text-xs"
                                                     >
                                                         Return
-                                                    </button>
+                                                    </Button>
                                                 ) : (
                                                     ASSIGNABLE_STATUSES.includes(
                                                         eq.status
                                                     ) && (
-                                                        <button
+                                                        <Button
+                                                            variant="link"
+                                                            className="h-auto p-0 text-xs text-action-assign hover:text-action-assign"
                                                             onClick={() =>
                                                                 handleOpenAssign(
                                                                     eq
                                                                 )
                                                             }
-                                                            className="text-green-600 hover:underline text-xs"
                                                         >
                                                             Assign
-                                                        </button>
+                                                        </Button>
                                                     )
                                                 )}
                                             </TableCell>

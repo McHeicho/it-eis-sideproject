@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Laptop, ArrowLeft } from "lucide-react";
 import api from "@/api/axios";
+import { Button } from "@/components/ui/custom/custom-button";
 import { toast } from "sonner";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConditionBadge from "@/components/ui/ConditionBadge";
@@ -100,13 +101,15 @@ export default function EquipmentDetail() {
     return (
         <div className="p-6 max-w-2xl">
             {/* Back Button */}
-            <button
+            <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 px-0 text-sm text-gray-500 hover:bg-transparent hover:text-gray-700 mb-6"
                 onClick={() => navigate("/equipment")}
-                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
             >
                 <ArrowLeft size={16} />
                 Back to Equipment List
-            </button>
+            </Button>
 
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
@@ -119,12 +122,13 @@ export default function EquipmentDetail() {
                     </p>
                 </div>
                 {user.role_id === 1 && (
-                    <button
+                    <Button
+                        variant="edit"
+                        size="lg"
                         onClick={() => navigate(`/equipment/${id}/edit`)}
-                        className="bg-amber-500 text-white px-4 py-2 rounded text-sm font-medium hover:bg-amber-600 transition-colors"
                     >
                         Edit
-                    </button>
+                    </Button>
                 )}
             </div>
 

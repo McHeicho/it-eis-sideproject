@@ -4,6 +4,7 @@ import { Laptop } from "lucide-react";
 import api from "@/api/axios";
 import { toast } from "sonner";
 import { useLookups } from "@/queries/useLookups";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError, FieldGroup, FieldSet } from "@/components/ui/field";
 import {
@@ -501,8 +502,10 @@ export default function EquipmentAdd() {
                                 {deliveryMode === "voucher" ? (
                                     <>
                                         No voucher number?{" "}
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="link"
+                                            className="h-auto p-0 align-baseline underline text-blue-500"
                                             onClick={() => {
                                                 setDeliveryMode("invoice");
                                                 if (!isEditMode) {
@@ -522,16 +525,17 @@ export default function EquipmentAdd() {
                                                     }));
                                                 }
                                             }}
-                                            className="underline text-blue-500"
                                         >
                                             Use invoice number instead
-                                        </button>
+                                        </Button>
                                     </>
                                 ) : (
                                     <>
                                         Have a voucher number?{" "}
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="link"
+                                            className="h-auto p-0 align-baseline underline text-blue-500"
                                             onClick={() => {
                                                 setDeliveryMode("voucher");
                                                 if (!isEditMode) {
@@ -551,10 +555,9 @@ export default function EquipmentAdd() {
                                                     }));
                                                 }
                                             }}
-                                            className="underline text-blue-500"
                                         >
                                             Switch back to voucher
-                                        </button>
+                                        </Button>
                                     </>
                                 )}
                             </p>
@@ -690,8 +693,10 @@ export default function EquipmentAdd() {
                         <p className="text-xs text-green-600">
                             Delivery matched — supplier and date pre-filled and
                             locked.{" "}
-                            <button
+                            <Button
                                 type="button"
+                                variant="link"
+                                className="h-auto p-0 align-baseline underline text-blue-500"
                                 onClick={() => {
                                     setDeliveryMatched(false);
                                     setDeliveryFields({
@@ -708,10 +713,9 @@ export default function EquipmentAdd() {
                                         delivery_id: "",
                                     }));
                                 }}
-                                className="underline text-blue-500"
                             >
                                 Clear
-                            </button>
+                            </Button>
                         </p>
                     )}
                 </FieldSet>
@@ -867,24 +871,26 @@ export default function EquipmentAdd() {
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-2">
-                    <button
+                    <Button
                         type="submit"
+                        variant="create"
+                        size="lg"
                         disabled={loading}
-                        className="bg-blue-600 text-white px-5 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
                     >
                         {loading
                             ? "Saving..."
                             : isEditMode
                             ? "Update Equipment"
                             : "Save Equipment"}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="button"
+                        variant="secondary"
+                        size="lg"
                         onClick={() => navigate("/equipment")}
-                        className="bg-gray-100 text-gray-700 px-5 py-2 rounded text-sm font-medium hover:bg-gray-200 transition-colors"
                     >
                         Cancel
-                    </button>
+                    </Button>
                 </div>
                 </FieldGroup>
             </form>

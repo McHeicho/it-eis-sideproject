@@ -62,15 +62,102 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   ~30-min expiry; required before internet deployment.
 
 - [ ] **#25 — Audit for "reinventing the wheel": replace hand-rolled UI with library equivalents**
-  Sweep the whole frontend for components we built from scratch that have mature, accessible library alternatives — prioritizing cases where our version likely misses keyboard navigation, ARIA/screen-reader support, or cross-browser consistency. Known first targets:
-  - Native `<input list>` + `<datalist>` employee picker in `EquipmentAddEdit.jsx` (Assigned-on-creation) and the per-file delivery-match datalist in Bulk Attach Documents.
-    → ~~Candidate: Headless UI Combobox (`@headlessui/react`) — headless/unstyled, pairs with Tailwind, stays configurable per location. Headless UI is on v2; build against current syntax. Decision pending on adding the dependency.~~
-    → After pondering: Finally chosen shadcn as main UI design principle.
-  - Re-evaluate other custom selects, modals, and dropdowns the same way.
-  - Collapsed sidebar icon alignment in `Layout.jsx` — current implementation uses manual 
-    `justify-center` / `gap-3 px-3` className toggles per nav item. Brittle and repetitive. 
-    → Candidate: revisit when doing the broader Headless UI audit, or extract a `SidebarNavItem` 
-    component that encapsulates the collapsed/expanded styling logic in one place.
+  Sweep the whole frontend for components built from scratch that have mature,
+  accessible library alternatives — prioritizing cases where our version likely
+  misses keyboard navigation, ARIA/screen-reader support, or cross-browser
+  consistency.
+
+  **Status: in progress since June 2026**, tracked across sessions as "The Great
+  UI Migration." Foundational decision, locked early: shadcn/ui is the standing
+  UI layer (Headless UI was evaluated and dropped). Primitives are installed via
+  the shadcn MCP server, and app-specific customizations live in
+  `components/ui/custom/` so a CLI reinstall cannot silently overwrite them.
+
+  **Landed:**
+  - `f102a48` — foundation + `AppDialog` unification (`dialog`, `button`)
+  - `aea69b2` — `Table` across 18 table instances; shadcn MCP configured
+  - `196a8a5` — `Badge` (`StatusBadge` / `ConditionBadge` wrappers own all colour
+    mapping centrally), `Tooltip` (replaced the hand-rolled `.tooltip-wrapper`
+    CSS), `Separator`
+  - `9580f76` — Sonner toast system, mounted in `Main.jsx`
+  - `b8d8fca` / `4c12545` — `Sidebar` (sidebar-05, offcanvas); `AppSidebar.jsx`
+    owned in `layouts/`; `collapsible`, `input`, `label`, `skeleton` installed
+  - `1bb7285` — `Select`, `Tabs`, `ToggleGroup`, `Checkbox`, `Textarea`
+    (AssignmentList overhaul)
+  - `2e05f88` — Radix Select-inside-Dialog fix (`pointer-events-auto!` on
+    `DialogContent`). Radix `Select` is unconditionally modal and has no `modal`
+    prop; the dismissable-layer stack sets inline `pointer-events: none` on
+    `DialogContent` itself, not on `body`.
+  - `b72aec2` — `Combobox` + `InputGroup` initialization
+  - `03dee39` — `Select` / `Field` sweep across 9 files
+  - `0729694` — removed orphaned class constants in `EquipmentReceipts`
+  - **CHK#21** — semantic action tokens + `Button` migration (see below). Raw
+    `<button>` elements across 9 files converted to the `Button` component with
+    `create` / `assign` / `edit` / `ghost` / `link` / `outline` / `secondary`
+    variants. House geometry (`px-4 py-2` + `text-sm`, 36px) maps to
+    `size="lg"`, not `size="default"` (32px).
+
+  **Design system — semantic action colours** (`resources/css/app.css`)
+
+  Introduced CHK#21. Action colours are tokens named for *intent*, not paint, so
+  a recolour is a value change in one file rather than a sweep through
+  components. Consumed by the `create` / `assign` / `edit` variants in
+  `components/ui/custom/custom-button.jsx`. Do not hardcode `bg-blue-600` or
+  similar palette classes in a component again.
+
+  | Token | Meaning | Light | Dark |
+  |---|---|---|---|
+  | `--action-create` | create / confirm | blue-600 | blue-500 |
+  | `--action-assign` | assign / import | green-700 | green-500 |
+  | `--action-edit` | edit / modify | amber-700 | amber-400 |
+
+  Each has a `-hover` and a `-foreground` sibling, wired through `@theme inline`
+  as `--color-action-*`.
+
+  Foregrounds intentionally differ per mode: **white in light mode** (dark fills)
+  and **near-black in dark mode** (light fills). All light-mode pairs meet WCAG
+  AA at 14px (≥5.02:1). Green and amber were deliberately darkened from their
+  original mid-tones (`green-600`, `amber-500`) so white labels would pass —
+  at those lightness values neither black nor white worked well; black passed
+  the meter but read as hazard tape.
+
+  Dark-mode values are drafted but **UNVERIFIED** — there is no toggle yet
+  (#30), so they have never been rendered. Re-check when #30 lands.
+
+  Not yet tokenised, deliberately:
+  - `StatusBadge.jsx` / `ConditionBadge.jsx` status colours — a separate system,
+    already centralised in two lookup maps. Small, self-contained, can be done
+    any time.
+  - ~316 hardcoded `gray-*` classes — structural chrome, not brand. These will
+    be absorbed by the Card / Input / remaining component migrations rather than
+    swept as their own effort.
+
+  **Remaining targets:**
+  - Native `<input list>` + `<datalist>` employee picker in `EquipmentAddEdit.jsx`
+    (Assigned-on-creation) and the per-file delivery-match datalist in Bulk
+    Attach Documents → shadcn `Combobox` (already installed). Native `datalist`
+    has poor keyboard and screen-reader behaviour and inconsistent cross-browser
+    rendering; this is the highest-value part of the remaining input work.
+  - Remaining raw `<input>`: ~11 text/password/email/date (drop-in `Input`),
+    3 checkboxes (`Checkbox` — different API, `onCheckedChange` rather than
+    `onChange`), 5 file inputs (typically a hidden input behind a styled
+    trigger — judgment, not a sweep).
+  - `Card` — ~17 hand-rolled `bg-white rounded` panels across 9 files. Needs a
+    scope redraw; drags a recharts decision with it.
+  - Form-fields — **no longer gated.** The blocker was the server-state layer,
+    which landed with the TanStack Query write-side work.
+  - Re-evaluate remaining custom selects, modals, and dropdowns the same way.
+  - ~~Collapsed sidebar icon alignment in `Layout.jsx`~~ — superseded by
+    `4c12545`; `Layout.jsx` no longer exists in that form.
+
+  **Permanently excluded:** `pages/Dashboard.jsx` and `components/dashboard/**`.
+  Placeholder pending rebuild; out of scope for every migration phase, including
+  the action-colour tokens. The app will read as two-toned until it is rebuilt.
+
+  **Known blocker:** `jsconfig.json` is missing `baseUrl`. This has caused
+  alias-doubling on multiple `shadcn add` runs (most recently on
+  `sidebar-05`, which rewrote `@/api/axios` to `@/resources/js/api/axios`).
+  Fix before the next CLI install.
 
 - [ ] **#26 — Disallow "Assigned" status in the Equipment bulk import**
   The bulk Excel import path can still create orphaned equipment — rows flagged
@@ -115,13 +202,6 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   Establish resources/js/queries/ for server-state (TanStack Query) hooks and resources/js/hooks/
   for generic React utility hooks. Migrate any ad-hoc hooks into the right bucket as they appear.
   Convention set during #6.
-
-- [ ] **#33 — QueryClient defaults (`staleTime` etc.)**
-  `Main.jsx`'s `QueryClient` has carried this comment since it was created:
-  *"Plumbing only — no defaultOptions yet. staleTime/refetch behavior is a
-  deliberate call once the first real query wires in (cleanup #6)."* That
-  condition is now met. Every hook currently defaults to `staleTime: 0`. Decide
-  app-wide default vs. per-hook tuning.
 
 - [ ] **#34 — `ManageBranchesModal` — silent failure on the `branch_code` guard**
   The 422 blocking edits to ids 1/2 lands in a batch `console.error`,
@@ -216,9 +296,12 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   `AssignmentAssignModal.jsx` / `AssignmentReturnModal.jsx`, addressing the
   separately-parked monolith-navigability concern as a side effect.
 
+- [x] **#33 — QueryClient defaults (staleTime)**
+`defaultOptions.queries` now exists in `Main.jsx` with a status-aware `retry` (CHK#21): 4xx bails immediately, network/5xx retries up to 3. `staleTime` deliberately left at 0. Raising it would invalidate the reasoning behind #6's broad-invalidation helper, and no hook currently needs caching. Decided, not deferred — revisit only if a specific performance problem appears.
 ---
 
 ## Retired / Merged
 
 - **#5 — Brands/Models append-only with confirmation prompt** → merged into **#4**. Same underlying concern (protecting referenced Brand/Model records); #4 now frames "warn-on-edit" vs. "append-only" as the single decision to make.
+
 - **#7 — Warn/block employee edit if active assignment exists** → dropped. Mis-framed: assignments reference employees by `employee_id`, so editing an employee's name or department doesn't threaten assignment integrity — there's no FK risk to guard against. (If *historical department attribution* on past assignments later becomes a real audit concern, that warrants a fresh, separately-scoped item — it is not what #7 described.)

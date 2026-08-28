@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Download } from "lucide-react";
+import { Button } from "@/components/ui/custom/custom-button";
 
 export default function EquipmentReports() {
     const [exporting, setExporting] = useState(false);
@@ -38,14 +39,15 @@ export default function EquipmentReports() {
                 <p className="text-xs text-gray-400 mb-4">
                     Exports all equipment records including receipt details and current assignment.
                 </p>
-                <button
+                <Button
+                    variant="create"
+                    size="lg"
                     onClick={handleExport}
                     disabled={exporting}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
                     <Download size={16} />
                     {exporting ? "Exporting..." : "Export"}
-                </button>
+                </Button>
             </div>
         </div>
     );

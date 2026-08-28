@@ -63,6 +63,15 @@
     --color-primary: var(--primary);
     --color-primary-hover: var(--primary-hover);
     --color-primary-hover-foreground: var(--primary-hover-foreground);
+    --color-action-create: var(--action-create);
+    --color-action-create-hover: var(--action-create-hover);
+    --color-action-create-foreground: var(--action-create-foreground);
+    --color-action-assign: var(--action-assign);
+    --color-action-assign-hover: var(--action-assign-hover);
+    --color-action-assign-foreground: var(--action-assign-foreground);
+    --color-action-edit: var(--action-edit);
+    --color-action-edit-hover: var(--action-edit-hover);
+    --color-action-edit-foreground: var(--action-edit-foreground);
     --color-popover-foreground: var(--popover-foreground);
     --color-popover: var(--popover);
     --color-card-foreground: var(--card-foreground);
@@ -89,6 +98,22 @@
     --primary-foreground: oklch(0 0 0);
     --primary-hover: oklch(0.390 0.064 176.7);
     --primary-hover-foreground: oklch(1 0 0);
+
+    /* Semantic action colours. Named for intent, not paint — recolouring later
+       is a value change here, not a sweep through components.
+       Foregrounds chosen for WCAG AA at 14px, not by eye. */
+    --action-create: oklch(0.546 0.215 262.9);          /* was bg-blue-600  */
+    --action-create-hover: oklch(0.488 0.217 264.4);    /* was bg-blue-700  */
+    --action-create-foreground: oklch(1 0 0);           /* white — 5.17:1   */
+
+    --action-assign: oklch(0.527 0.137 150.1);          /* was bg-green-700 */
+    --action-assign-hover: oklch(0.448 0.108 151.3);    /* was bg-green-800 */
+    --action-assign-foreground: oklch(1 0 0);           /* white — 5.02:1   */
+
+    --action-edit: oklch(0.555 0.146 49.0);             /* was bg-amber-700 */
+    --action-edit-hover: oklch(0.473 0.125 46.2);       /* was bg-amber-800 */
+    --action-edit-foreground: oklch(1 0 0);             /* white — 5.02:1   */
+
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
@@ -132,6 +157,24 @@
     --accent: oklch(0.269 0 0);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
+
+    /* Dark-mode action colours. Saturated mid-tones read as heavy on a dark
+       ground, so bases lighten and labels invert to the near-black already used
+       by --primary-foreground in this block. Contrast measured against
+       oklch(0.205 0 0). UNVERIFIED: dark mode has no toggle yet (cleanup #30),
+       so these values have never been rendered. Re-check when #30 lands. */
+    --action-create: oklch(0.623 0.188 259.8);          /* blue-500  — 4.87:1 */
+    --action-create-hover: oklch(0.714 0.143 254.6);    /* blue-400          */
+    --action-create-foreground: oklch(0.205 0 0);
+
+    --action-assign: oklch(0.723 0.192 149.6);          /* green-500 — 7.86:1 */
+    --action-assign-hover: oklch(0.800 0.182 151.7);    /* green-400         */
+    --action-assign-foreground: oklch(0.205 0 0);
+
+    --action-edit: oklch(0.837 0.164 84.4);             /* amber-400 — 10.73:1 */
+    --action-edit-hover: oklch(0.879 0.153 91.6);       /* amber-300           */
+    --action-edit-foreground: oklch(0.205 0 0);
+
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Laptop, FileSearch, Pencil } from "lucide-react";
 import api from "@/api/axios";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConditionBadge from "@/components/ui/ConditionBadge";
@@ -98,13 +99,14 @@ export default function EquipmentList() {
                         Equipment inventory.
                     </p>
                 </div>
-                <button
+                <Button
+                    variant="create"
+                    size="lg"
                     onClick={() => navigate("/equipment/add")}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                     <Plus size={16} />
                     Add Equipment
-                </button>
+                </Button>
             </div>
 
             {/* Filter Bar */}
@@ -262,20 +264,24 @@ export default function EquipmentList() {
                               } found`}
                     </p>
                     <div className="flex gap-2">
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-gray-500 hover:bg-transparent hover:text-gray-700"
                             onClick={handleReset}
                             disabled={filtering}
-                            className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors px-3 py-1.5"
                         >
                             Reset
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="create"
+                            size="sm"
+                            className="text-xs"
                             onClick={handleFilter}
                             disabled={filtering}
-                            className="text-xs bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
                         >
                             Filter
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -346,29 +352,33 @@ export default function EquipmentList() {
                                         )}
                                     </TableCell>
                                     <TableCell className="px-4 py-3 flex items-center gap-3">
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-sm"
+                                            className="text-blue-600 hover:bg-transparent hover:text-blue-800"
                                             onClick={() =>
                                                 navigate(
                                                     `/equipment/${item.id}`
                                                 )
                                             }
-                                            className="text-blue-600 hover:text-blue-800 transition-colors"
                                             title="View"
                                         >
                                             <FileSearch size={15} />
-                                        </button>
+                                        </Button>
                                         {user.role_id === 1 && (
-                                            <button
+                                            <Button
+                                                variant="ghost"
+                                                size="icon-sm"
+                                                className="text-amber-600 hover:bg-transparent hover:text-amber-800"
                                                 onClick={() =>
                                                     navigate(
                                                         `/equipment/${item.id}/edit`
                                                     )
                                                 }
-                                                className="text-amber-600 hover:text-amber-800 transition-colors"
                                                 title="Edit"
                                             >
                                                 <Pencil size={15} />
-                                            </button>
+                                            </Button>
                                         )}
                                     </TableCell>
                                 </TableRow>

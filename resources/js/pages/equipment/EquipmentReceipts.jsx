@@ -8,6 +8,7 @@ import {
     Laptop,
 } from "lucide-react";
 import api from "@/api/axios";
+import { Button } from "@/components/ui/custom/custom-button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useLookups } from "@/queries/useLookups";
@@ -307,20 +308,24 @@ export default function EquipmentReceipts() {
                     </label>
                 </div>
                 <div className="flex justify-end gap-2">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-gray-500 hover:bg-transparent hover:text-gray-700"
                         onClick={handleReset}
                         disabled={filtering}
-                        className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors px-3 py-1.5"
                     >
                         Reset
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        variant="create"
+                        size="sm"
+                        className="text-xs"
                         onClick={handleFilter}
                         disabled={filtering}
-                        className="text-xs bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
                     >
                         {filtering ? "Filtering..." : "Filter"}
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -579,13 +584,15 @@ function ReceiptDetail({
                         Receipt Details
                     </p>
                     {isAdmin && !isEditing && (
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1 px-0 text-xs text-gray-400 hover:bg-transparent hover:text-action-edit"
                             onClick={handleEditStart}
-                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-amber-500 transition-colors"
                         >
                             <Pencil size={12} />
                             Edit
-                        </button>
+                        </Button>
                     )}
                 </div>
                 <div className="bg-white border rounded divide-y text-sm">
@@ -769,20 +776,24 @@ function ReceiptDetail({
                         </p>
                     )}
                     <div className="flex gap-2 ml-auto">
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-gray-500 hover:bg-transparent hover:text-gray-700"
                             onClick={handleEditCancel}
                             disabled={saving}
-                            className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors"
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="create"
+                            size="sm"
+                            className="text-xs"
                             onClick={handleSave}
                             disabled={saving}
-                            className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
                         >
                             {saving ? "Saving..." : "Save"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -919,12 +930,13 @@ function ReceiptDetail({
                                     >
                                         View
                                     </a>
-                                    <button
+                                    <Button
+                                        variant="link"
+                                        className="h-auto p-0 text-red-400 hover:text-red-600 hover:no-underline"
                                         onClick={() => handleRemove(att.id)}
-                                        className="text-red-400 hover:text-red-600 transition-colors"
                                     >
                                         Remove
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         ))}
@@ -949,13 +961,14 @@ function ReceiptDetail({
                             <span className="text-sm text-gray-600 truncate max-w-xs">
                                 {selectedFile.name}
                             </span>
-                            <button
+                            <Button
+                                variant="create"
+                                size="lg"
                                 onClick={handleUpload}
                                 disabled={uploading}
-                                className="bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
                                 {uploading ? "Uploading..." : "Upload"}
-                            </button>
+                            </Button>
                         </>
                     )}
                 </div>

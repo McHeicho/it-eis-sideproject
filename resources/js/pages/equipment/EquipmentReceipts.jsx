@@ -11,6 +11,9 @@ import api from "@/api/axios";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLookups } from "@/queries/useLookups";
 import { useDeliveries } from "@/queries/useDeliveries";
 import {
@@ -144,11 +147,10 @@ export default function EquipmentReceipts() {
             {/* Filter Bar */}
             <div className="bg-white rounded-lg shadow p-4 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Voucher No.
-                        </label>
-                        <input
+                    <Field>
+                        <FieldLabel htmlFor="voucher_no">Voucher No.</FieldLabel>
+                        <Input
+                            id="voucher_no"
                             type="text"
                             value={filterForm.voucher_no}
                             onChange={(e) =>
@@ -160,15 +162,13 @@ export default function EquipmentReceipts() {
                             onKeyDown={(e) =>
                                 e.key === "Enter" && handleFilter()
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full"
                             placeholder="Enter Voucher No."
                         />
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Invoice No.
-                        </label>
-                        <input
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="invoice_no">Invoice No.</FieldLabel>
+                        <Input
+                            id="invoice_no"
                             type="text"
                             value={filterForm.invoice_no}
                             onChange={(e) =>
@@ -180,15 +180,13 @@ export default function EquipmentReceipts() {
                             onKeyDown={(e) =>
                                 e.key === "Enter" && handleFilter()
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full"
                             placeholder="Enter Invoice No."
                         />
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Purchase Order No.
-                        </label>
-                        <input
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="order_no">Purchase Order No.</FieldLabel>
+                        <Input
+                            id="order_no"
                             type="text"
                             value={filterForm.order_no}
                             onChange={(e) =>
@@ -200,14 +198,11 @@ export default function EquipmentReceipts() {
                             onKeyDown={(e) =>
                                 e.key === "Enter" && handleFilter()
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full"
                             placeholder="Enter Purchase Order No."
                         />
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Supplier
-                        </label>
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
                         <Select
                             value={filterForm.supplier_id || SUPPLIER_ALL}
                             onValueChange={(value) =>
@@ -218,7 +213,7 @@ export default function EquipmentReceipts() {
                                 }))
                             }
                         >
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger id="supplier_id" className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -232,15 +227,14 @@ export default function EquipmentReceipts() {
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
+                    </Field>
                 </div>
                 {isAdmin && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label className="text-xs text-gray-500 block mb-1">
-                                Serial Number
-                            </label>
-                            <input
+                        <Field>
+                            <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
+                            <Input
+                                id="serial_number"
                                 type="text"
                                 value={filterForm.serial_number}
                                 onChange={(e) =>
@@ -252,14 +246,11 @@ export default function EquipmentReceipts() {
                                 onKeyDown={(e) =>
                                     e.key === "Enter" && handleFilter()
                                 }
-                                className="border rounded px-2 py-1.5 text-sm w-full"
                                 placeholder="Starts with..."
                             />
-                        </div>
-                        <div>
-                            <label className="text-xs text-gray-500 block mb-1">
-                                Equipment Status
-                            </label>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="status">Equipment Status</FieldLabel>
                             <Select
                                 value={filterForm.status || STATUS_ALL}
                                 onValueChange={(value) =>
@@ -270,7 +261,7 @@ export default function EquipmentReceipts() {
                                     }))
                                 }
                             >
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger id="status" className="w-full">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -284,21 +275,19 @@ export default function EquipmentReceipts() {
                                     ))}
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </Field>
                     </div>
                 )}
                 <div className="flex items-center gap-2 mt-1">
-                    <input
-                        type="checkbox"
+                    <Checkbox
                         id="no_attachment"
                         checked={filterForm.no_attachment}
-                        onChange={(e) =>
+                        onCheckedChange={(checked) =>
                             setFilterForm((prev) => ({
                                 ...prev,
-                                no_attachment: e.target.checked,
+                                no_attachment: checked,
                             }))
                         }
-                        className="rounded border-gray-300"
                     />
                     <label
                         htmlFor="no_attachment"
@@ -598,48 +587,58 @@ function ReceiptDetail({
                 <div className="bg-white border rounded divide-y text-sm">
                     {/* Voucher No. */}
                     <div className="flex items-center px-4 py-2 gap-3">
-                        <span className="text-xs text-gray-500 w-36 shrink-0">
-                            Voucher No.
-                        </span>
                         {isEditing ? (
-                            <input
-                                type="text"
-                                value={editForm.voucher_no}
-                                onChange={(e) =>
-                                    setEditForm((prev) => ({
-                                        ...prev,
-                                        voucher_no: e.target.value,
-                                    }))
-                                }
-                                className="border rounded px-2 py-1 text-sm flex-1"
-                            />
+                            <Field className="flex-1">
+                                <FieldLabel htmlFor="edit_voucher_no">Voucher No.</FieldLabel>
+                                <Input
+                                    id="edit_voucher_no"
+                                    type="text"
+                                    value={editForm.voucher_no}
+                                    onChange={(e) =>
+                                        setEditForm((prev) => ({
+                                            ...prev,
+                                            voucher_no: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </Field>
                         ) : (
-                            <span className="text-gray-800 flex-1">
-                                {delivery.voucher_no || "—"}
-                            </span>
+                            <>
+                                <span className="text-xs text-gray-500 w-36 shrink-0">
+                                    Voucher No.
+                                </span>
+                                <span className="text-gray-800 flex-1">
+                                    {delivery.voucher_no || "—"}
+                                </span>
+                            </>
                         )}
                     </div>
                     {/* Invoice No. */}
                     <div className="flex items-center px-4 py-2 gap-3">
-                        <span className="text-xs text-gray-500 w-36 shrink-0">
-                            Invoice No.
-                        </span>
                         {isEditing ? (
-                            <input
-                                type="text"
-                                value={editForm.invoice_no}
-                                onChange={(e) =>
-                                    setEditForm((prev) => ({
-                                        ...prev,
-                                        invoice_no: e.target.value,
-                                    }))
-                                }
-                                className="border rounded px-2 py-1 text-sm flex-1"
-                            />
+                            <Field className="flex-1">
+                                <FieldLabel htmlFor="edit_invoice_no">Invoice No.</FieldLabel>
+                                <Input
+                                    id="edit_invoice_no"
+                                    type="text"
+                                    value={editForm.invoice_no}
+                                    onChange={(e) =>
+                                        setEditForm((prev) => ({
+                                            ...prev,
+                                            invoice_no: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </Field>
                         ) : (
-                            <span className="text-gray-800 flex-1">
-                                {delivery.invoice_no || "—"}
-                            </span>
+                            <>
+                                <span className="text-xs text-gray-500 w-36 shrink-0">
+                                    Invoice No.
+                                </span>
+                                <span className="text-gray-800 flex-1">
+                                    {delivery.invoice_no || "—"}
+                                </span>
+                            </>
                         )}
                     </div>
                     {/* Supplier */}
@@ -682,56 +681,66 @@ function ReceiptDetail({
                     </div>
                     {/* Purchase Date */}
                     <div className="flex items-center px-4 py-2 gap-3">
-                        <span className="text-xs text-gray-500 w-36 shrink-0">
-                            Purchase Date
-                        </span>
                         {isEditing ? (
-                            <input
-                                type="date"
-                                value={editForm.purchase_date}
-                                onChange={(e) =>
-                                    setEditForm((prev) => ({
-                                        ...prev,
-                                        purchase_date: e.target.value,
-                                    }))
-                                }
-                                className="border rounded px-2 py-1 text-sm flex-1"
-                            />
+                            <Field className="flex-1">
+                                <FieldLabel htmlFor="edit_purchase_date">Purchase Date</FieldLabel>
+                                <Input
+                                    id="edit_purchase_date"
+                                    type="date"
+                                    value={editForm.purchase_date}
+                                    onChange={(e) =>
+                                        setEditForm((prev) => ({
+                                            ...prev,
+                                            purchase_date: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </Field>
                         ) : (
-                            <span className="text-gray-800 flex-1">
-                                {delivery.purchase_date
-                                    ? new Date(
-                                          delivery.purchase_date
-                                      ).toLocaleDateString("en-PH", {
-                                          year: "numeric",
-                                          month: "short",
-                                          day: "numeric",
-                                      })
-                                    : "—"}
-                            </span>
+                            <>
+                                <span className="text-xs text-gray-500 w-36 shrink-0">
+                                    Purchase Date
+                                </span>
+                                <span className="text-gray-800 flex-1">
+                                    {delivery.purchase_date
+                                        ? new Date(
+                                              delivery.purchase_date
+                                          ).toLocaleDateString("en-PH", {
+                                              year: "numeric",
+                                              month: "short",
+                                              day: "numeric",
+                                          })
+                                        : "—"}
+                                </span>
+                            </>
                         )}
                     </div>
                     {/* Purchase Order No. */}
                     <div className="flex items-center px-4 py-2 gap-3">
-                        <span className="text-xs text-gray-500 w-36 shrink-0">
-                            Purchase Order No.
-                        </span>
                         {isEditing ? (
-                            <input
-                                type="text"
-                                value={editForm.order_no}
-                                onChange={(e) =>
-                                    setEditForm((prev) => ({
-                                        ...prev,
-                                        order_no: e.target.value,
-                                    }))
-                                }
-                                className="border rounded px-2 py-1 text-sm flex-1"
-                            />
+                            <Field className="flex-1">
+                                <FieldLabel htmlFor="edit_order_no">Purchase Order No.</FieldLabel>
+                                <Input
+                                    id="edit_order_no"
+                                    type="text"
+                                    value={editForm.order_no}
+                                    onChange={(e) =>
+                                        setEditForm((prev) => ({
+                                            ...prev,
+                                            order_no: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </Field>
                         ) : (
-                            <span className="text-gray-800 flex-1">
-                                {delivery.order_no || "—"}
-                            </span>
+                            <>
+                                <span className="text-xs text-gray-500 w-36 shrink-0">
+                                    Purchase Order No.
+                                </span>
+                                <span className="text-gray-800 flex-1">
+                                    {delivery.order_no || "—"}
+                                </span>
+                            </>
                         )}
                     </div>
                     {/* Notes */}

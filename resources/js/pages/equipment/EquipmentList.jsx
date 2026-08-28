@@ -7,6 +7,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConditionBadge from "@/components/ui/ConditionBadge";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
 import {
@@ -112,10 +114,8 @@ export default function EquipmentList() {
             {/* Filter Bar */}
             <div className="bg-white rounded-lg shadow p-4 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Status
-                        </label>
+                    <Field>
+                        <FieldLabel htmlFor="status">Status</FieldLabel>
                         <Select
                             value={filterForm.status || STATUS_ALL}
                             onValueChange={(value) =>
@@ -125,7 +125,7 @@ export default function EquipmentList() {
                                 }))
                             }
                         >
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger id="status" className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -146,11 +146,9 @@ export default function EquipmentList() {
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Condition
-                        </label>
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="condition">Condition</FieldLabel>
                         <Select
                             value={filterForm.condition || CONDITION_ALL}
                             onValueChange={(value) =>
@@ -161,7 +159,7 @@ export default function EquipmentList() {
                                 }))
                             }
                         >
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger id="condition" className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -175,11 +173,9 @@ export default function EquipmentList() {
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Equipment Type
-                        </label>
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="equipment_type_id">Equipment Type</FieldLabel>
                         <Select
                             value={filterForm.equipment_type_id || TYPE_ALL}
                             onValueChange={(value) =>
@@ -190,7 +186,7 @@ export default function EquipmentList() {
                                 }))
                             }
                         >
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger id="equipment_type_id" className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -204,11 +200,9 @@ export default function EquipmentList() {
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Supplier
-                        </label>
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
                         <Select
                             value={filterForm.supplier_id || SUPPLIER_ALL}
                             onValueChange={(value) =>
@@ -219,7 +213,7 @@ export default function EquipmentList() {
                                 }))
                             }
                         >
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger id="supplier_id" className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -233,12 +227,11 @@ export default function EquipmentList() {
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                            Serial Number
-                        </label>
-                        <input
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
+                        <Input
+                            id="serial_number"
                             type="text"
                             value={filterForm.serial_number}
                             onChange={(e) =>
@@ -250,10 +243,9 @@ export default function EquipmentList() {
                             onKeyDown={(e) =>
                                 e.key === "Enter" && handleFilter()
                             }
-                            className="border rounded px-2 py-1.5 text-sm w-full"
                             placeholder="Starts with..."
                         />
-                    </div>
+                    </Field>
                 </div>
                 <div className="flex justify-between items-center">
                     <p className="text-xs text-gray-400">

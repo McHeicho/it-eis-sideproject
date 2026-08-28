@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import api from "@/api/axios";
 import { Button } from "@/components/ui/custom/custom-button";
+import { Checkbox } from "@/components/ui/checkbox";
 import AppDialog from "@/components/ui/AppDialog";
 
 export default function BulkImport() {
@@ -593,12 +594,11 @@ export default function BulkImport() {
                                             }`}
                                         >
                                             <div className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
+                                                <Checkbox
                                                     checked={
                                                         empCurrentChecks.left
                                                     }
-                                                    onChange={() =>
+                                                    onCheckedChange={() =>
                                                         setEmpCurrentChecks(
                                                             (prev) => ({
                                                                 ...prev,
@@ -606,7 +606,6 @@ export default function BulkImport() {
                                                             })
                                                         )
                                                     }
-                                                    className="accent-blue-600"
                                                 />
                                                 <span className="text-xs font-semibold text-gray-500 uppercase">
                                                     Existing
@@ -643,12 +642,11 @@ export default function BulkImport() {
                                             }`}
                                         >
                                             <div className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
+                                                <Checkbox
                                                     checked={
                                                         empCurrentChecks.right
                                                     }
-                                                    onChange={() =>
+                                                    onCheckedChange={() =>
                                                         setEmpCurrentChecks(
                                                             (prev) => ({
                                                                 ...prev,
@@ -656,7 +654,6 @@ export default function BulkImport() {
                                                             })
                                                         )
                                                     }
-                                                    className="accent-green-600"
                                                 />
                                                 <span className="text-xs font-semibold text-gray-500 uppercase">
                                                     Incoming

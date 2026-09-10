@@ -1,6 +1,7 @@
 // jsconfig.json
 {
     "compilerOptions": {
+        "baseUrl": ".",
         "paths": {
             "@/*": ["./resources/js/*"]
         }

@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/custom/custom-select";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Sentinels for the form Selects — Radix throws on an empty-string item
 // value, so these stand in for "" ("nothing chosen yet") at the component
@@ -357,543 +358,544 @@ export default function EquipmentAdd() {
                 </p>
             </div>
 
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white rounded-lg shadow p-6"
-            >
-                <FieldGroup className="gap-5">
-                {/* Equipment Type */}
-                <Field>
-                    <FieldLabel>Equipment Type</FieldLabel>
-                    <div className="flex gap-3">
-                        {equipmentTypes.map((type) => (
-                            <button
-                                type="button"
-                                key={type.id}
-                                onClick={() =>
-                                    setForm({
-                                        ...form,
-                                        equipment_type_id: type.id,
-                                    })
-                                }
-                                className={`flex flex-col items-center gap-1 px-4 py-3 rounded border text-sm transition-colors ${
-                                    form.equipment_type_id === type.id
-                                        ? "border-blue-500 bg-blue-50 text-blue-600"
-                                        : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                                }`}
-                            >
-                                <Laptop size={20} />
-                                {type.name}
-                            </button>
-                        ))}
-                    </div>
-                    {errors.equipment_type_id && (
-                        <FieldError>
-                            {errors.equipment_type_id[0]}
-                        </FieldError>
-                    )}
-                </Field>
-
-                {/* Brand */}
-                <Field>
-                    <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
-                    <Select
-                        value={String(form.brand_id || BRAND_NONE)}
-                        onValueChange={(value) =>
-                            handleSelectChange(
-                                "brand_id",
-                                value === BRAND_NONE ? "" : value
-                            )
-                        }
-                    >
-                        <SelectTrigger
-                            id="brand_id"
-                            className="w-full"
-                            aria-invalid={!!errors.brand_id}
-                        >
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value={BRAND_NONE}>
-                                Select Brand
-                            </SelectItem>
-                            {brands.map((brand) => (
-                                <SelectItem
-                                    key={brand.id}
-                                    value={String(brand.id)}
-                                >
-                                    {brand.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {errors.brand_id && (
-                        <FieldError>{errors.brand_id[0]}</FieldError>
-                    )}
-                </Field>
-
-                {/* Model */}
-                <Field>
-                    <FieldLabel htmlFor="model_id">Model</FieldLabel>
-                    <Select
-                        value={String(form.model_id || MODEL_NONE)}
-                        onValueChange={(value) =>
-                            handleSelectChange(
-                                "model_id",
-                                value === MODEL_NONE ? "" : value
-                            )
-                        }
-                        disabled={!form.brand_id}
-                    >
-                        <SelectTrigger
-                            id="model_id"
-                            className="w-full"
-                            aria-invalid={!!errors.model_id}
-                        >
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value={MODEL_NONE}>
-                                {form.brand_id
-                                    ? "Select Model"
-                                    : "Select a brand first"}
-                            </SelectItem>
-                            {models.map((model) => (
-                                <SelectItem
-                                    key={model.id}
-                                    value={String(model.id)}
-                                >
-                                    {model.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {errors.model_id && (
-                        <FieldError>{errors.model_id[0]}</FieldError>
-                    )}
-                </Field>
-
-                {/* Serial Number */}
-                <Field>
-                    <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
-                    <Input
-                        id="serial_number"
-                        type="text"
-                        name="serial_number"
-                        value={form.serial_number}
-                        onChange={handleChange}
-                        placeholder="e.g. PF123456"
-                    />
-                    {errors.serial_number && (
-                        <FieldError>{errors.serial_number[0]}</FieldError>
-                    )}
-                </Field>
-
-                {/* Delivery */}
-                <FieldSet className="gap-3">
-                    <div className="flex items-center justify-between">
-                        <FieldLabel htmlFor="delivery-handle">
-                            {deliveryMode === "voucher"
-                                ? "Voucher No."
-                                : "Sales Invoice No."}
-                        </FieldLabel>
-                        <div className="flex gap-1 text-xs">
-                            <p className="text-xs text-gray-500">
-                                {deliveryMode === "voucher" ? (
-                                    <>
-                                        No voucher number?{" "}
-                                        <Button
-                                            type="button"
-                                            variant="link"
-                                            className="h-auto p-0 align-baseline underline text-blue-500"
-                                            onClick={() => {
-                                                setDeliveryMode("invoice");
-                                                if (!isEditMode) {
-                                                    setDeliveryMatched(false);
-                                                    setDeliveryFields({
-                                                        voucher_no: "",
-                                                        invoice_no: "",
-                                                        supplier_id: "",
-                                                        supplier_name: "",
-                                                        purchase_date: "",
-                                                        order_no: "",
-                                                        notes: "",
-                                                    });
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        delivery_id: "",
-                                                    }));
-                                                }
-                                            }}
-                                        >
-                                            Use invoice number instead
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        Have a voucher number?{" "}
-                                        <Button
-                                            type="button"
-                                            variant="link"
-                                            className="h-auto p-0 align-baseline underline text-blue-500"
-                                            onClick={() => {
-                                                setDeliveryMode("voucher");
-                                                if (!isEditMode) {
-                                                    setDeliveryMatched(false);
-                                                    setDeliveryFields({
-                                                        voucher_no: "",
-                                                        invoice_no: "",
-                                                        supplier_id: "",
-                                                        supplier_name: "",
-                                                        purchase_date: "",
-                                                        order_no: "",
-                                                        notes: "",
-                                                    });
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        delivery_id: "",
-                                                    }));
-                                                }
-                                            }}
-                                        >
-                                            Switch back to voucher
-                                        </Button>
-                                    </>
-                                )}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Handle input */}
-                    <div className="relative">
-                        <Input
-                            id="delivery-handle"
-                            type="text"
-                            value={
-                                deliveryMode === "voucher"
-                                    ? deliveryFields.voucher_no
-                                    : deliveryFields.invoice_no
-                            }
-                            onChange={(e) => {
-                                const key =
-                                    deliveryMode === "voucher"
-                                        ? "voucher_no"
-                                        : "invoice_no";
-                                setDeliveryFields((prev) => ({
-                                    ...prev,
-                                    [key]: e.target.value,
-                                }));
-                                setDeliveryMatched(false);
-                                setForm((prev) => ({
-                                    ...prev,
-                                    delivery_id: "",
-                                }));
-                            }}
-                            onBlur={handleDeliveryBlur}
-                            className="pr-8"
-                        />
-                        {deliveryLoading && (
-                            <span className="absolute right-2 top-2.5 text-xs text-gray-400">
-                                ...
-                            </span>
-                        )}
-                        {deliveryMatched && !deliveryLoading && (
-                            <span className="absolute right-2 top-2.5 text-xs text-green-500">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Matched / manual fields */}
-                    <div className="grid grid-cols-2 gap-4">
+            <Card>
+                <CardContent>
+                    <form onSubmit={handleSubmit}>
+                        <FieldGroup className="gap-5">
+                        {/* Equipment Type */}
                         <Field>
-                            <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
-                            {deliveryMatched ? (
-                                <Input
-                                    id="supplier_id"
-                                    type="text"
-                                    value={deliveryFields.supplier_name}
-                                    disabled
-                                    className="disabled:bg-gray-100 disabled:text-gray-400"
-                                />
-                            ) : (
-                                <Select
-                                    value={
-                                        deliveryFields.supplier_id ||
-                                        SUPPLIER_NONE
-                                    }
-                                    onValueChange={(value) => {
-                                        const selected = suppliers.find(
-                                            (s) => s.id === parseInt(value)
-                                        );
-                                        setDeliveryFields((prev) => ({
-                                            ...prev,
-                                            supplier_id:
-                                                value === SUPPLIER_NONE
-                                                    ? ""
-                                                    : value,
-                                            supplier_name: selected
-                                                ? selected.name
-                                                : "",
-                                        }));
-                                    }}
-                                >
-                                    <SelectTrigger
-                                        id="supplier_id"
-                                        className="w-full"
-                                        aria-invalid={!!errors.supplier_id}
+                            <FieldLabel>Equipment Type</FieldLabel>
+                            <div className="flex gap-3">
+                                {equipmentTypes.map((type) => (
+                                    <button
+                                        type="button"
+                                        key={type.id}
+                                        onClick={() =>
+                                            setForm({
+                                                ...form,
+                                                equipment_type_id: type.id,
+                                            })
+                                        }
+                                        className={`flex flex-col items-center gap-1 px-4 py-3 rounded border text-sm transition-colors ${
+                                            form.equipment_type_id === type.id
+                                                ? "border-blue-500 bg-blue-50 text-blue-600"
+                                                : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                                        }`}
                                     >
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value={SUPPLIER_NONE}>
-                                            Select Supplier
-                                        </SelectItem>
-                                        {suppliers.map((s) => (
-                                            <SelectItem
-                                                key={s.id}
-                                                value={String(s.id)}
-                                            >
-                                                {s.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
-                            {errors.supplier_id && (
-                                <FieldError>
-                                    {errors.supplier_id[0]}
-                                </FieldError>
-                            )}
-                        </Field>
-                        <Field>
-                            <FieldLabel htmlFor="purchase_date">Purchase Date</FieldLabel>
-                            <Input
-                                id="purchase_date"
-                                type="date"
-                                value={deliveryFields.purchase_date}
-                                onChange={(e) =>
-                                    setDeliveryFields((prev) => ({
-                                        ...prev,
-                                        purchase_date: e.target.value,
-                                    }))
-                                }
-                                disabled={deliveryMatched}
-                                className="disabled:bg-gray-100 disabled:text-gray-400"
-                            />
-                            {errors.purchase_date && (
-                                <FieldError>
-                                    {errors.purchase_date[0]}
-                                </FieldError>
-                            )}
-                        </Field>
-                    </div>
-
-                    {deliveryMatched && (
-                        <p className="text-xs text-green-600">
-                            Delivery matched — supplier and date pre-filled and
-                            locked.{" "}
-                            <Button
-                                type="button"
-                                variant="link"
-                                className="h-auto p-0 align-baseline underline text-blue-500"
-                                onClick={() => {
-                                    setDeliveryMatched(false);
-                                    setDeliveryFields({
-                                        voucher_no: "",
-                                        invoice_no: "",
-                                        supplier_id: "",
-                                        supplier_name: "",
-                                        purchase_date: "",
-                                        order_no: "",
-                                        notes: "",
-                                    });
-                                    setForm((prev) => ({
-                                        ...prev,
-                                        delivery_id: "",
-                                    }));
-                                }}
-                            >
-                                Clear
-                            </Button>
-                        </p>
-                    )}
-                </FieldSet>
-
-                {/* Condition + Status */}
-                <div className="grid grid-cols-2 gap-4">
-                    <Field>
-                        <FieldLabel htmlFor="condition">Condition</FieldLabel>
-                        <Select
-                            value={form.condition || CONDITION_NONE}
-                            onValueChange={(value) =>
-                                handleSelectChange(
-                                    "condition",
-                                    value === CONDITION_NONE ? "" : value
-                                )
-                            }
-                        >
-                            <SelectTrigger
-                                id="condition"
-                                className="w-full"
-                                aria-invalid={!!errors.condition}
-                            >
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={CONDITION_NONE}>
-                                    Select Condition
-                                </SelectItem>
-                                {conditionOptions.map((c) => (
-                                    <SelectItem key={c} value={c}>
-                                        {c}
-                                    </SelectItem>
+                                        <Laptop size={20} />
+                                        {type.name}
+                                    </button>
                                 ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.condition && (
-                            <FieldError>{errors.condition[0]}</FieldError>
-                        )}
-                    </Field>
-                    {/* Status */}
-                    <Field>
-                        <FieldLabel htmlFor="status">Status</FieldLabel>
-                        {isEditMode ? (
-                            <>
-                                <Select
-                                    value={form.status}
-                                    onValueChange={(value) =>
-                                        handleSelectChange("status", value)
-                                    }
-                                    disabled={form.status === "Assigned"}
-                                >
-                                    <SelectTrigger
-                                        id="status"
-                                        className="w-full"
-                                        aria-invalid={!!errors.status}
-                                    >
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {form.status === "Assigned" && (
-                                            <SelectItem value="Assigned">
-                                                Assigned
-                                            </SelectItem>
-                                        )}
-                                        {statusOptions
-                                            .filter((s) => s !== "Assigned")
-                                            .map((s) => (
-                                                <SelectItem key={s} value={s}>
-                                                    {s}
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-                                {form.status === "Assigned" && (
-                                    <p className="text-xs text-gray-400 mt-1">
-                                        Status is locked while equipment is
-                                        assigned. Use Return Equipment to change
-                                        it.
-                                    </p>
-                                )}
-                            </>
-                        ) : (
+                            </div>
+                            {errors.equipment_type_id && (
+                                <FieldError>
+                                    {errors.equipment_type_id[0]}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        {/* Brand */}
+                        <Field>
+                            <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
                             <Select
-                                value={form.status}
+                                value={String(form.brand_id || BRAND_NONE)}
                                 onValueChange={(value) =>
-                                    handleSelectChange("status", value)
+                                    handleSelectChange(
+                                        "brand_id",
+                                        value === BRAND_NONE ? "" : value
+                                    )
                                 }
                             >
                                 <SelectTrigger
-                                    id="status"
+                                    id="brand_id"
                                     className="w-full"
-                                    aria-invalid={!!errors.status}
+                                    aria-invalid={!!errors.brand_id}
                                 >
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {statusOptions.map((s) => (
-                                        <SelectItem key={s} value={s}>
-                                            {s}
+                                    <SelectItem value={BRAND_NONE}>
+                                        Select Brand
+                                    </SelectItem>
+                                    {brands.map((brand) => (
+                                        <SelectItem
+                                            key={brand.id}
+                                            value={String(brand.id)}
+                                        >
+                                            {brand.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                        )}
-                        {errors.status && (
-                            <FieldError>{errors.status[0]}</FieldError>
-                        )}
-                    </Field>
-
-                    {/* Employee assignment — add mode only, visible when Assigned is selected */}
-                    {!isEditMode && form.status === "Assigned" && (
-                        <Field>
-                            <FieldLabel htmlFor="employee-combobox">
-                                Assign to Employee
-                            </FieldLabel>
-                            <Combobox
-                                items={employees}
-                                itemToStringValue={(emp) => emp.name}
-                                value={selectedEmployee}
-                                onValueChange={setSelectedEmployee}
-                            >
-                                <ComboboxInput
-                                    id="employee-combobox"
-                                    placeholder="Type to search employee..."
-                                />
-                                <ComboboxContent>
-                                    <ComboboxEmpty>
-                                        No employees found.
-                                    </ComboboxEmpty>
-                                    <ComboboxList>
-                                        {(emp) => (
-                                            <ComboboxItem
-                                                key={emp.id}
-                                                value={emp}
-                                            >
-                                                <span>{emp.name}</span>
-                                                <span className="ml-auto text-xs text-muted-foreground">
-                                                    {emp.department_tag}
-                                                </span>
-                                            </ComboboxItem>
-                                        )}
-                                    </ComboboxList>
-                                </ComboboxContent>
-                            </Combobox>
-                            {errors.employee_id && (
-                                <FieldError>
-                                    {errors.employee_id[0]}
-                                </FieldError>
+                            {errors.brand_id && (
+                                <FieldError>{errors.brand_id[0]}</FieldError>
                             )}
                         </Field>
-                    )}
-                </div>
 
-                {/* Actions */}
-                <div className="flex gap-3 pt-2">
-                    <Button
-                        type="submit"
-                        variant="create"
-                        size="lg"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? "Saving..."
-                            : isEditMode
-                            ? "Update Equipment"
-                            : "Save Equipment"}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        size="lg"
-                        onClick={() => navigate("/equipment")}
-                    >
-                        Cancel
-                    </Button>
-                </div>
-                </FieldGroup>
-            </form>
+                        {/* Model */}
+                        <Field>
+                            <FieldLabel htmlFor="model_id">Model</FieldLabel>
+                            <Select
+                                value={String(form.model_id || MODEL_NONE)}
+                                onValueChange={(value) =>
+                                    handleSelectChange(
+                                        "model_id",
+                                        value === MODEL_NONE ? "" : value
+                                    )
+                                }
+                                disabled={!form.brand_id}
+                            >
+                                <SelectTrigger
+                                    id="model_id"
+                                    className="w-full"
+                                    aria-invalid={!!errors.model_id}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={MODEL_NONE}>
+                                        {form.brand_id
+                                            ? "Select Model"
+                                            : "Select a brand first"}
+                                    </SelectItem>
+                                    {models.map((model) => (
+                                        <SelectItem
+                                            key={model.id}
+                                            value={String(model.id)}
+                                        >
+                                            {model.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.model_id && (
+                                <FieldError>{errors.model_id[0]}</FieldError>
+                            )}
+                        </Field>
+
+                        {/* Serial Number */}
+                        <Field>
+                            <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
+                            <Input
+                                id="serial_number"
+                                type="text"
+                                name="serial_number"
+                                value={form.serial_number}
+                                onChange={handleChange}
+                                placeholder="e.g. PF123456"
+                            />
+                            {errors.serial_number && (
+                                <FieldError>{errors.serial_number[0]}</FieldError>
+                            )}
+                        </Field>
+
+                        {/* Delivery */}
+                        <FieldSet className="gap-3">
+                            <div className="flex items-center justify-between">
+                                <FieldLabel htmlFor="delivery-handle">
+                                    {deliveryMode === "voucher"
+                                        ? "Voucher No."
+                                        : "Sales Invoice No."}
+                                </FieldLabel>
+                                <div className="flex gap-1 text-xs">
+                                    <p className="text-xs text-gray-500">
+                                        {deliveryMode === "voucher" ? (
+                                            <>
+                                                No voucher number?{" "}
+                                                <Button
+                                                    type="button"
+                                                    variant="link"
+                                                    className="h-auto p-0 align-baseline underline text-blue-500"
+                                                    onClick={() => {
+                                                        setDeliveryMode("invoice");
+                                                        if (!isEditMode) {
+                                                            setDeliveryMatched(false);
+                                                            setDeliveryFields({
+                                                                voucher_no: "",
+                                                                invoice_no: "",
+                                                                supplier_id: "",
+                                                                supplier_name: "",
+                                                                purchase_date: "",
+                                                                order_no: "",
+                                                                notes: "",
+                                                            });
+                                                            setForm((prev) => ({
+                                                                ...prev,
+                                                                delivery_id: "",
+                                                            }));
+                                                        }
+                                                    }}
+                                                >
+                                                    Use invoice number instead
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                Have a voucher number?{" "}
+                                                <Button
+                                                    type="button"
+                                                    variant="link"
+                                                    className="h-auto p-0 align-baseline underline text-blue-500"
+                                                    onClick={() => {
+                                                        setDeliveryMode("voucher");
+                                                        if (!isEditMode) {
+                                                            setDeliveryMatched(false);
+                                                            setDeliveryFields({
+                                                                voucher_no: "",
+                                                                invoice_no: "",
+                                                                supplier_id: "",
+                                                                supplier_name: "",
+                                                                purchase_date: "",
+                                                                order_no: "",
+                                                                notes: "",
+                                                            });
+                                                            setForm((prev) => ({
+                                                                ...prev,
+                                                                delivery_id: "",
+                                                            }));
+                                                        }
+                                                    }}
+                                                >
+                                                    Switch back to voucher
+                                                </Button>
+                                            </>
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Handle input */}
+                            <div className="relative">
+                                <Input
+                                    id="delivery-handle"
+                                    type="text"
+                                    value={
+                                        deliveryMode === "voucher"
+                                            ? deliveryFields.voucher_no
+                                            : deliveryFields.invoice_no
+                                    }
+                                    onChange={(e) => {
+                                        const key =
+                                            deliveryMode === "voucher"
+                                                ? "voucher_no"
+                                                : "invoice_no";
+                                        setDeliveryFields((prev) => ({
+                                            ...prev,
+                                            [key]: e.target.value,
+                                        }));
+                                        setDeliveryMatched(false);
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            delivery_id: "",
+                                        }));
+                                    }}
+                                    onBlur={handleDeliveryBlur}
+                                    className="pr-8"
+                                />
+                                {deliveryLoading && (
+                                    <span className="absolute right-2 top-2.5 text-xs text-gray-400">
+                                        ...
+                                    </span>
+                                )}
+                                {deliveryMatched && !deliveryLoading && (
+                                    <span className="absolute right-2 top-2.5 text-xs text-green-500">
+                                        ✓
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Matched / manual fields */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <Field>
+                                    <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
+                                    {deliveryMatched ? (
+                                        <Input
+                                            id="supplier_id"
+                                            type="text"
+                                            value={deliveryFields.supplier_name}
+                                            disabled
+                                            className="disabled:bg-gray-100 disabled:text-gray-400"
+                                        />
+                                    ) : (
+                                        <Select
+                                            value={
+                                                deliveryFields.supplier_id ||
+                                                SUPPLIER_NONE
+                                            }
+                                            onValueChange={(value) => {
+                                                const selected = suppliers.find(
+                                                    (s) => s.id === parseInt(value)
+                                                );
+                                                setDeliveryFields((prev) => ({
+                                                    ...prev,
+                                                    supplier_id:
+                                                        value === SUPPLIER_NONE
+                                                            ? ""
+                                                            : value,
+                                                    supplier_name: selected
+                                                        ? selected.name
+                                                        : "",
+                                                }));
+                                            }}
+                                        >
+                                            <SelectTrigger
+                                                id="supplier_id"
+                                                className="w-full"
+                                                aria-invalid={!!errors.supplier_id}
+                                            >
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value={SUPPLIER_NONE}>
+                                                    Select Supplier
+                                                </SelectItem>
+                                                {suppliers.map((s) => (
+                                                    <SelectItem
+                                                        key={s.id}
+                                                        value={String(s.id)}
+                                                    >
+                                                        {s.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                    {errors.supplier_id && (
+                                        <FieldError>
+                                            {errors.supplier_id[0]}
+                                        </FieldError>
+                                    )}
+                                </Field>
+                                <Field>
+                                    <FieldLabel htmlFor="purchase_date">Purchase Date</FieldLabel>
+                                    <Input
+                                        id="purchase_date"
+                                        type="date"
+                                        value={deliveryFields.purchase_date}
+                                        onChange={(e) =>
+                                            setDeliveryFields((prev) => ({
+                                                ...prev,
+                                                purchase_date: e.target.value,
+                                            }))
+                                        }
+                                        disabled={deliveryMatched}
+                                        className="disabled:bg-gray-100 disabled:text-gray-400"
+                                    />
+                                    {errors.purchase_date && (
+                                        <FieldError>
+                                            {errors.purchase_date[0]}
+                                        </FieldError>
+                                    )}
+                                </Field>
+                            </div>
+
+                            {deliveryMatched && (
+                                <p className="text-xs text-green-600">
+                                    Delivery matched — supplier and date pre-filled and
+                                    locked.{" "}
+                                    <Button
+                                        type="button"
+                                        variant="link"
+                                        className="h-auto p-0 align-baseline underline text-blue-500"
+                                        onClick={() => {
+                                            setDeliveryMatched(false);
+                                            setDeliveryFields({
+                                                voucher_no: "",
+                                                invoice_no: "",
+                                                supplier_id: "",
+                                                supplier_name: "",
+                                                purchase_date: "",
+                                                order_no: "",
+                                                notes: "",
+                                            });
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                delivery_id: "",
+                                            }));
+                                        }}
+                                    >
+                                        Clear
+                                    </Button>
+                                </p>
+                            )}
+                        </FieldSet>
+
+                        {/* Condition + Status */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <Field>
+                                <FieldLabel htmlFor="condition">Condition</FieldLabel>
+                                <Select
+                                    value={form.condition || CONDITION_NONE}
+                                    onValueChange={(value) =>
+                                        handleSelectChange(
+                                            "condition",
+                                            value === CONDITION_NONE ? "" : value
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="condition"
+                                        className="w-full"
+                                        aria-invalid={!!errors.condition}
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={CONDITION_NONE}>
+                                            Select Condition
+                                        </SelectItem>
+                                        {conditionOptions.map((c) => (
+                                            <SelectItem key={c} value={c}>
+                                                {c}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.condition && (
+                                    <FieldError>{errors.condition[0]}</FieldError>
+                                )}
+                            </Field>
+                            {/* Status */}
+                            <Field>
+                                <FieldLabel htmlFor="status">Status</FieldLabel>
+                                {isEditMode ? (
+                                    <>
+                                        <Select
+                                            value={form.status}
+                                            onValueChange={(value) =>
+                                                handleSelectChange("status", value)
+                                            }
+                                            disabled={form.status === "Assigned"}
+                                        >
+                                            <SelectTrigger
+                                                id="status"
+                                                className="w-full"
+                                                aria-invalid={!!errors.status}
+                                            >
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {form.status === "Assigned" && (
+                                                    <SelectItem value="Assigned">
+                                                        Assigned
+                                                    </SelectItem>
+                                                )}
+                                                {statusOptions
+                                                    .filter((s) => s !== "Assigned")
+                                                    .map((s) => (
+                                                        <SelectItem key={s} value={s}>
+                                                            {s}
+                                                        </SelectItem>
+                                                    ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {form.status === "Assigned" && (
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                Status is locked while equipment is
+                                                assigned. Use Return Equipment to change
+                                                it.
+                                            </p>
+                                        )}
+                                    </>
+                                ) : (
+                                    <Select
+                                        value={form.status}
+                                        onValueChange={(value) =>
+                                            handleSelectChange("status", value)
+                                        }
+                                    >
+                                        <SelectTrigger
+                                            id="status"
+                                            className="w-full"
+                                            aria-invalid={!!errors.status}
+                                        >
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {statusOptions.map((s) => (
+                                                <SelectItem key={s} value={s}>
+                                                    {s}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                {errors.status && (
+                                    <FieldError>{errors.status[0]}</FieldError>
+                                )}
+                            </Field>
+
+                            {/* Employee assignment — add mode only, visible when Assigned is selected */}
+                            {!isEditMode && form.status === "Assigned" && (
+                                <Field>
+                                    <FieldLabel htmlFor="employee-combobox">
+                                        Assign to Employee
+                                    </FieldLabel>
+                                    <Combobox
+                                        items={employees}
+                                        itemToStringValue={(emp) => emp.name}
+                                        value={selectedEmployee}
+                                        onValueChange={setSelectedEmployee}
+                                    >
+                                        <ComboboxInput
+                                            id="employee-combobox"
+                                            placeholder="Type to search employee..."
+                                        />
+                                        <ComboboxContent>
+                                            <ComboboxEmpty>
+                                                No employees found.
+                                            </ComboboxEmpty>
+                                            <ComboboxList>
+                                                {(emp) => (
+                                                    <ComboboxItem
+                                                        key={emp.id}
+                                                        value={emp}
+                                                    >
+                                                        <span>{emp.name}</span>
+                                                        <span className="ml-auto text-xs text-muted-foreground">
+                                                            {emp.department_tag}
+                                                        </span>
+                                                    </ComboboxItem>
+                                                )}
+                                            </ComboboxList>
+                                        </ComboboxContent>
+                                    </Combobox>
+                                    {errors.employee_id && (
+                                        <FieldError>
+                                            {errors.employee_id[0]}
+                                        </FieldError>
+                                    )}
+                                </Field>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                type="submit"
+                                variant="create"
+                                size="lg"
+                                disabled={loading}
+                            >
+                                {loading
+                                    ? "Saving..."
+                                    : isEditMode
+                                    ? "Update Equipment"
+                                    : "Save Equipment"}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="lg"
+                                onClick={() => navigate("/equipment")}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                        </FieldGroup>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 }

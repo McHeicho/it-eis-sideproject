@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/custom/custom-select";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Tooltip text for an Assigned row's current holder. Employee-held rows name
 // the person and their office; branch-held rows name the branch. Returns null
@@ -112,171 +113,173 @@ export default function EquipmentList() {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white rounded-lg shadow p-4 mb-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
-                    <Field>
-                        <FieldLabel htmlFor="status">Status</FieldLabel>
-                        <Select
-                            value={filterForm.status || STATUS_ALL}
-                            onValueChange={(value) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    status: value === STATUS_ALL ? "" : value,
-                                }))
-                            }
-                        >
-                            <SelectTrigger id="status" className="w-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={STATUS_ALL}>
-                                    All Statuses
-                                </SelectItem>
-                                {[
-                                    "Available",
-                                    "Assigned",
-                                    "Under Repair",
-                                    "Lost/Missing",
-                                    "Retired/Disposed",
-                                    "Spare Unit",
-                                ].map((s) => (
-                                    <SelectItem key={s} value={s}>
-                                        {s}
+            <Card className="mb-4">
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
+                        <Field>
+                            <FieldLabel htmlFor="status">Status</FieldLabel>
+                            <Select
+                                value={filterForm.status || STATUS_ALL}
+                                onValueChange={(value) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        status: value === STATUS_ALL ? "" : value,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger id="status" className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={STATUS_ALL}>
+                                        All Statuses
                                     </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="condition">Condition</FieldLabel>
-                        <Select
-                            value={filterForm.condition || CONDITION_ALL}
-                            onValueChange={(value) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    condition:
-                                        value === CONDITION_ALL ? "" : value,
-                                }))
-                            }
-                        >
-                            <SelectTrigger id="condition" className="w-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={CONDITION_ALL}>
-                                    All Conditions
-                                </SelectItem>
-                                {["Good", "Defective"].map((c) => (
-                                    <SelectItem key={c} value={c}>
-                                        {c}
+                                    {[
+                                        "Available",
+                                        "Assigned",
+                                        "Under Repair",
+                                        "Lost/Missing",
+                                        "Retired/Disposed",
+                                        "Spare Unit",
+                                    ].map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                            {s}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="condition">Condition</FieldLabel>
+                            <Select
+                                value={filterForm.condition || CONDITION_ALL}
+                                onValueChange={(value) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        condition:
+                                            value === CONDITION_ALL ? "" : value,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger id="condition" className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={CONDITION_ALL}>
+                                        All Conditions
                                     </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="equipment_type_id">Equipment Type</FieldLabel>
-                        <Select
-                            value={filterForm.equipment_type_id || TYPE_ALL}
-                            onValueChange={(value) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    equipment_type_id:
-                                        value === TYPE_ALL ? "" : value,
-                                }))
-                            }
-                        >
-                            <SelectTrigger id="equipment_type_id" className="w-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={TYPE_ALL}>
-                                    All Types
-                                </SelectItem>
-                                {types.map((t) => (
-                                    <SelectItem key={t.id} value={String(t.id)}>
-                                        {t.name}
+                                    {["Good", "Defective"].map((c) => (
+                                        <SelectItem key={c} value={c}>
+                                            {c}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="equipment_type_id">Equipment Type</FieldLabel>
+                            <Select
+                                value={filterForm.equipment_type_id || TYPE_ALL}
+                                onValueChange={(value) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        equipment_type_id:
+                                            value === TYPE_ALL ? "" : value,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger id="equipment_type_id" className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={TYPE_ALL}>
+                                        All Types
                                     </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
-                        <Select
-                            value={filterForm.supplier_id || SUPPLIER_ALL}
-                            onValueChange={(value) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    supplier_id:
-                                        value === SUPPLIER_ALL ? "" : value,
-                                }))
-                            }
-                        >
-                            <SelectTrigger id="supplier_id" className="w-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={SUPPLIER_ALL}>
-                                    All Suppliers
-                                </SelectItem>
-                                {suppliers.map((s) => (
-                                    <SelectItem key={s.id} value={String(s.id)}>
-                                        {s.name}
+                                    {types.map((t) => (
+                                        <SelectItem key={t.id} value={String(t.id)}>
+                                            {t.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
+                            <Select
+                                value={filterForm.supplier_id || SUPPLIER_ALL}
+                                onValueChange={(value) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        supplier_id:
+                                            value === SUPPLIER_ALL ? "" : value,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger id="supplier_id" className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={SUPPLIER_ALL}>
+                                        All Suppliers
                                     </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
-                        <Input
-                            id="serial_number"
-                            type="text"
-                            value={filterForm.serial_number}
-                            onChange={(e) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    serial_number: e.target.value,
-                                }))
-                            }
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && handleFilter()
-                            }
-                            placeholder="Starts with..."
-                        />
-                    </Field>
-                </div>
-                <div className="flex justify-between items-center">
-                    <p className="text-xs text-gray-400">
-                        {filtering
-                            ? "Filtering..."
-                            : `${equipment.length} record${
-                                  equipment.length !== 1 ? "s" : ""
-                              } found`}
-                    </p>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs text-gray-500 hover:bg-transparent hover:text-gray-700"
-                            onClick={handleReset}
-                            disabled={filtering}
-                        >
-                            Reset
-                        </Button>
-                        <Button
-                            variant="create"
-                            size="sm"
-                            className="text-xs"
-                            onClick={handleFilter}
-                            disabled={filtering}
-                        >
-                            Filter
-                        </Button>
+                                    {suppliers.map((s) => (
+                                        <SelectItem key={s.id} value={String(s.id)}>
+                                            {s.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
+                            <Input
+                                id="serial_number"
+                                type="text"
+                                value={filterForm.serial_number}
+                                onChange={(e) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        serial_number: e.target.value,
+                                    }))
+                                }
+                                onKeyDown={(e) =>
+                                    e.key === "Enter" && handleFilter()
+                                }
+                                placeholder="Starts with..."
+                            />
+                        </Field>
                     </div>
-                </div>
-            </div>
+                    <div className="flex justify-between items-center">
+                        <p className="text-xs text-gray-400">
+                            {filtering
+                                ? "Filtering..."
+                                : `${equipment.length} record${
+                                      equipment.length !== 1 ? "s" : ""
+                                  } found`}
+                        </p>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs text-gray-500 hover:bg-transparent hover:text-gray-700"
+                                onClick={handleReset}
+                                disabled={filtering}
+                            >
+                                Reset
+                            </Button>
+                            <Button
+                                variant="create"
+                                size="sm"
+                                className="text-xs"
+                                onClick={handleFilter}
+                                disabled={filtering}
+                            >
+                                Filter
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Table */}
             {equipment.length === 0 ? (

@@ -4,6 +4,13 @@ import api from '@/api/axios';
 import { Button } from '@/components/ui/custom/custom-button';
 import { Input } from '@/components/ui/input';
 import { Field, FieldLabel, FieldGroup } from '@/components/ui/field';
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+} from '@/components/ui/card';
 
 export default function Login() {
     const navigate = useNavigate();
@@ -34,54 +41,61 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">IT Inventory System</h1>
-                <p className="text-sm text-gray-500 mb-6">Sign in to continue</p>
+            <Card className="w-full max-w-sm">
+                <CardHeader>
+                    <CardTitle>
+                        <h1 className="text-2xl font-bold text-gray-800">IT Inventory System</h1>
+                    </CardTitle>
+                    <CardDescription>
+                        <p className="text-sm text-gray-500">Sign in to continue</p>
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {error && (
+                        <div className="bg-red-100 text-red-700 text-sm px-4 py-2 rounded mb-4">
+                            {error}
+                        </div>
+                    )}
 
-                {error && (
-                    <div className="bg-red-100 text-red-700 text-sm px-4 py-2 rounded mb-4">
-                        {error}
-                    </div>
-                )}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <FieldGroup className="gap-5">
+                            <Field>
+                                <FieldLabel htmlFor="email">Email</FieldLabel>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Field>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <FieldGroup className="gap-5">
-                        <Field>
-                            <FieldLabel htmlFor="email">Email</FieldLabel>
-                            <Input
-                                id="email"
-                                type="email"
-                                name="email"
-                                value={form.email}
-                                onChange={handleChange}
-                                required
-                            />
-                        </Field>
+                            <Field>
+                                <FieldLabel htmlFor="password">Password</FieldLabel>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    name="password"
+                                    value={form.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Field>
+                        </FieldGroup>
 
-                        <Field>
-                            <FieldLabel htmlFor="password">Password</FieldLabel>
-                            <Input
-                                id="password"
-                                type="password"
-                                name="password"
-                                value={form.password}
-                                onChange={handleChange}
-                                required
-                            />
-                        </Field>
-                    </FieldGroup>
-
-                    <Button
-                        type="submit"
-                        variant="create"
-                        size="lg"
-                        className="w-full"
-                        disabled={loading}
-                    >
-                        {loading ? 'Signing in...' : 'Sign In'}
-                    </Button>
-                </form>
-            </div>
+                        <Button
+                            type="submit"
+                            variant="create"
+                            size="lg"
+                            className="w-full"
+                            disabled={loading}
+                        >
+                            {loading ? 'Signing in...' : 'Sign In'}
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 }

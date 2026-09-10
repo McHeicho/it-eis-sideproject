@@ -11,6 +11,7 @@ import api from "@/api/axios";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import AppDialog from "@/components/ui/AppDialog";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function BulkImport() {
     const navigate = useNavigate();
@@ -290,657 +291,681 @@ export default function BulkImport() {
             {/* Category Cards */}
             <div className="space-y-4">
                 {/* Equipment */}
-                <div className="bg-white rounded-lg shadow p-5">
-                    <div className="flex items-center gap-3 mb-4">
-                        <FileSpreadsheet size={20} className="text-blue-600" />
-                        <h2 className="text-base font-semibold text-gray-800">
-                            Equipment
-                        </h2>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-4">
-                        Download the equipment template, fill in your records,
-                        then upload to register multiple equipment items at
-                        once.
-                    </p>
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <FileSpreadsheet size={20} className="text-blue-600" />
+                            <CardTitle>
+                                <h2 className="text-base font-semibold text-gray-800">
+                                    Equipment
+                                </h2>
+                            </CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Download the equipment template, fill in your records,
+                            then upload to register multiple equipment items at
+                            once.
+                        </p>
 
-                    {/* Actions Row */}
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <Button
-                            variant="create"
-                            size="lg"
-                            onClick={handleDownloadTemplate}
-                            disabled={eqDownloading || eqUploading}
-                        >
-                            <FileSpreadsheet size={16} />
-                            {eqDownloading
-                                ? "Generating..."
-                                : "Generate Template"}
-                        </Button>
-
-                        {/* File Picker */}
-                        <label
-                            className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                eqDownloading || eqUploading
-                                    ? "opacity-50 cursor-not-allowed bg-gray-50"
-                                    : "hover:bg-gray-50 cursor-pointer"
-                            }`}
-                        >
-                            <Upload size={16} />
-                            {eqSelectedFile
-                                ? eqSelectedFile.name
-                                : "Choose File"}
-                            <input
-                                type="file"
-                                accept=".xlsx"
-                                className="hidden"
+                        {/* Actions Row */}
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <Button
+                                variant="create"
+                                size="lg"
+                                onClick={handleDownloadTemplate}
                                 disabled={eqDownloading || eqUploading}
-                                onChange={(e) => {
-                                    setEqSelectedFile(
-                                        e.target.files[0] || null
-                                    );
-                                    setEqImportResult(null);
-                                }}
-                            />
-                        </label>
-
-                        {/* Upload Button */}
-                        {eqSelectedFile && (
-                            <Button
-                                variant="assign"
-                                size="lg"
-                                onClick={handleUpload}
-                                disabled={eqUploading}
                             >
-                                {eqUploading ? "Importing..." : "Import"}
+                                <FileSpreadsheet size={16} />
+                                {eqDownloading
+                                    ? "Generating..."
+                                    : "Generate Template"}
                             </Button>
-                        )}
-                    </div>
 
-                    {/* Result Area */}
-                    <AppDialog
-                        open={!!eqImportResult}
-                        onOpenChange={(o) => { if (!o) { setEqImportResult(null); setEqCountdown(null); } }}
-                        title="Import Complete"
-                        size="sm"
-                    >
-                        {eqImportResult && (
-                            <div className="space-y-4">
-                                {/* Summary */}
-                                <p className="text-sm text-gray-700">
-                                    {eqImportResult.imported} record
-                                    {eqImportResult.imported !== 1 ? "s" : ""}{" "}
-                                    imported successfully.
-                                </p>
-
-                                {/* Warnings */}
-                                {eqImportResult.warnings?.length > 0 && (
-                                    <div>
-                                        <p className="text-amber-600 font-medium text-xs mb-1">
-                                            {eqImportResult.warnings.length}{" "}
-                                            warning
-                                            {eqImportResult.warnings.length !==
-                                            1
-                                                ? "s"
-                                                : ""}
-                                            :
-                                        </p>
-                                        <ul className="space-y-1">
-                                            {eqImportResult.warnings.map(
-                                                (w, i) => (
-                                                    <li
-                                                        key={i}
-                                                        className="text-amber-500 text-xs"
-                                                    >
-                                                        {w}
-                                                    </li>
-                                                )
-                                            )}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {/* Failures */}
-                                {eqImportResult.failures?.length > 0 && (
-                                    <div>
-                                        <p className="text-red-600 font-medium text-xs mb-1">
-                                            {eqImportResult.failures.length} row
-                                            {eqImportResult.failures.length !==
-                                            1
-                                                ? "s"
-                                                : ""}{" "}
-                                            failed:
-                                        </p>
-                                        <ul className="space-y-1">
-                                            {eqImportResult.failures.map(
-                                                (f, i) => (
-                                                    <li
-                                                        key={i}
-                                                        className="text-red-500 text-xs"
-                                                    >
-                                                        <span className="font-medium">
-                                                            Row {f.row}:
-                                                        </span>{" "}
-                                                        {f.errors.join(" ")}
-                                                    </li>
-                                                )
-                                            )}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {/* Question */}
-                                <p className="text-sm text-gray-600">
-                                    Where would you like to go next?
-                                </p>
-
-                                {/* Actions */}
-                                <div className="flex flex-col gap-2">
-                                    <Button
-                                        variant="create"
-                                        size="lg"
-                                        className="w-full"
-                                        onClick={() => navigate("/equipment")}
-                                    >
-                                        Go to Equipment List
-                                    </Button>
-                                    <Button
-                                        variant="assign"
-                                        size="lg"
-                                        className="w-full"
-                                        onClick={() => navigate("/assignments")}
-                                    >
-                                        Go to Assignment List
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        className="w-full"
-                                        onClick={() => {
-                                            setEqImportResult(null);
-                                            setEqCountdown(null);
-                                        }}
-                                    >
-                                        OK — dismiss ({eqCountdown}s)
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </AppDialog>
-                </div>
-
-                {/* Employees */}
-                <div className="bg-white rounded-lg shadow p-5">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Users size={20} className="text-blue-600" />
-                        <h2 className="text-base font-semibold text-gray-800">
-                            Employees
-                        </h2>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-4">
-                        Download the employee template, fill in your records,
-                        then upload to register multiple employees at once.
-                    </p>
-
-                    {/* Actions Row */}
-                    <div className="flex items-center gap-3 flex-wrap">
-                        <Button
-                            variant="create"
-                            size="lg"
-                            onClick={handleEmpDownloadTemplate}
-                            disabled={empDownloading || empUploading}
-                        >
-                            <FileSpreadsheet size={16} />
-                            {empDownloading
-                                ? "Generating..."
-                                : "Generate Template"}
-                        </Button>
-
-                        <label
-                            className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
-                                empDownloading || empUploading
-                                    ? "opacity-50 cursor-not-allowed bg-gray-50"
-                                    : "hover:bg-gray-50 cursor-pointer"
-                            }`}
-                        >
-                            <Upload size={16} />
-                            {empSelectedFile
-                                ? empSelectedFile.name
-                                : "Choose File"}
-                            <input
-                                type="file"
-                                accept=".xlsx"
-                                className="hidden"
-                                disabled={empDownloading || empUploading}
-                                onChange={(e) => {
-                                    setEmpSelectedFile(
-                                        e.target.files[0] || null
-                                    );
-                                    setEmpImportResult(null);
-                                    setEmpDuplicates([]);
-                                }}
-                            />
-                        </label>
-
-                        {empSelectedFile && (
-                            <Button
-                                variant="assign"
-                                size="lg"
-                                onClick={handleEmpUpload}
-                                disabled={empUploading}
+                            {/* File Picker */}
+                            <label
+                                className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    eqDownloading || eqUploading
+                                        ? "opacity-50 cursor-not-allowed bg-gray-50"
+                                        : "hover:bg-gray-50 cursor-pointer"
+                                }`}
                             >
-                                {empUploading ? "Importing..." : "Import"}
-                            </Button>
-                        )}
-                    </div>
-
-                    {/* Result Area */}
-                    {empImportResult && (
-                        <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-2">
-                            {empImportResult.allDuplicates ? (
-                                <p className="font-medium text-red-600">
-                                    Import failed — all records are duplicate
-                                    values.
-                                </p>
-                            ) : (
-                                <p className="font-medium text-gray-700">
-                                    Import complete — {empImportResult.imported}{" "}
-                                    record
-                                    {empImportResult.imported !== 1
-                                        ? "s"
-                                        : ""}{" "}
-                                    imported
-                                    {empImportResult.updated > 0 &&
-                                        `, ${empImportResult.updated} record${
-                                            empImportResult.updated !== 1
-                                                ? "s"
-                                                : ""
-                                        } updated`}{" "}
-                                    successfully.
-                                </p>
-                            )}
-
-                            {/* Duplicate Wizard Panel */}
-                            {empDuplicates.length > 0 && (
-                                <div className="mt-4 border border-yellow-300 bg-yellow-50 rounded p-4 space-y-4">
-                                    {/* Header */}
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm font-semibold text-yellow-800">
-                                            {empDuplicates.length -
-                                                empDuplicateIndex}{" "}
-                                            duplicate record
-                                            {empDuplicates.length -
-                                                empDuplicateIndex !==
-                                            1
-                                                ? "s"
-                                                : ""}{" "}
-                                            remaining
-                                        </p>
-                                    </div>
-
-                                    {/* Side by Side Cards */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {/* Left — Existing Record */}
-                                        <div
-                                            onClick={() =>
-                                                setEmpCurrentChecks((prev) => ({
-                                                    ...prev,
-                                                    left: !prev.left,
-                                                }))
-                                            }
-                                            className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
-                                                empCurrentChecks.left
-                                                    ? "border-blue-400 bg-blue-50"
-                                                    : "border-gray-300 bg-white"
-                                            }`}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <Checkbox
-                                                    checked={
-                                                        empCurrentChecks.left
-                                                    }
-                                                    onCheckedChange={() =>
-                                                        setEmpCurrentChecks(
-                                                            (prev) => ({
-                                                                ...prev,
-                                                                left: !prev.left,
-                                                            })
-                                                        )
-                                                    }
-                                                />
-                                                <span className="text-xs font-semibold text-gray-500 uppercase">
-                                                    Existing
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {
-                                                    empDuplicates[
-                                                        empDuplicateIndex
-                                                    ].name
-                                                }
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                {
-                                                    empDuplicates[
-                                                        empDuplicateIndex
-                                                    ].existing_department_name
-                                                }
-                                            </p>
-                                        </div>
-
-                                        {/* Right — Incoming Record */}
-                                        <div
-                                            onClick={() =>
-                                                setEmpCurrentChecks((prev) => ({
-                                                    ...prev,
-                                                    right: !prev.right,
-                                                }))
-                                            }
-                                            className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
-                                                empCurrentChecks.right
-                                                    ? "border-green-400 bg-green-50"
-                                                    : "border-gray-300 bg-white"
-                                            }`}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <Checkbox
-                                                    checked={
-                                                        empCurrentChecks.right
-                                                    }
-                                                    onCheckedChange={() =>
-                                                        setEmpCurrentChecks(
-                                                            (prev) => ({
-                                                                ...prev,
-                                                                right: !prev.right,
-                                                            })
-                                                        )
-                                                    }
-                                                />
-                                                <span className="text-xs font-semibold text-gray-500 uppercase">
-                                                    Incoming
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {
-                                                    empDuplicates[
-                                                        empDuplicateIndex
-                                                    ].name
-                                                }
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                {
-                                                    empDuplicates[
-                                                        empDuplicateIndex
-                                                    ].department_name
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex justify-end gap-2">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="text-xs"
-                                            onClick={handleCancelDuplicates}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            variant="create"
-                                            size="sm"
-                                            className={`text-xs ${
-                                                !empCurrentChecks.left &&
-                                                !empCurrentChecks.right
-                                                    ? "bg-gray-400 hover:bg-gray-500"
-                                                    : ""
-                                            }`}
-                                            onClick={handleDuplicateDecision}
-                                        >
-                                            {!empCurrentChecks.left &&
-                                            !empCurrentChecks.right
-                                                ? "Skip"
-                                                : "OK"}
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {empDuplicates.length === 0 && (
-                                <Button
-                                    variant="link"
-                                    className="h-auto p-0 mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
-                                    onClick={() => {
-                                        setEmpImportResult(null);
-                                        setEmpDuplicates([]);
+                                <Upload size={16} />
+                                {eqSelectedFile
+                                    ? eqSelectedFile.name
+                                    : "Choose File"}
+                                <input
+                                    type="file"
+                                    accept=".xlsx"
+                                    className="hidden"
+                                    disabled={eqDownloading || eqUploading}
+                                    onChange={(e) => {
+                                        setEqSelectedFile(
+                                            e.target.files[0] || null
+                                        );
+                                        setEqImportResult(null);
                                     }}
+                                />
+                            </label>
+
+                            {/* Upload Button */}
+                            {eqSelectedFile && (
+                                <Button
+                                    variant="assign"
+                                    size="lg"
+                                    onClick={handleUpload}
+                                    disabled={eqUploading}
                                 >
-                                    OK
+                                    {eqUploading ? "Importing..." : "Import"}
                                 </Button>
                             )}
                         </div>
-                    )}
-                </div>
 
-                {/* Bulk Attach Documents */}
-                <div className="bg-white rounded-lg shadow p-5">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Paperclip size={20} className="text-blue-600" />
-                        <h2 className="text-base font-semibold text-gray-800">
-                            Receipt Documents
-                        </h2>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-4">
-                        Select multiple PDFs and match each one to its delivery
-                        receipt before uploading.
-                    </p>
+                        {/* Result Area */}
+                        <AppDialog
+                            open={!!eqImportResult}
+                            onOpenChange={(o) => { if (!o) { setEqImportResult(null); setEqCountdown(null); } }}
+                            title="Import Complete"
+                            size="sm"
+                        >
+                            {eqImportResult && (
+                                <div className="space-y-4">
+                                    {/* Summary */}
+                                    <p className="text-sm text-gray-700">
+                                        {eqImportResult.imported} record
+                                        {eqImportResult.imported !== 1 ? "s" : ""}{" "}
+                                        imported successfully.
+                                    </p>
 
-                    {/* File Picker */}
-                    <label className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 cursor-pointer w-fit">
-                        <Upload size={16} />
-                        Choose PDFs
-                        <input
-                            type="file"
-                            accept=".pdf"
-                            multiple
-                            className="hidden"
-                            onChange={handleDocFilesSelected}
-                        />
-                    </label>
-
-                    {/* Matching Table */}
-                    {docFiles.length > 0 && (
-                        <div className="mt-4 space-y-3">
-                            {docLoadingDeliveries ? (
-                                <p className="text-sm text-gray-400">
-                                    Loading deliveries...
-                                </p>
-                            ) : (
-                                <>
-                                    {docFiles.map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center gap-3 flex-wrap"
-                                        >
-                                            <span
-                                                className="text-sm text-gray-700 w-64 truncate"
-                                                title={item.file.name}
-                                            >
-                                                {item.file.name}
-                                            </span>
-                                            <input
-                                                list={`deliveries-list-${index}`}
-                                                value={
-                                                    item.deliveryId
-                                                        ? docDeliveries.find(
-                                                              (d) =>
-                                                                  d.id ==
-                                                                  item.deliveryId
-                                                          )
-                                                            ? [
-                                                                  docDeliveries.find(
-                                                                      (d) =>
-                                                                          d.id ==
-                                                                          item.deliveryId
-                                                                  ).voucher_no,
-                                                                  docDeliveries.find(
-                                                                      (d) =>
-                                                                          d.id ==
-                                                                          item.deliveryId
-                                                                  ).invoice_no,
-                                                              ]
-                                                                  .filter(
-                                                                      Boolean
-                                                                  )
-                                                                  .join(" / ") +
-                                                              " — " +
-                                                              (docDeliveries.find(
-                                                                  (d) =>
-                                                                      d.id ==
-                                                                      item.deliveryId
-                                                              ).supplier
-                                                                  ?.name ||
-                                                                  "No Supplier")
-                                                            : item.deliveryId
-                                                        : item.inputValue || ""
-                                                }
-                                                onChange={(e) => {
-                                                    const typed =
-                                                        e.target.value;
-                                                    const matched = docDeliveries.find(
-                                                        (d) => {
-                                                            const label =
-                                                                [
-                                                                    d.voucher_no,
-                                                                    d.invoice_no,
-                                                                ]
-                                                                    .filter(
-                                                                        Boolean
-                                                                    )
-                                                                    .join(
-                                                                        " / "
-                                                                    ) +
-                                                                " — " +
-                                                                (d.supplier
-                                                                    ?.name ||
-                                                                    "No Supplier");
-                                                            return (
-                                                                label === typed
-                                                            );
-                                                        }
-                                                    );
-                                                    handleDocDeliveryChange(
-                                                        index,
-                                                        matched
-                                                            ? matched.id
-                                                            : "",
-                                                        typed
-                                                    );
-                                                }}
-                                                placeholder="Type voucher or invoice no..."
-                                                className="border rounded px-2 py-1.5 text-sm flex-1 min-w-48"
-                                            />
-                                            <datalist
-                                                id={`deliveries-list-${index}`}
-                                            >
-                                                {docDeliveries.map((d) => (
-                                                    <option
-                                                        key={d.id}
-                                                        value={
-                                                            [
-                                                                d.voucher_no,
-                                                                d.invoice_no,
-                                                            ]
-                                                                .filter(Boolean)
-                                                                .join(" / ") +
-                                                            " — " +
-                                                            (d.supplier?.name ||
-                                                                "No Supplier")
-                                                        }
-                                                    />
-                                                ))}
-                                            </datalist>
+                                    {/* Warnings */}
+                                    {eqImportResult.warnings?.length > 0 && (
+                                        <div>
+                                            <p className="text-amber-600 font-medium text-xs mb-1">
+                                                {eqImportResult.warnings.length}{" "}
+                                                warning
+                                                {eqImportResult.warnings.length !==
+                                                1
+                                                    ? "s"
+                                                    : ""}
+                                                :
+                                            </p>
+                                            <ul className="space-y-1">
+                                                {eqImportResult.warnings.map(
+                                                    (w, i) => (
+                                                        <li
+                                                            key={i}
+                                                            className="text-amber-500 text-xs"
+                                                        >
+                                                            {w}
+                                                        </li>
+                                                    )
+                                                )}
+                                            </ul>
                                         </div>
-                                    ))}
+                                    )}
 
-                                    <div className="flex items-center gap-2">
+                                    {/* Failures */}
+                                    {eqImportResult.failures?.length > 0 && (
+                                        <div>
+                                            <p className="text-red-600 font-medium text-xs mb-1">
+                                                {eqImportResult.failures.length} row
+                                                {eqImportResult.failures.length !==
+                                                1
+                                                    ? "s"
+                                                    : ""}{" "}
+                                                failed:
+                                            </p>
+                                            <ul className="space-y-1">
+                                                {eqImportResult.failures.map(
+                                                    (f, i) => (
+                                                        <li
+                                                            key={i}
+                                                            className="text-red-500 text-xs"
+                                                        >
+                                                            <span className="font-medium">
+                                                                Row {f.row}:
+                                                            </span>{" "}
+                                                            {f.errors.join(" ")}
+                                                        </li>
+                                                    )
+                                                )}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {/* Question */}
+                                    <p className="text-sm text-gray-600">
+                                        Where would you like to go next?
+                                    </p>
+
+                                    {/* Actions */}
+                                    <div className="flex flex-col gap-2">
+                                        <Button
+                                            variant="create"
+                                            size="lg"
+                                            className="w-full"
+                                            onClick={() => navigate("/equipment")}
+                                        >
+                                            Go to Equipment List
+                                        </Button>
                                         <Button
                                             variant="assign"
                                             size="lg"
-                                            onClick={handleDocUploadAll}
-                                            disabled={
-                                                docUploading ||
-                                                docFiles.every(
-                                                    (f) => !f.deliveryId
-                                                )
-                                            }
+                                            className="w-full"
+                                            onClick={() => navigate("/assignments")}
                                         >
-                                            {docUploading
-                                                ? "Uploading..."
-                                                : "Upload All"}
+                                            Go to Assignment List
                                         </Button>
                                         <Button
                                             variant="outline"
                                             size="lg"
-                                            onClick={() =>
-                                                window.location.reload()
-                                            }
-                                            disabled={docUploading}
+                                            className="w-full"
+                                            onClick={() => {
+                                                setEqImportResult(null);
+                                                setEqCountdown(null);
+                                            }}
                                         >
-                                            Cancel
+                                            OK — dismiss ({eqCountdown}s)
                                         </Button>
                                     </div>
-                                </>
+                                </div>
+                            )}
+                        </AppDialog>
+                    </CardContent>
+                </Card>
+
+                {/* Employees */}
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <Users size={20} className="text-blue-600" />
+                            <CardTitle>
+                                <h2 className="text-base font-semibold text-gray-800">
+                                    Employees
+                                </h2>
+                            </CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Download the employee template, fill in your records,
+                            then upload to register multiple employees at once.
+                        </p>
+
+                        {/* Actions Row */}
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <Button
+                                variant="create"
+                                size="lg"
+                                onClick={handleEmpDownloadTemplate}
+                                disabled={empDownloading || empUploading}
+                            >
+                                <FileSpreadsheet size={16} />
+                                {empDownloading
+                                    ? "Generating..."
+                                    : "Generate Template"}
+                            </Button>
+
+                            <label
+                                className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    empDownloading || empUploading
+                                        ? "opacity-50 cursor-not-allowed bg-gray-50"
+                                        : "hover:bg-gray-50 cursor-pointer"
+                                }`}
+                            >
+                                <Upload size={16} />
+                                {empSelectedFile
+                                    ? empSelectedFile.name
+                                    : "Choose File"}
+                                <input
+                                    type="file"
+                                    accept=".xlsx"
+                                    className="hidden"
+                                    disabled={empDownloading || empUploading}
+                                    onChange={(e) => {
+                                        setEmpSelectedFile(
+                                            e.target.files[0] || null
+                                        );
+                                        setEmpImportResult(null);
+                                        setEmpDuplicates([]);
+                                    }}
+                                />
+                            </label>
+
+                            {empSelectedFile && (
+                                <Button
+                                    variant="assign"
+                                    size="lg"
+                                    onClick={handleEmpUpload}
+                                    disabled={empUploading}
+                                >
+                                    {empUploading ? "Importing..." : "Import"}
+                                </Button>
                             )}
                         </div>
-                    )}
 
-                    {/* Results */}
-                    {docResults.length > 0 && (
-                        <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-1">
-                            {docResults.map((r, i) => (
-                                <p
-                                    key={i}
-                                    className={
-                                        r.success
-                                            ? "text-green-600"
-                                            : "text-red-500"
-                                    }
-                                >
-                                    <span className="font-medium">
-                                        {r.filename}:
-                                    </span>{" "}
-                                    {r.success
-                                        ? "Uploaded successfully."
-                                        : r.message}
-                                </p>
-                            ))}
-                            <Button
-                                variant="link"
-                                className="h-auto p-0 mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
-                                onClick={() => setDocResults([])}
-                            >
-                                OK
-                            </Button>
+                        {/* Result Area */}
+                        {empImportResult && (
+                            <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-2">
+                                {empImportResult.allDuplicates ? (
+                                    <p className="font-medium text-red-600">
+                                        Import failed — all records are duplicate
+                                        values.
+                                    </p>
+                                ) : (
+                                    <p className="font-medium text-gray-700">
+                                        Import complete — {empImportResult.imported}{" "}
+                                        record
+                                        {empImportResult.imported !== 1
+                                            ? "s"
+                                            : ""}{" "}
+                                        imported
+                                        {empImportResult.updated > 0 &&
+                                            `, ${empImportResult.updated} record${
+                                                empImportResult.updated !== 1
+                                                    ? "s"
+                                                    : ""
+                                            } updated`}{" "}
+                                        successfully.
+                                    </p>
+                                )}
+
+                                {/* Duplicate Wizard Panel */}
+                                {empDuplicates.length > 0 && (
+                                    <div className="mt-4 border border-yellow-300 bg-yellow-50 rounded p-4 space-y-4">
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm font-semibold text-yellow-800">
+                                                {empDuplicates.length -
+                                                    empDuplicateIndex}{" "}
+                                                duplicate record
+                                                {empDuplicates.length -
+                                                    empDuplicateIndex !==
+                                                1
+                                                    ? "s"
+                                                    : ""}{" "}
+                                                remaining
+                                            </p>
+                                        </div>
+
+                                        {/* Side by Side Cards */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {/* Left — Existing Record */}
+                                            <div
+                                                onClick={() =>
+                                                    setEmpCurrentChecks((prev) => ({
+                                                        ...prev,
+                                                        left: !prev.left,
+                                                    }))
+                                                }
+                                                className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
+                                                    empCurrentChecks.left
+                                                        ? "border-blue-400 bg-blue-50"
+                                                        : "border-gray-300 bg-white"
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        checked={
+                                                            empCurrentChecks.left
+                                                        }
+                                                        onCheckedChange={() =>
+                                                            setEmpCurrentChecks(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    left: !prev.left,
+                                                                })
+                                                            )
+                                                        }
+                                                    />
+                                                    <span className="text-xs font-semibold text-gray-500 uppercase">
+                                                        Existing
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {
+                                                        empDuplicates[
+                                                            empDuplicateIndex
+                                                        ].name
+                                                    }
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {
+                                                        empDuplicates[
+                                                            empDuplicateIndex
+                                                        ].existing_department_name
+                                                    }
+                                                </p>
+                                            </div>
+
+                                            {/* Right — Incoming Record */}
+                                            <div
+                                                onClick={() =>
+                                                    setEmpCurrentChecks((prev) => ({
+                                                        ...prev,
+                                                        right: !prev.right,
+                                                    }))
+                                                }
+                                                className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
+                                                    empCurrentChecks.right
+                                                        ? "border-green-400 bg-green-50"
+                                                        : "border-gray-300 bg-white"
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        checked={
+                                                            empCurrentChecks.right
+                                                        }
+                                                        onCheckedChange={() =>
+                                                            setEmpCurrentChecks(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    right: !prev.right,
+                                                                })
+                                                            )
+                                                        }
+                                                    />
+                                                    <span className="text-xs font-semibold text-gray-500 uppercase">
+                                                        Incoming
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {
+                                                        empDuplicates[
+                                                            empDuplicateIndex
+                                                        ].name
+                                                    }
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {
+                                                        empDuplicates[
+                                                            empDuplicateIndex
+                                                        ].department_name
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="text-xs"
+                                                onClick={handleCancelDuplicates}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                variant="create"
+                                                size="sm"
+                                                className={`text-xs ${
+                                                    !empCurrentChecks.left &&
+                                                    !empCurrentChecks.right
+                                                        ? "bg-gray-400 hover:bg-gray-500"
+                                                        : ""
+                                                }`}
+                                                onClick={handleDuplicateDecision}
+                                            >
+                                                {!empCurrentChecks.left &&
+                                                !empCurrentChecks.right
+                                                    ? "Skip"
+                                                    : "OK"}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {empDuplicates.length === 0 && (
+                                    <Button
+                                        variant="link"
+                                        className="h-auto p-0 mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
+                                        onClick={() => {
+                                            setEmpImportResult(null);
+                                            setEmpDuplicates([]);
+                                        }}
+                                    >
+                                        OK
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Bulk Attach Documents */}
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <Paperclip size={20} className="text-blue-600" />
+                            <CardTitle>
+                                <h2 className="text-base font-semibold text-gray-800">
+                                    Receipt Documents
+                                </h2>
+                            </CardTitle>
                         </div>
-                    )}
-                </div>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Select multiple PDFs and match each one to its delivery
+                            receipt before uploading.
+                        </p>
+
+                        {/* File Picker */}
+                        <label className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 cursor-pointer w-fit">
+                            <Upload size={16} />
+                            Choose PDFs
+                            <input
+                                type="file"
+                                accept=".pdf"
+                                multiple
+                                className="hidden"
+                                onChange={handleDocFilesSelected}
+                            />
+                        </label>
+
+                        {/* Matching Table */}
+                        {docFiles.length > 0 && (
+                            <div className="mt-4 space-y-3">
+                                {docLoadingDeliveries ? (
+                                    <p className="text-sm text-gray-400">
+                                        Loading deliveries...
+                                    </p>
+                                ) : (
+                                    <>
+                                        {docFiles.map((item, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center gap-3 flex-wrap"
+                                            >
+                                                <span
+                                                    className="text-sm text-gray-700 w-64 truncate"
+                                                    title={item.file.name}
+                                                >
+                                                    {item.file.name}
+                                                </span>
+                                                <input
+                                                    list={`deliveries-list-${index}`}
+                                                    value={
+                                                        item.deliveryId
+                                                            ? docDeliveries.find(
+                                                                  (d) =>
+                                                                      d.id ==
+                                                                      item.deliveryId
+                                                              )
+                                                                ? [
+                                                                      docDeliveries.find(
+                                                                          (d) =>
+                                                                              d.id ==
+                                                                              item.deliveryId
+                                                                      ).voucher_no,
+                                                                      docDeliveries.find(
+                                                                          (d) =>
+                                                                              d.id ==
+                                                                              item.deliveryId
+                                                                      ).invoice_no,
+                                                                  ]
+                                                                      .filter(
+                                                                          Boolean
+                                                                      )
+                                                                      .join(" / ") +
+                                                                  " — " +
+                                                                  (docDeliveries.find(
+                                                                      (d) =>
+                                                                          d.id ==
+                                                                          item.deliveryId
+                                                                  ).supplier
+                                                                      ?.name ||
+                                                                      "No Supplier")
+                                                                : item.deliveryId
+                                                            : item.inputValue || ""
+                                                    }
+                                                    onChange={(e) => {
+                                                        const typed =
+                                                            e.target.value;
+                                                        const matched = docDeliveries.find(
+                                                            (d) => {
+                                                                const label =
+                                                                    [
+                                                                        d.voucher_no,
+                                                                        d.invoice_no,
+                                                                    ]
+                                                                        .filter(
+                                                                            Boolean
+                                                                        )
+                                                                        .join(
+                                                                            " / "
+                                                                        ) +
+                                                                    " — " +
+                                                                    (d.supplier
+                                                                        ?.name ||
+                                                                        "No Supplier");
+                                                                return (
+                                                                    label === typed
+                                                                );
+                                                            }
+                                                        );
+                                                        handleDocDeliveryChange(
+                                                            index,
+                                                            matched
+                                                                ? matched.id
+                                                                : "",
+                                                            typed
+                                                        );
+                                                    }}
+                                                    placeholder="Type voucher or invoice no..."
+                                                    className="border rounded px-2 py-1.5 text-sm flex-1 min-w-48"
+                                                />
+                                                <datalist
+                                                    id={`deliveries-list-${index}`}
+                                                >
+                                                    {docDeliveries.map((d) => (
+                                                        <option
+                                                            key={d.id}
+                                                            value={
+                                                                [
+                                                                    d.voucher_no,
+                                                                    d.invoice_no,
+                                                                ]
+                                                                    .filter(Boolean)
+                                                                    .join(" / ") +
+                                                                " — " +
+                                                                (d.supplier?.name ||
+                                                                    "No Supplier")
+                                                            }
+                                                        />
+                                                    ))}
+                                                </datalist>
+                                            </div>
+                                        ))}
+
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="assign"
+                                                size="lg"
+                                                onClick={handleDocUploadAll}
+                                                disabled={
+                                                    docUploading ||
+                                                    docFiles.every(
+                                                        (f) => !f.deliveryId
+                                                    )
+                                                }
+                                            >
+                                                {docUploading
+                                                    ? "Uploading..."
+                                                    : "Upload All"}
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="lg"
+                                                onClick={() =>
+                                                    window.location.reload()
+                                                }
+                                                disabled={docUploading}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Results */}
+                        {docResults.length > 0 && (
+                            <div className="mt-4 p-4 rounded border border-gray-200 bg-gray-50 text-sm space-y-1">
+                                {docResults.map((r, i) => (
+                                    <p
+                                        key={i}
+                                        className={
+                                            r.success
+                                                ? "text-green-600"
+                                                : "text-red-500"
+                                        }
+                                    >
+                                        <span className="font-medium">
+                                            {r.filename}:
+                                        </span>{" "}
+                                        {r.success
+                                            ? "Uploaded successfully."
+                                            : r.message}
+                                    </p>
+                                ))}
+                                <Button
+                                    variant="link"
+                                    className="h-auto p-0 mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
+                                    onClick={() => setDocResults([])}
+                                >
+                                    OK
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* Assignments — Coming Soon */}
-                <div className="bg-white rounded-lg shadow p-5 opacity-50">
-                    <div className="flex items-center gap-3 mb-2">
-                        <ClipboardList size={20} className="text-gray-400" />
-                        <h2 className="text-base font-semibold text-gray-600">
-                            Assignments
-                        </h2>
-                        <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                            Coming Soon
-                        </span>
-                    </div>
-                    <p className="text-sm text-gray-400">
-                        Bulk import for assignments is not yet available.
-                    </p>
-                </div>
+                <Card className="opacity-50">
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <ClipboardList size={20} className="text-gray-400" />
+                            <CardTitle>
+                                <h2 className="text-base font-semibold text-gray-600">
+                                    Assignments
+                                </h2>
+                            </CardTitle>
+                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                                Coming Soon
+                            </span>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-gray-400">
+                            Bulk import for assignments is not yet available.
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

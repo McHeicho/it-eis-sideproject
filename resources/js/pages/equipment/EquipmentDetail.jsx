@@ -8,6 +8,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import ConditionBadge from "@/components/ui/ConditionBadge";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useEquipmentDetail } from "@/queries/useEquipmentDetail";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 // Tooltip text for an Assigned record's current holder. Employee-held records
 // name the person and their office; branch-held records name the branch.
@@ -133,17 +134,19 @@ export default function EquipmentDetail() {
             </div>
 
             {/* Details Card */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <Card>
                 {/* Equipment Type Banner */}
-                <div className="bg-gray-50 px-6 py-4 flex items-center gap-3 border-b">
-                    <Laptop size={20} className="text-gray-400" />
-                    <span className="text-sm font-medium text-gray-600">
-                        {equipment.type?.name}
-                    </span>
-                </div>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <Laptop size={20} className="text-gray-400" />
+                        <span className="text-sm font-medium text-gray-600">
+                            {equipment.type?.name}
+                        </span>
+                    </div>
+                </CardHeader>
 
                 {/* Details Grid */}
-                <div className="px-6 py-4 space-y-4">
+                <CardContent className="space-y-4">
                     <div className="flex justify-between items-center py-2 border-b border-gray-50">
                         <span className="text-sm text-gray-500">Brand</span>
                         <span className="text-sm font-medium text-gray-800">
@@ -225,8 +228,8 @@ export default function EquipmentDetail() {
                             <StatusBadge status={equipment.status} />
                         )}
                     </div>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

@@ -6,6 +6,7 @@ import {
     Paperclip,
     Pencil,
     Laptop,
+    Receipt,
 } from "lucide-react";
 import api from "@/api/axios";
 import { Button } from "@/components/ui/custom/custom-button";
@@ -23,6 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/custom/custom-select";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Sentinels for the filter-bar Selects — Radix throws on an empty-string item
 // value, so these stand in for "" ("All X") at the component boundary and get
@@ -145,293 +147,354 @@ export default function EquipmentReceipts() {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white rounded-lg shadow p-4 mb-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                    <Field>
-                        <FieldLabel htmlFor="voucher_no">Voucher No.</FieldLabel>
-                        <Input
-                            id="voucher_no"
-                            type="text"
-                            value={filterForm.voucher_no}
-                            onChange={(e) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    voucher_no: e.target.value,
-                                }))
-                            }
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && handleFilter()
-                            }
-                            placeholder="Enter Voucher No."
-                        />
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="invoice_no">Invoice No.</FieldLabel>
-                        <Input
-                            id="invoice_no"
-                            type="text"
-                            value={filterForm.invoice_no}
-                            onChange={(e) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    invoice_no: e.target.value,
-                                }))
-                            }
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && handleFilter()
-                            }
-                            placeholder="Enter Invoice No."
-                        />
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="order_no">Purchase Order No.</FieldLabel>
-                        <Input
-                            id="order_no"
-                            type="text"
-                            value={filterForm.order_no}
-                            onChange={(e) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    order_no: e.target.value,
-                                }))
-                            }
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && handleFilter()
-                            }
-                            placeholder="Enter Purchase Order No."
-                        />
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
-                        <Select
-                            value={filterForm.supplier_id || SUPPLIER_ALL}
-                            onValueChange={(value) =>
-                                setFilterForm((prev) => ({
-                                    ...prev,
-                                    supplier_id:
-                                        value === SUPPLIER_ALL ? "" : value,
-                                }))
-                            }
-                        >
-                            <SelectTrigger id="supplier_id" className="w-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={SUPPLIER_ALL}>
-                                    All Suppliers
-                                </SelectItem>
-                                {suppliers.map((s) => (
-                                    <SelectItem key={s.id} value={String(s.id)}>
-                                        {s.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </Field>
-                </div>
-                {isAdmin && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Card className="mb-4">
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
                         <Field>
-                            <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
+                            <FieldLabel htmlFor="voucher_no">Voucher No.</FieldLabel>
                             <Input
-                                id="serial_number"
+                                id="voucher_no"
                                 type="text"
-                                value={filterForm.serial_number}
+                                value={filterForm.voucher_no}
                                 onChange={(e) =>
                                     setFilterForm((prev) => ({
                                         ...prev,
-                                        serial_number: e.target.value,
+                                        voucher_no: e.target.value,
                                     }))
                                 }
                                 onKeyDown={(e) =>
                                     e.key === "Enter" && handleFilter()
                                 }
-                                placeholder="Starts with..."
+                                placeholder="Enter Voucher No."
                             />
                         </Field>
                         <Field>
-                            <FieldLabel htmlFor="status">Equipment Status</FieldLabel>
+                            <FieldLabel htmlFor="invoice_no">Invoice No.</FieldLabel>
+                            <Input
+                                id="invoice_no"
+                                type="text"
+                                value={filterForm.invoice_no}
+                                onChange={(e) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        invoice_no: e.target.value,
+                                    }))
+                                }
+                                onKeyDown={(e) =>
+                                    e.key === "Enter" && handleFilter()
+                                }
+                                placeholder="Enter Invoice No."
+                            />
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="order_no">Purchase Order No.</FieldLabel>
+                            <Input
+                                id="order_no"
+                                type="text"
+                                value={filterForm.order_no}
+                                onChange={(e) =>
+                                    setFilterForm((prev) => ({
+                                        ...prev,
+                                        order_no: e.target.value,
+                                    }))
+                                }
+                                onKeyDown={(e) =>
+                                    e.key === "Enter" && handleFilter()
+                                }
+                                placeholder="Enter Purchase Order No."
+                            />
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="supplier_id">Supplier</FieldLabel>
                             <Select
-                                value={filterForm.status || STATUS_ALL}
+                                value={filterForm.supplier_id || SUPPLIER_ALL}
                                 onValueChange={(value) =>
                                     setFilterForm((prev) => ({
                                         ...prev,
-                                        status:
-                                            value === STATUS_ALL ? "" : value,
+                                        supplier_id:
+                                            value === SUPPLIER_ALL ? "" : value,
                                     }))
                                 }
                             >
-                                <SelectTrigger id="status" className="w-full">
+                                <SelectTrigger id="supplier_id" className="w-full">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value={STATUS_ALL}>
-                                        All Statuses
+                                    <SelectItem value={SUPPLIER_ALL}>
+                                        All Suppliers
                                     </SelectItem>
-                                    {statuses.map((s) => (
-                                        <SelectItem key={s} value={s}>
-                                            {s}
+                                    {suppliers.map((s) => (
+                                        <SelectItem key={s.id} value={String(s.id)}>
+                                            {s.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </Field>
                     </div>
-                )}
-                <div className="flex items-center gap-2 mt-1">
-                    <Checkbox
-                        id="no_attachment"
-                        checked={filterForm.no_attachment}
-                        onCheckedChange={(checked) =>
-                            setFilterForm((prev) => ({
-                                ...prev,
-                                no_attachment: checked,
-                            }))
-                        }
-                    />
-                    <label
-                        htmlFor="no_attachment"
-                        className="text-xs text-gray-600 cursor-pointer"
-                    >
-                        Missing documents only
-                    </label>
-                </div>
-                <div className="flex justify-end gap-2">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-gray-500 hover:bg-transparent hover:text-gray-700"
-                        onClick={handleReset}
-                        disabled={filtering}
-                    >
-                        Reset
-                    </Button>
-                    <Button
-                        variant="create"
-                        size="sm"
-                        className="text-xs"
-                        onClick={handleFilter}
-                        disabled={filtering}
-                    >
-                        {filtering ? "Filtering..." : "Filter"}
-                    </Button>
-                </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                {/* Table Header */}
-                <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    <div className="col-span-1"></div>
-                    <div className="col-span-3">Supplier</div>
-                    <div className="col-span-2">Voucher No.</div>
-                    <div className="col-span-2">Invoice No.</div>
-                    <div className="col-span-2">Purchase Date</div>
-                    <div className="col-span-2 text-right">Equipment</div>
-                </div>
-
-                {/* Rows */}
-                {deliveries.length === 0 && (
-                    <div className="px-6 py-8 text-sm text-gray-400 text-center">
-                        No receipts found.
-                    </div>
-                )}
-
-                {deliveries.map((delivery) => (
-                    <div key={delivery.id} className="border-b last:border-0">
-                        {/* Summary Row */}
-                        <button
-                            onClick={() => handleExpand(delivery.id)}
-                            className="grid grid-cols-12 gap-4 px-6 py-4 w-full text-left hover:bg-gray-50 transition-colors"
-                        >
-                            <div className="col-span-1 flex items-center">
-                                {expandedId === delivery.id ? (
-                                    <ChevronDown
-                                        size={16}
-                                        className="text-gray-400"
-                                    />
-                                ) : (
-                                    <ChevronRight
-                                        size={16}
-                                        className="text-gray-400"
-                                    />
-                                )}
-                            </div>
-                            <div className="col-span-3 text-sm font-medium text-gray-800">
-                                {delivery.supplier?.name || "—"}
-                            </div>
-                            <div className="col-span-2 text-sm text-gray-600">
-                                {delivery.voucher_no || "—"}
-                            </div>
-                            <div className="col-span-2 text-sm text-gray-600">
-                                {delivery.invoice_no || "—"}
-                            </div>
-                            <div className="col-span-2 text-sm text-gray-600">
-                                {delivery.purchase_date
-                                    ? new Date(
-                                          delivery.purchase_date
-                                      ).toLocaleDateString("en-PH", {
-                                          year: "numeric",
-                                          month: "short",
-                                          day: "numeric",
-                                      })
-                                    : "—"}
-                            </div>
-                            <div className="col-span-2 text-sm text-gray-600 text-right">
-                                {delivery.equipment_count} item
-                                {delivery.equipment_count !== 1 ? "s" : ""}
-                            </div>
-                        </button>
-
-                        {/* Expanded Row */}
-                        {expandedId === delivery.id && (
-                            <div className="px-6 pb-4 bg-gray-50 border-t">
-                                {expandLoading === delivery.id ? (
-                                    <div className="py-4 space-y-2">
-                                        {[...Array(3)].map((_, i) => (
-                                            <div
-                                                key={i}
-                                                className="skeleton h-8 w-full rounded"
-                                            ></div>
+                    {isAdmin && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <Field>
+                                <FieldLabel htmlFor="serial_number">Serial Number</FieldLabel>
+                                <Input
+                                    id="serial_number"
+                                    type="text"
+                                    value={filterForm.serial_number}
+                                    onChange={(e) =>
+                                        setFilterForm((prev) => ({
+                                            ...prev,
+                                            serial_number: e.target.value,
+                                        }))
+                                    }
+                                    onKeyDown={(e) =>
+                                        e.key === "Enter" && handleFilter()
+                                    }
+                                    placeholder="Starts with..."
+                                />
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="status">Equipment Status</FieldLabel>
+                                <Select
+                                    value={filterForm.status || STATUS_ALL}
+                                    onValueChange={(value) =>
+                                        setFilterForm((prev) => ({
+                                            ...prev,
+                                            status:
+                                                value === STATUS_ALL ? "" : value,
+                                        }))
+                                    }
+                                >
+                                    <SelectTrigger id="status" className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={STATUS_ALL}>
+                                            All Statuses
+                                        </SelectItem>
+                                        {statuses.map((s) => (
+                                            <SelectItem key={s} value={s}>
+                                                {s}
+                                            </SelectItem>
                                         ))}
-                                    </div>
-                                ) : expandedData[delivery.id] ? (
-                                    <ReceiptDetail
-                                        delivery={expandedData[delivery.id]}
-                                        suppliers={suppliers}
-                                        onDeliveryUpdated={
-                                            handleDeliveryUpdated
-                                        }
-                                        onAttachmentUploaded={(attachment) => {
-                                            setExpandedData((prev) => ({
-                                                ...prev,
-                                                [delivery.id]: {
-                                                    ...prev[delivery.id],
-                                                    attachments: [attachment],
-                                                },
-                                            }));
-                                        }}
-                                        onAttachmentRemoved={(attachmentId) => {
-                                            setExpandedData((prev) => ({
-                                                ...prev,
-                                                [delivery.id]: {
-                                                    ...prev[delivery.id],
-                                                    attachments: prev[
-                                                        delivery.id
-                                                    ].attachments.filter(
-                                                        (a) =>
-                                                            a.id !==
-                                                            attachmentId
-                                                    ),
-                                                },
-                                            }));
-                                        }}
-                                    />
-                                ) : null}
-                            </div>
-                        )}
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                        </div>
+                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                        <Checkbox
+                            id="no_attachment"
+                            checked={filterForm.no_attachment}
+                            onCheckedChange={(checked) =>
+                                setFilterForm((prev) => ({
+                                    ...prev,
+                                    no_attachment: checked,
+                                }))
+                            }
+                        />
+                        <label
+                            htmlFor="no_attachment"
+                            className="text-xs text-gray-600 cursor-pointer"
+                        >
+                            Missing documents only
+                        </label>
                     </div>
-                ))}
-            </div>
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-gray-500 hover:bg-transparent hover:text-gray-700"
+                            onClick={handleReset}
+                            disabled={filtering}
+                        >
+                            Reset
+                        </Button>
+                        <Button
+                            variant="create"
+                            size="sm"
+                            className="text-xs"
+                            onClick={handleFilter}
+                            disabled={filtering}
+                        >
+                            {filtering ? "Filtering..." : "Filter"}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Table */}
+            {deliveries.length === 0 ? (
+                <div className="text-center py-16 text-gray-400">
+                    <Receipt size={40} className="mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">No receipts found.</p>
+                </div>
+            ) : (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <Table>
+                        <TableHeader className="bg-gray-50 text-gray-600 uppercase text-xs">
+                            <TableRow className="border-0 hover:bg-transparent">
+                                <TableHead className="w-10 px-4 py-3 h-auto font-normal text-inherit">
+                                    <span className="sr-only">Expand</span>
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
+                                    Supplier
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
+                                    Voucher No.
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
+                                    Invoice No.
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
+                                    Purchase Date
+                                </TableHead>
+                                <TableHead className="px-4 py-3 h-auto font-normal text-inherit text-right">
+                                    Equipment
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-100">
+                            {deliveries.map((delivery) => (
+                                <React.Fragment key={delivery.id}>
+                                    {/* Summary Row */}
+                                    <TableRow
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-expanded={expandedId === delivery.id}
+                                        onClick={() => handleExpand(delivery.id)}
+                                        onKeyDown={(e) => {
+                                            if (
+                                                e.key === "Enter" ||
+                                                e.key === " "
+                                            ) {
+                                                e.preventDefault();
+                                                handleExpand(delivery.id);
+                                            }
+                                        }}
+                                        className="border-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                                    >
+                                        <TableCell className="px-4 py-3 text-gray-400">
+                                            {expandedId === delivery.id ? (
+                                                <ChevronDown size={16} />
+                                            ) : (
+                                                <ChevronRight size={16} />
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 font-medium text-gray-800">
+                                            {delivery.supplier?.name || "—"}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600">
+                                            {delivery.voucher_no || "—"}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600">
+                                            {delivery.invoice_no || "—"}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600 text-xs">
+                                            {delivery.purchase_date
+                                                ? new Date(
+                                                      delivery.purchase_date
+                                                  ).toLocaleDateString("en-PH", {
+                                                      year: "numeric",
+                                                      month: "short",
+                                                      day: "numeric",
+                                                  })
+                                                : "—"}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-gray-600 text-right">
+                                            {delivery.equipment_count} item
+                                            {delivery.equipment_count !== 1
+                                                ? "s"
+                                                : ""}
+                                        </TableCell>
+                                    </TableRow>
+
+                                    {/* Expanded Row */}
+                                    {expandedId === delivery.id && (
+                                        <TableRow className="border-0 bg-gray-50 hover:bg-gray-50">
+                                            <TableCell
+                                                colSpan={6}
+                                                className="px-6 pb-4 pt-0 whitespace-normal"
+                                            >
+                                                {expandLoading === delivery.id ? (
+                                                    <div className="py-4 space-y-2">
+                                                        {[...Array(3)].map(
+                                                            (_, i) => (
+                                                                <div
+                                                                    key={i}
+                                                                    className="skeleton h-8 w-full rounded"
+                                                                ></div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                ) : expandedData[delivery.id] ? (
+                                                    <ReceiptDetail
+                                                        delivery={
+                                                            expandedData[
+                                                                delivery.id
+                                                            ]
+                                                        }
+                                                        suppliers={suppliers}
+                                                        onDeliveryUpdated={
+                                                            handleDeliveryUpdated
+                                                        }
+                                                        onAttachmentUploaded={(
+                                                            attachment
+                                                        ) => {
+                                                            setExpandedData(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    [delivery.id]:
+                                                                        {
+                                                                            ...prev[
+                                                                                delivery
+                                                                                    .id
+                                                                            ],
+                                                                            attachments:
+                                                                                [
+                                                                                    attachment,
+                                                                                ],
+                                                                        },
+                                                                })
+                                                            );
+                                                        }}
+                                                        onAttachmentRemoved={(
+                                                            attachmentId
+                                                        ) => {
+                                                            setExpandedData(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    [delivery.id]:
+                                                                        {
+                                                                            ...prev[
+                                                                                delivery
+                                                                                    .id
+                                                                            ],
+                                                                            attachments:
+                                                                                prev[
+                                                                                    delivery
+                                                                                        .id
+                                                                                ].attachments.filter(
+                                                                                    (
+                                                                                        a
+                                                                                    ) =>
+                                                                                        a.id !==
+                                                                                        attachmentId
+                                                                                ),
+                                                                        },
+                                                                })
+                                                            );
+                                                        }}
+                                                    />
+                                                ) : null}
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
         </div>
     );
 }
@@ -817,42 +880,42 @@ function ReceiptDetail({
                         No equipment linked to this receipt.
                     </p>
                 ) : (
-                    <div className="rounded border overflow-hidden">
+                    <div className="bg-white rounded-lg shadow overflow-hidden">
                         <Table>
-                            <TableHeader className="bg-gray-100 text-xs text-gray-500 uppercase">
+                            <TableHeader className="bg-gray-50 text-gray-600 uppercase text-xs">
                                 <TableRow className="border-0 hover:bg-transparent">
-                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Type
                                     </TableHead>
-                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Brand
                                     </TableHead>
-                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Model
                                     </TableHead>
-                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Serial No.
                                     </TableHead>
-                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Condition
                                     </TableHead>
-                                    <TableHead className="px-4 py-2 h-auto font-normal text-inherit">
+                                    <TableHead className="px-4 py-3 h-auto font-normal text-inherit">
                                         Status
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody className="divide-y divide-gray-100 bg-white">
+                            <TableBody className="divide-y divide-gray-100">
                                 {delivery.equipment.map((eq) => (
-                                    <TableRow key={eq.id} className="border-0 hover:bg-transparent">
-                                        <TableCell className="px-4 py-2">
+                                    <TableRow
+                                        key={eq.id}
+                                        className="border-0 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <TableCell className="px-4 py-3 text-gray-500">
                                             {(() => {
                                                 const Icon =
                                                     TYPE_ICONS[eq.type?.name];
                                                 return Icon ? (
-                                                    <Icon
-                                                        size={15}
-                                                        className="text-gray-500"
-                                                    />
+                                                    <Icon size={16} />
                                                 ) : (
                                                     <span className="text-gray-400">
                                                         —
@@ -860,19 +923,19 @@ function ReceiptDetail({
                                                 );
                                             })()}
                                         </TableCell>
-                                        <TableCell className="px-4 py-2">
+                                        <TableCell className="px-4 py-3 font-medium text-gray-800">
                                             {eq.brand?.name || "—"}
                                         </TableCell>
-                                        <TableCell className="px-4 py-2">
+                                        <TableCell className="px-4 py-3 text-gray-600">
                                             {eq.model?.name || "—"}
                                         </TableCell>
-                                        <TableCell className="px-4 py-2 font-mono text-xs">
+                                        <TableCell className="px-4 py-3 text-gray-600 font-mono text-xs">
                                             {eq.serial_number}
                                         </TableCell>
-                                        <TableCell className="px-4 py-2">
+                                        <TableCell className="px-4 py-3 text-gray-600">
                                             {eq.condition}
                                         </TableCell>
-                                        <TableCell className="px-4 py-2">
+                                        <TableCell className="px-4 py-3 text-gray-600">
                                             {eq.status}
                                         </TableCell>
                                     </TableRow>

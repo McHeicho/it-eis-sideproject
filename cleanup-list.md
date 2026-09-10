@@ -208,6 +208,9 @@ Tracking known issues, deferred improvements, and architectural cleanup items fo
   indistinguishable from a dropped connection. Likely wants prevention
   (disable the code field on those two rows client-side) over better error
   display, since the restriction is permanent, not conditional.
+
+- [ ] **#35 — Hand-rolled component sweep.**
+ Card recon proved the codebase carries bespoke UI beyond the tracked migration list (grid pseudo-tables in EquipmentReceipts, divide-y list containers, card-styled nav buttons in ManageBrandsModelsModal). Inventory what remains hand-rolled, match each against a shadcn equivalent, and scope one at a time rather than as a sweep.
 ---
 
 ## Closed Items

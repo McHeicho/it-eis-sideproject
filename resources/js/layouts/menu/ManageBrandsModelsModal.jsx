@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/custom/custom-select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Sentinels for the Selects in ModelsView below — Radix throws on an
 // empty-string item value, so these stand in for "" at the component
@@ -317,7 +318,7 @@ function BrandsView({ setBrandsEditing }) {
             {loading ? (
                 <div className="space-y-2">
                     {[...Array(3)].map((_, i) => (
-                        <div key={i} className="skeleton h-3 w-full rounded"></div>
+                        <Skeleton key={i} className="h-3 w-full rounded" />
                     ))}
                 </div>
             ) : isEditing ? (
@@ -675,8 +676,8 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                 <div className="space-y-2">
                     {[...Array(3)].map((_, i) => (
                         <div key={i} className="flex justify-between">
-                            <div className="skeleton h-3 w-32 rounded"></div>
-                            <div className="skeleton h-3 w-24 rounded"></div>
+                            <Skeleton className="h-3 w-32 rounded" />
+                            <Skeleton className="h-3 w-24 rounded" />
                         </div>
                     ))}
                 </div>

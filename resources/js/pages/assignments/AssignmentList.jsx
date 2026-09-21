@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/custom/custom-select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ASSIGNMENT_EQUIPMENT_FILTERS = {
     status: "",
@@ -158,17 +159,17 @@ export default function AssignmentList() {
     if (loading) {
         return (
             <div className="p-6">
-                <div className="skeleton h-6 w-36 rounded mb-2"></div>
-                <div className="skeleton h-3 w-24 rounded mb-6"></div>
+                <Skeleton className="h-6 w-36 rounded mb-2" />
+                <Skeleton className="h-3 w-24 rounded mb-6" />
                 <div className="bg-white rounded-lg shadow overflow-hidden">
                     {[...Array(5)].map((_, i) => (
                         <div
                             key={i}
                             className="flex items-center justify-between px-4 py-3 border-b"
                         >
-                            <div className="skeleton h-3 w-40 rounded"></div>
-                            <div className="skeleton h-3 w-32 rounded"></div>
-                            <div className="skeleton h-3 w-24 rounded"></div>
+                            <Skeleton className="h-3 w-40 rounded" />
+                            <Skeleton className="h-3 w-32 rounded" />
+                            <Skeleton className="h-3 w-24 rounded" />
                         </div>
                     ))}
                 </div>

@@ -8,6 +8,7 @@ import {
     Paperclip,
 } from "lucide-react";
 import api from "@/api/axios";
+import { describeError } from "@/lib/errors";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import AppDialog from "@/components/ui/AppDialog";
@@ -36,9 +37,13 @@ export default function BulkImport() {
     const [docUploading, setDocUploading] = useState(false);
     const [docResults, setDocResults] = useState([]);
     const [eqCountdown, setEqCountdown] = useState(null);
+    const [eqError, setEqError] = useState("");
+    const [empError, setEmpError] = useState("");
+    const [docError, setDocError] = useState("");
 
     const handleDownloadTemplate = async () => {
         setEqDownloading(true);
+        setEqError("");
         try {
             const response = await api.get("/bulk-import/equipment-template", {
                 responseType: "blob",
@@ -52,7 +57,7 @@ export default function BulkImport() {
             link.remove();
             window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error("Failed to download equipment template:", error);
+            setEqError(describeError(error, "Could not generate the template."));
         } finally {
             setEqDownloading(false);
         }
@@ -61,6 +66,7 @@ export default function BulkImport() {
     const handleUpload = async () => {
         if (!eqSelectedFile) return;
         setEqUploading(true);
+        setEqError("");
         setEqImportResult(null);
         try {
             const formData = new FormData();
@@ -76,7 +82,7 @@ export default function BulkImport() {
             setEqCountdown(5);
             setEqSelectedFile(null);
         } catch (error) {
-            console.error("Failed to import:", error);
+            setEqError(describeError(error, "Import failed."));
         } finally {
             setEqUploading(false);
         }
@@ -84,6 +90,7 @@ export default function BulkImport() {
 
     const handleEmpDownloadTemplate = async () => {
         setEmpDownloading(true);
+        setEmpError("");
         try {
             const response = await api.get("/bulk-import/employee-template", {
                 responseType: "blob",
@@ -97,7 +104,7 @@ export default function BulkImport() {
             link.remove();
             window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error("Failed to download employee template:", error);
+            setEmpError(describeError(error, "Could not generate the template."));
         } finally {
             setEmpDownloading(false);
         }
@@ -106,6 +113,7 @@ export default function BulkImport() {
     const handleEmpUpload = async () => {
         if (!empSelectedFile) return;
         setEmpUploading(true);
+        setEmpError("");
         setEmpImportResult(null);
         setEmpDuplicates([]);
         try {
@@ -134,7 +142,7 @@ export default function BulkImport() {
             }
             setEmpSelectedFile(null);
         } catch (error) {
-            console.error("Failed to import employees:", error);
+            setEmpError(describeError(error, "Import failed."));
         } finally {
             setEmpUploading(false);
         }
@@ -174,7 +182,7 @@ export default function BulkImport() {
                     updated: (prev.updated ?? 0) + response.data.updated,
                 }));
             } catch (error) {
-                console.error("Force import failed:", error);
+                setEmpError(describeError(error, "The duplicate decisions could not be saved."));
             }
             setEmpDuplicates([]);
             setEmpDecisions([]);
@@ -193,6 +201,7 @@ export default function BulkImport() {
 
         setDocResults([]);
         setDocFiles(selected.map((file) => ({ file, deliveryId: "" })));
+        setDocError("");
 
         // Fetch deliveries missing documents if not already loaded
         if (docDeliveries.length === 0) {
@@ -203,7 +212,7 @@ export default function BulkImport() {
                 });
                 setDocDeliveries(res.data);
             } catch (err) {
-                console.error("Failed to fetch deliveries:", err);
+                setDocError(describeError(err, "Could not load deliveries."));
             } finally {
                 setDocLoadingDeliveries(false);
             }
@@ -361,6 +370,12 @@ export default function BulkImport() {
                                 </Button>
                             )}
                         </div>
+
+                        {eqError && (
+                            <p role="alert" className="mt-3 text-xs text-red-500">
+                                {eqError}
+                            </p>
+                        )}
 
                         {/* Result Area */}
                         <AppDialog
@@ -544,6 +559,12 @@ export default function BulkImport() {
                                 </Button>
                             )}
                         </div>
+
+                        {empError && (
+                            <p role="alert" className="mt-3 text-xs text-red-500">
+                                {empError}
+                            </p>
+                        )}
 
                         {/* Result Area */}
                         {empImportResult && (
@@ -765,6 +786,12 @@ export default function BulkImport() {
                                 onChange={handleDocFilesSelected}
                             />
                         </label>
+
+                        {docError && (
+                            <p role="alert" className="mt-3 text-xs text-red-500">
+                                {docError}
+                            </p>
+                        )}
 
                         {/* Matching Table */}
                         {docFiles.length > 0 && (

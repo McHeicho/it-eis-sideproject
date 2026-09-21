@@ -3,6 +3,7 @@ import { useEmployees } from "@/queries/useEmployees";
 import { HEAD_OFFICE_CODE, MANILA_OFFICE_CODE } from "@/lib/branches";
 import EmployeeListTable from "./EmployeeList-Table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/custom/custom-tabs"
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EmployeeList() {
     const [view, setView] = useState("head");
@@ -20,18 +21,18 @@ export default function EmployeeList() {
     if (isLoading) {
         return (
             <div className="p-6">
-                <div className="skeleton h-6 w-36 rounded mb-2"></div>
-                <div className="skeleton h-3 w-24 rounded mb-6"></div>
+                <Skeleton className="h-6 w-36 rounded mb-2" />
+                <Skeleton className="h-3 w-24 rounded mb-6" />
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <div className="skeleton h-8 w-32 rounded m-4"></div>
+                    <Skeleton className="h-8 w-32 rounded m-4" />
                     {[...Array(5)].map((_, i) => (
                         <div
                             key={i}
                             className="flex items-center justify-between px-4 py-3 border-t"
                         >
-                            <div className="skeleton h-3 w-40 rounded"></div>
-                            <div className="skeleton h-3 w-24 rounded"></div>
-                            <div className="skeleton h-5 w-5 rounded"></div>
+                            <Skeleton className="h-3 w-40 rounded" />
+                            <Skeleton className="h-3 w-24 rounded" />
+                            <Skeleton className="h-5 w-5 rounded" />
                         </div>
                     ))}
                 </div>

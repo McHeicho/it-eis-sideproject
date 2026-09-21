@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useEquipmentList } from "@/queries/useEquipmentList";
 import { sortBranches } from "@/lib/branches";
 import api from "@/api/axios";
+import { describeError } from "@/lib/errors";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Input } from "@/components/ui/input";
@@ -143,10 +144,13 @@ export default function AssignmentAssignModal({
             onClose();
             toast.success("Equipment assigned");
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === 422 && error.response.data.errors) {
                 setAssignErrors(error.response.data.errors);
             } else {
-                console.error("Failed to assign:", error);
+                // Network failures, 403/409/500, and any 422 without an
+                // errors map — the old code stored undefined here and the
+                // next render crashed the whole app (blueprint A-05).
+                setAssignErrors({ general: [describeError(error)] });
             }
         } finally {
             setAssigning(false);
@@ -520,7 +524,7 @@ export default function AssignmentAssignModal({
                     </Field>
 
                     {assignErrors.general && (
-                        <p className="text-red-500 text-xs">
+                        <p role="alert" className="text-red-500 text-xs">
                             {assignErrors.general[0]}
                         </p>
                     )}

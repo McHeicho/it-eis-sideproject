@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/custom/custom-select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { OFFICE_CODES, HEAD_OFFICE_CODE } from "@/lib/branches";
 
 // Sentinels for the Selects below — Radix throws on an empty-string item
@@ -428,8 +429,8 @@ export default function ManageEmployeesModal({ onClose }) {
                     <div className="space-y-2">
                         {[...Array(4)].map((_, i) => (
                             <div key={i} className="flex justify-between">
-                                <div className="skeleton h-3 w-32 rounded"></div>
-                                <div className="skeleton h-3 w-24 rounded"></div>
+                                <Skeleton className="h-3 w-32 rounded" />
+                                <Skeleton className="h-3 w-24 rounded" />
                             </div>
                         ))}
                     </div>

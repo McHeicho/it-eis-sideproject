@@ -10,7 +10,11 @@ export function useAssignmentsList() {
     return useQuery({
         queryKey: ["assignments", "list"],
         queryFn: async ({ signal }) => {
-            const { data } = await api.get("/assignments", { signal });
+            // active=1: the list and the Assign modal only read open rows.
+            const { data } = await api.get("/assignments", {
+                params: { active: 1 },
+                signal,
+            });
             return data;
         },
     });

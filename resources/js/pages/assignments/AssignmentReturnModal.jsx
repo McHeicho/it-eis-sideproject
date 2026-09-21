@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from "@/api/axios";
+import { describeError } from "@/lib/errors";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Input } from "@/components/ui/input";
@@ -38,10 +39,10 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
             onClose();
             toast.success("Equipment returned");
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === 422 && error.response.data.errors) {
                 setReturnErrors(error.response.data.errors);
             } else {
-                console.error("Failed to return:", error);
+                setReturnErrors({ general: [describeError(error)] });
             }
         } finally {
             setReturning(false);
@@ -140,6 +141,11 @@ export default function AssignmentReturnModal({ assignment, onClose, onReturned 
                             placeholder="Optional notes on return condition..."
                         />
                     </Field>
+                    {returnErrors.general && (
+                        <p role="alert" className="text-red-500 text-xs">
+                            {returnErrors.general[0]}
+                        </p>
+                    )}
                 </div>
             </form>
         </AppDialog>

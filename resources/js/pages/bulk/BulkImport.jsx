@@ -708,14 +708,14 @@ export default function BulkImport() {
                                                 Cancel
                                             </Button>
                                             <Button
-                                                variant="create"
-                                                size="sm"
-                                                className={`text-xs ${
+                                                variant={
                                                     !empCurrentChecks.left &&
                                                     !empCurrentChecks.right
-                                                        ? "bg-gray-400 hover:bg-gray-500"
-                                                        : ""
-                                                }`}
+                                                        ? "secondary"
+                                                        : "create"
+                                                }
+                                                size="sm"
+                                                className="text-xs"
                                                 onClick={handleDuplicateDecision}
                                             >
                                                 {!empCurrentChecks.left &&

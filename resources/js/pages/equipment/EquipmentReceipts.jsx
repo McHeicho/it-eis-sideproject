@@ -1001,15 +1001,22 @@ function ReceiptDetail({
                                 />
                                 No documents provided.
                             </div>
-                            <label className="cursor-pointer border rounded px-3 py-1.5 text-xs font-medium bg-green-500 text-white hover:bg-green-600 border-green-500 transition-colors">
-                                Choose PDF
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                />
-                            </label>
+                            <Button
+                                asChild
+                                variant="assign"
+                                size="sm"
+                                className="cursor-pointer text-xs focus-within:ring-3 focus-within:ring-ring/30"
+                            >
+                                <label>
+                                    Choose PDF
+                                    <input
+                                        type="file"
+                                        accept=".pdf"
+                                        onChange={handleFileChange}
+                                        className="sr-only"
+                                    />
+                                </label>
+                            </Button>
                         </div>
                     </div>
                 )}
@@ -1055,15 +1062,22 @@ function ReceiptDetail({
                 {/* Replace PDF + Upload */}
                 <div className="flex items-center gap-3">
                     {delivery.attachments?.length > 0 && (
-                        <label className="cursor-pointer border rounded px-3 py-2 text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 border-amber-500 transition-colors">
-                            Replace PDF
-                            <input
-                                type="file"
-                                accept=".pdf"
-                                onChange={handleFileChange}
-                                className="hidden"
-                            />
-                        </label>
+                        <Button
+                            asChild
+                            variant="edit"
+                            size="lg"
+                            className="cursor-pointer focus-within:ring-3 focus-within:ring-ring/30"
+                        >
+                            <label>
+                                Replace PDF
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={handleFileChange}
+                                    className="sr-only"
+                                />
+                            </label>
+                        </Button>
                     )}
                     {selectedFile && (
                         <>

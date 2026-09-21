@@ -334,7 +334,7 @@ export default function BulkImport() {
 
                             {/* File Picker */}
                             <label
-                                className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors focus-within:ring-3 focus-within:ring-ring/30 ${
                                     eqDownloading || eqUploading
                                         ? "opacity-50 cursor-not-allowed bg-gray-50"
                                         : "hover:bg-gray-50 cursor-pointer"
@@ -347,7 +347,7 @@ export default function BulkImport() {
                                 <input
                                     type="file"
                                     accept=".xlsx"
-                                    className="hidden"
+                                    className="sr-only"
                                     disabled={eqDownloading || eqUploading}
                                     onChange={(e) => {
                                         setEqSelectedFile(
@@ -523,7 +523,7 @@ export default function BulkImport() {
                             </Button>
 
                             <label
-                                className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                className={`flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium transition-colors focus-within:ring-3 focus-within:ring-ring/30 ${
                                     empDownloading || empUploading
                                         ? "opacity-50 cursor-not-allowed bg-gray-50"
                                         : "hover:bg-gray-50 cursor-pointer"
@@ -536,7 +536,7 @@ export default function BulkImport() {
                                 <input
                                     type="file"
                                     accept=".xlsx"
-                                    className="hidden"
+                                    className="sr-only"
                                     disabled={empDownloading || empUploading}
                                     onChange={(e) => {
                                         setEmpSelectedFile(
@@ -763,14 +763,14 @@ export default function BulkImport() {
                         </p>
 
                         {/* File Picker */}
-                        <label className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 cursor-pointer w-fit">
+                        <label className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 cursor-pointer w-fit focus-within:ring-3 focus-within:ring-ring/30">
                             <Upload size={16} />
                             Choose PDFs
                             <input
                                 type="file"
                                 accept=".pdf"
                                 multiple
-                                className="hidden"
+                                className="sr-only"
                                 onChange={handleDocFilesSelected}
                             />
                         </label>

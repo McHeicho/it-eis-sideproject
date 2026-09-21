@@ -57,6 +57,7 @@ export default function ManageBrandsModelsModal({ onClose }) {
                     <Button
                         variant="ghost"
                         size="icon-sm"
+                        aria-label="Back"
                         className="text-gray-400 hover:bg-transparent hover:text-gray-600"
                         onClick={handleBack}
                         disabled={isEditing}

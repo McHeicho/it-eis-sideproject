@@ -56,6 +56,7 @@ export default function AppDialog({
                     </div>
                     <button
                         type="button"
+                        aria-label="Close"
                         onClick={() => onOpenChange(false)}
                         disabled={!dismissible}
                         className={cn(

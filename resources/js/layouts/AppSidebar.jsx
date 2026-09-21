@@ -82,12 +82,16 @@ function NavItem({ to, end, icon: Icon, label, onNavigate }) {
     );
 }
 
-function NavSubItem({ to, end, icon: Icon, label, onNavigate }) {
+// `exclude` names a deeper path that belongs to another item: List owns
+// /equipment/* except /equipment/receipts, which has its own entry.
+function NavSubItem({ to, end, exclude, icon: Icon, label, onNavigate }) {
     const match = useMatch({ path: to, end: !!end });
+    const excluded = useMatch({ path: exclude ?? "/__never__", end: false });
+    const isActive = !!match && !excluded;
 
     return (
         <SidebarMenuSubItem>
-            <SidebarMenuSubButton asChild isActive={!!match}
+            <SidebarMenuSubButton asChild isActive={isActive}
                 className="gap-1.5 py-2 data-[active=true]:bg-[var(--sidebar-active-bg)]">
                 <NavLink to={to} end={end} onClick={onNavigate}>
                     <Icon />
@@ -208,7 +212,7 @@ export function AppSidebar(props) {
                         >
                             <NavSubItem
                                 to="/equipment"
-                                end
+                                exclude="/equipment/receipts"
                                 icon={List}
                                 label="List"
                                 onNavigate={closeMobile}

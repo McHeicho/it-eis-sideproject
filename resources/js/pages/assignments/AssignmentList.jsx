@@ -10,6 +10,7 @@ import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
 import { useAssignmentsList } from "@/queries/useAssignmentsList";
 import { sortBranches } from "@/lib/branches";
+import { formatDate } from "@/lib/dates";
 import {
     Select,
     SelectContent,
@@ -137,15 +138,6 @@ export default function AssignmentList() {
     });
 
     const sortedBranches = sortBranches(branches);
-
-    const formatDate = (date) =>
-        date
-            ? new Date(date).toLocaleDateString("en-PH", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-              })
-            : "—";
 
     const handleOpenAssign = (eq = null) => {
         setPreselectedEquipment(eq);

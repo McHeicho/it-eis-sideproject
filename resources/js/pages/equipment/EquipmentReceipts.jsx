@@ -18,6 +18,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLookups } from "@/queries/useLookups";
 import { useDeliveries } from "@/queries/useDeliveries";
+import { formatDate } from "@/lib/dates";
 import {
     Select,
     SelectContent,
@@ -406,15 +407,7 @@ export default function EquipmentReceipts() {
                                             {delivery.invoice_no || "—"}
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-gray-600 text-xs">
-                                            {delivery.purchase_date
-                                                ? new Date(
-                                                      delivery.purchase_date
-                                                  ).toLocaleDateString("en-PH", {
-                                                      year: "numeric",
-                                                      month: "short",
-                                                      day: "numeric",
-                                                  })
-                                                : "—"}
+                                            {formatDate(delivery.purchase_date)}
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-gray-600 text-right">
                                             {delivery.equipment_count} item
@@ -811,15 +804,7 @@ function ReceiptDetail({
                                     Purchase Date
                                 </span>
                                 <span className="text-gray-800 flex-1">
-                                    {delivery.purchase_date
-                                        ? new Date(
-                                              delivery.purchase_date
-                                          ).toLocaleDateString("en-PH", {
-                                              year: "numeric",
-                                              month: "short",
-                                              day: "numeric",
-                                          })
-                                        : "—"}
+                                    {formatDate(delivery.purchase_date)}
                                 </span>
                             </>
                         )}

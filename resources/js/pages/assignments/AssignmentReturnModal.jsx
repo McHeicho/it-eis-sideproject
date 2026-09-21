@@ -7,15 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { toast } from "sonner";
-
-const formatDate = (date) =>
-    date
-        ? new Date(date).toLocaleDateString("en-PH", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-          })
-        : "—";
+import { formatDate } from "@/lib/dates";
 
 export default function AssignmentReturnModal({ assignment, onClose, onReturned }) {
     const [returnForm, setReturnForm] = useState({

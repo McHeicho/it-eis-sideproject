@@ -151,7 +151,9 @@ class DeliveryController extends Controller
         $delivery->attachments()->each(fn($att) => $att->delete());
 
         $file = $request->file("file");
-        $path = $file->store("deliveries/attachments", "public");
+        // Private disk (storage/app/private): reachable only through
+        // streamAttachment, which sits behind auth:sanctum (blueprint A-17).
+        $path = $file->store("deliveries/attachments", "local");
         $originalName = $file->getClientOriginalName();
         $mimeType = $file->getClientMimeType();
         $fileSize = $file->getSize();
@@ -190,11 +192,11 @@ class DeliveryController extends Controller
             );
         }
 
-        if (!Storage::disk("public")->exists($attachment->file_path)) {
+        if (!Storage::disk("local")->exists($attachment->file_path)) {
             return response()->json(["message" => "File not found."], 404);
         }
 
-        return Storage::disk("public")->response(
+        return Storage::disk("local")->response(
             $attachment->file_path,
             $attachment->original_filename,
             [

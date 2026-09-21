@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Laptop } from "lucide-react";
 import api from "@/api/axios";
+import { describeError } from "@/lib/errors";
 import { toast } from "sonner";
 import { useLookups } from "@/queries/useLookups";
 import { Button } from "@/components/ui/custom/custom-button";
@@ -41,6 +42,8 @@ export default function EquipmentAdd() {
     const [lastSeenUpdatedAt, setLastSeenUpdatedAt] = useState(null);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [equipmentLoading, setEquipmentLoading] = useState(isEditMode);
+    const [loadError, setLoadError] = useState("");
+    const [matchError, setMatchError] = useState("");
 
     const { data: lookups, isPending: lookupsPending } = useLookups();
     const dropdownsLoading = lookupsPending || equipmentLoading;
@@ -121,9 +124,9 @@ export default function EquipmentAdd() {
                 }
             } catch (error) {
                 if (error.name === "CanceledError") return;
-                // TODO(#6): still silent on failure — visible error
-                // surface lands in the next step.
-                console.error("Failed to load equipment record:", error);
+                setLoadError(
+                    describeError(error, "Could not load this equipment record.")
+                );
             } finally {
                 if (!controller.signal.aborted) {
                     setEquipmentLoading(false);
@@ -178,6 +181,7 @@ export default function EquipmentAdd() {
         if (!handle.trim()) return;
 
         setDeliveryLoading(true);
+        setMatchError("");
         try {
             const res = await api.post("/deliveries/match", {
                 handle,
@@ -201,7 +205,7 @@ export default function EquipmentAdd() {
                 setForm((prev) => ({ ...prev, delivery_id: "" }));
             }
         } catch (error) {
-            console.error("Delivery match failed:", error);
+            setMatchError(describeError(error, "Could not check this number."));
         } finally {
             setDeliveryLoading(false);
         }
@@ -250,17 +254,36 @@ export default function EquipmentAdd() {
             navigate("/equipment");
         } catch (error) {
             if (error.response?.status === 409) {
-                alert(error.response.data.message);
+                // The page navigates away, so the message rides a toast.
+                toast.error(error.response.data.message);
                 navigate("/equipment");
             } else if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             } else {
-                console.error("Failed to save equipment:", error);
+                setErrors({ general: [describeError(error)] });
             }
         } finally {
             setLoading(false);
         }
     };
+
+    if (loadError) {
+        return (
+            <div className="p-6 max-w-2xl">
+                <p role="alert" className="text-sm text-red-500">
+                    {loadError}
+                </p>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => navigate("/equipment")}
+                >
+                    Back to Equipment List
+                </Button>
+            </div>
+        );
+    }
 
     // Loading skeleton
     if (dropdownsLoading) {
@@ -603,6 +626,7 @@ export default function EquipmentAdd() {
                                     </span>
                                 )}
                             </div>
+                            {matchError && <FieldError>{matchError}</FieldError>}
 
                             {/* Matched / manual fields */}
                             <div className="grid grid-cols-2 gap-4">
@@ -868,6 +892,10 @@ export default function EquipmentAdd() {
                                 </Field>
                             )}
                         </div>
+
+                        {errors.general && (
+                            <FieldError>{errors.general[0]}</FieldError>
+                        )}
 
                         {/* Actions */}
                         <div className="flex gap-3 pt-2">

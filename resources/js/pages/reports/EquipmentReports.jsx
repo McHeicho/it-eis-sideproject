@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Download } from "lucide-react";
+import api from "@/api/axios";
+import { describeError } from "@/lib/errors";
 import { Button } from "@/components/ui/custom/custom-button";
 import {
     Card,
@@ -11,26 +13,28 @@ import {
 
 export default function EquipmentReports() {
     const [exporting, setExporting] = useState(false);
+    const [exportError, setExportError] = useState("");
 
     const handleExport = async () => {
         setExporting(true);
+        setExportError("");
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch("/api/equipment/export", {
-                headers: { Authorization: `Bearer ${token}` },
+            // Through the axios client so the Bearer token, base URL and the
+            // 401 redirect all apply. Files behind Sanctum come down as blobs;
+            // a plain link would not carry the token.
+            const response = await api.get("/equipment/export", {
+                responseType: "blob",
             });
-
-            if (!response.ok) throw new Error("Export failed");
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+            const url = window.URL.createObjectURL(new Blob([response.data]));
             const a = document.createElement("a");
             a.href = url;
             a.download = `equipment-${new Date().toISOString().slice(0, 10)}.xlsx`;
+            document.body.appendChild(a);
             a.click();
+            a.remove();
             window.URL.revokeObjectURL(url);
         } catch (err) {
-            alert("Export failed. Please try again.");
+            setExportError(describeError(err, "Export failed. Please try again."));
         } finally {
             setExporting(false);
         }
@@ -62,6 +66,11 @@ export default function EquipmentReports() {
                         <Download size={16} />
                         {exporting ? "Exporting..." : "Export"}
                     </Button>
+                    {exportError && (
+                        <p role="alert" className="mt-3 text-xs text-red-500">
+                            {exportError}
+                        </p>
+                    )}
                 </CardContent>
             </Card>
         </div>

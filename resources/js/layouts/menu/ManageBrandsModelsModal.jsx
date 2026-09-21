@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, ChevronRight, ArrowLeft } from 'lucide-react';
 import api from '@/api/axios';
+import { describeError } from "@/lib/errors";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
@@ -148,6 +149,7 @@ function BrandsView({ setBrandsEditing }) {
     const [form, setForm] = useState({ name: '' });
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(false);
+    const [formError, setFormError] = useState("");
     const [isEditing, setIsEditing] = useState(false);
     const [editRows, setEditRows] = useState([]);
     const [rowErrors, setRowErrors] = useState({});
@@ -159,7 +161,7 @@ function BrandsView({ setBrandsEditing }) {
             const response = await api.get('/brands');
             setBrands(response.data);
         } catch (error) {
-            console.error('Failed to fetch brands:', error);
+            setFormError(describeError(error, "Could not load the list."));
         } finally {
             setLoading(false);
         }
@@ -199,6 +201,7 @@ function BrandsView({ setBrandsEditing }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+        setFormError("");
         try {
             await addBrandMutation.mutateAsync(form);
             setForm({ name: '' });
@@ -207,6 +210,8 @@ function BrandsView({ setBrandsEditing }) {
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
+            } else {
+                setFormError(describeError(error));
             }
         }
     };
@@ -243,13 +248,14 @@ function BrandsView({ setBrandsEditing }) {
             setRowErrors(validationErrors);
             return;
         }
+        setFormError("");
         try {
             await saveAllMutation.mutateAsync(editRows);
             setIsEditing(false);
             setBrandsEditing(false);
             setSuccess(true);
         } catch (error) {
-            console.error('Failed to save brands:', error);
+            setFormError(describeError(error));
         }
     };
 
@@ -295,6 +301,11 @@ function BrandsView({ setBrandsEditing }) {
                 </div>
             )}
 
+            {formError && (
+                <div role="alert" className="bg-red-50 text-red-700 text-xs px-3 py-2 rounded">
+                    {formError}
+                </div>
+            )}
             {/* Success Message */}
             {success && (
                 <div className="bg-green-50 text-green-700 text-xs px-3 py-2 rounded">
@@ -432,6 +443,7 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
     const [form, setForm] = useState({ brand_id: '', name: '' });
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(false);
+    const [formError, setFormError] = useState("");
     const [editRows, setEditRows] = useState([]);
     const [rowErrors, setRowErrors] = useState({});
 
@@ -446,7 +458,7 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                 setAllModels(modelsRes.data);
                 setFilteredModels(modelsRes.data);
             } catch (error) {
-                console.error('Failed to fetch data:', error);
+                setFormError(describeError(error, "Could not load the list."));
             } finally {
                 setLoading(false);
             }
@@ -541,12 +553,13 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
             return;
         }
         setSavingParent(true);
+        setFormError("");
         try {
             await saveAllMutation.mutateAsync(editRows);
             setModelsEditing(false);
             setSuccess(true);
         } catch (error) {
-            console.error('Failed to save models:', error);
+            setFormError(describeError(error));
         } finally {
             setSavingParent(false);
         }
@@ -581,6 +594,7 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+        setFormError("");
         try {
             await addModelMutation.mutateAsync(form);
             setForm({ brand_id: selectedBrandId || '', name: '' });
@@ -589,6 +603,8 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
+            } else {
+                setFormError(describeError(error));
             }
         }
     };
@@ -643,6 +659,11 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                 </div>
             )}
 
+            {formError && (
+                <div role="alert" className="bg-red-50 text-red-700 text-xs px-3 py-2 rounded">
+                    {formError}
+                </div>
+            )}
             {/* Success Message */}
             {success && (
                 <div className="bg-green-50 text-green-700 text-xs px-3 py-2 rounded">

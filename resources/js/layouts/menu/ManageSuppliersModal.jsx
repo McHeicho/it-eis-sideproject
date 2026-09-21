@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil } from 'lucide-react';
 import api from '@/api/axios';
+import { describeError } from "@/lib/errors";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
@@ -18,6 +19,7 @@ export default function ManageSuppliersModal({ onClose }) {
     const [form, setForm] = useState({ name: '' });
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(false);
+    const [formError, setFormError] = useState("");
 
     // Inline edit state
     const [isEditing, setIsEditing] = useState(false);
@@ -33,7 +35,7 @@ export default function ManageSuppliersModal({ onClose }) {
             const response = await api.get('/suppliers');
             setSuppliers(response.data);
         } catch (error) {
-            console.error('Failed to fetch suppliers:', error);
+            setFormError(describeError(error, "Could not load the list."));
         } finally {
             setLoading(false);
         }
@@ -69,6 +71,7 @@ export default function ManageSuppliersModal({ onClose }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+        setFormError("");
 
         try {
             await addSupplierMutation.mutateAsync(form);
@@ -79,7 +82,7 @@ export default function ManageSuppliersModal({ onClose }) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             } else {
-                console.error('Failed to save supplier:', error);
+                setFormError(describeError(error));
             }
         }
     };
@@ -131,12 +134,13 @@ export default function ManageSuppliersModal({ onClose }) {
             return;
         }
 
+        setFormError("");
         try {
             await saveAllMutation.mutateAsync(editRows);
             setSuccess(true);
             setIsEditing(false);
         } catch (error) {
-            console.error('Failed to save suppliers:', error);
+            setFormError(describeError(error));
         }
     };
 
@@ -206,6 +210,11 @@ export default function ManageSuppliersModal({ onClose }) {
                     </div>
                 )}
 
+                {formError && (
+                    <div role="alert" className="bg-red-50 text-red-700 text-xs px-3 py-2 rounded">
+                        {formError}
+                    </div>
+                )}
                 {/* Success Message */}
                 {success && (
                     <div className="bg-green-50 text-green-700 text-xs px-3 py-2 rounded">

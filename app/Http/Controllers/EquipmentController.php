@@ -38,14 +38,6 @@ class EquipmentController extends Controller
         ]);
     }
 
-    public function options()
-    {
-        return response()->json([
-            "conditions" => Equipment::CONDITIONS,
-            "statuses" => Equipment::STATUSES,
-        ]);
-    }
-
     public function index(Request $request)
     {
         $query = Equipment::with([

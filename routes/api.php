@@ -44,8 +44,7 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::apiResource("employees", EmployeeController::class)->only(["index", "show"]);
 
     // Equipment — read. Static paths stay above the {equipment} resource so
-    // "options", "form-data" and "export" are never captured as an id.
-    Route::get("/equipment/options", [EquipmentController::class, "options"]);
+    // "form-data" and "export" are never captured as an id.
     Route::get("/equipment/form-data", [EquipmentController::class, "formData"]);
     Route::get("/equipment/export", [EquipmentController::class, "export"])->middleware(EnsureUserIsAdmin::class);
     Route::apiResource("equipment", EquipmentController::class)->only(["index", "show"]);

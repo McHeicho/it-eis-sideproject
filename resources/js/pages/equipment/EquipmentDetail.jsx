@@ -10,13 +10,15 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { useEquipmentDetail } from "@/queries/useEquipmentDetail";
 import { holderLabel } from "@/lib/equipment";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { describeError } from "@/lib/errors";
 
 export default function EquipmentDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-    const { data: live, isPending } = useEquipmentDetail(id);
+    const { data: live, isPending, isError, error, refetch } = useEquipmentDetail(id);
 
     const [shown, setShown] = useState(null);
     const shownRef = useRef(null);
@@ -60,29 +62,50 @@ export default function EquipmentDetail() {
         const equipment = shown;
         const loading = shown === null && isPending;
 
-    // Loading skeleton
+    // Loading skeleton — back link, header, then the same Card as the loaded
+    // panel so radius, ring and shadow do not change on swap.
     if (loading) {
         return (
             <div className="p-6 max-w-2xl">
-                <div className="skeleton h-4 w-24 rounded mb-6"></div>
-                <div className="skeleton h-6 w-48 rounded mb-2"></div>
-                <div className="skeleton h-3 w-32 rounded mb-6"></div>
-                <div className="bg-white rounded-lg shadow p-6 space-y-4">
-                    {[...Array(8)].map((_, i) => (
-                        <div key={i} className="flex justify-between">
-                            <div className="skeleton h-3 w-28 rounded"></div>
-                            <div className="skeleton h-3 w-40 rounded"></div>
-                        </div>
-                    ))}
-                </div>
+                <Skeleton className="h-4 w-24 rounded mb-6" />
+                <Skeleton className="h-6 w-48 rounded mb-2" />
+                <Skeleton className="h-3 w-32 rounded mb-6" />
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-4 w-20 rounded" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {[...Array(8)].map((_, i) => (
+                            <div key={i} className="flex justify-between py-2">
+                                <Skeleton className="h-3 w-28 rounded" />
+                                <Skeleton className="h-3 w-40 rounded" />
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     if (!equipment) {
+        const notFound = error?.response?.status === 404;
         return (
-            <div className="p-6 text-sm text-red-500">
-                Equipment record not found.
+            <div className="p-6 max-w-2xl">
+                <p role="alert" className="text-sm text-red-500">
+                    {notFound
+                        ? "Equipment record not found."
+                        : describeError(error, "Could not load this equipment record.")}
+                </p>
+                <div className="flex gap-2 mt-4">
+                    {isError && !notFound && (
+                        <Button variant="outline" size="sm" onClick={() => refetch()}>
+                            Retry
+                        </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={() => navigate("/equipment")}>
+                        Back to Equipment List
+                    </Button>
+                </div>
             </div>
         );
     }

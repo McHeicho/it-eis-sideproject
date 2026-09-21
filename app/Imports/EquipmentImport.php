@@ -72,7 +72,13 @@ foreach ($rows as $index => $row) {
             if (is_numeric($rawDate)) {
                 $purchaseDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($rawDate)->format("Y-m-d");
             } else {
-                $purchaseDate = $rawDate ? date("Y-m-d", strtotime($rawDate)) : "";
+                // strtotime() returns false on text it cannot read, and
+                // date("Y-m-d", false) is 1970-01-01 — fail the row instead.
+                $timestamp = $rawDate ? strtotime((string) $rawDate) : false;
+                $purchaseDate = $timestamp ? date("Y-m-d", $timestamp) : "";
+                if ($rawDate && !$timestamp) {
+                    $errors[] = "Purchase Date '{$rawDate}' is not a valid date.";
+                }
             }
 
             // --- Validate Equipment fields ---
@@ -88,14 +94,18 @@ foreach ($rows as $index => $row) {
             }
             if (!$serialNumber) {
                 $errors[] = "Serial Number is required.";
-            } elseif (in_array($serialNumber, $existingSerials)) {
+            } elseif (in_array($serialNumber, $existingSerials, true)) {
                 $errors[] = "Serial Number '{$serialNumber}' already exists in system.";
             }
-            if (!in_array($condition, Equipment::CONDITIONS)) {
+            if (!in_array($condition, Equipment::CONDITIONS, true)) {
                 $errors[] = "Condition '{$condition}' is invalid.";
             }
-            if (!in_array($status, Equipment::STATUSES)) {
+            if (!in_array($status, Equipment::STATUSES, true)) {
                 $errors[] = "Status '{$status}' is invalid.";
+            } elseif ($status === "Assigned") {
+                // Assigned is reachable only through the Assignments page,
+                // which creates the Assignment row (cleanup #26).
+                $errors[] = "Status 'Assigned' cannot be imported. Import the unit as Available and assign it from the Assignments page.";
             }
 
             // --- Delivery resolution ---

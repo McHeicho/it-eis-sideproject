@@ -16,10 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/custom/custom-select";
-
-// Employees are only ever based at Head Office or Manila Office — the two
-// rows in branches whose code is HO or MLA, never the full branch list.
-const ALLOWED_BRANCH_CODES = ["HO", "MLA"];
+import { OFFICE_CODES, HEAD_OFFICE_CODE } from "@/lib/branches";
 
 // Sentinels for the Selects below — Radix throws on an empty-string item
 // value, so these stand in for "" at the component boundary and get
@@ -29,7 +26,7 @@ const DEPT_NONE = "none";
 const BRANCH_NONE = "none";
 
 const defaultBranchId = (branches) =>
-    branches.find((b) => b.branch_code === "HO")?.id ?? "";
+    branches.find((b) => b.branch_code === HEAD_OFFICE_CODE)?.id ?? "";
 
 export default function ManageEmployeesModal({ onClose }) {
     const queryClient = useQueryClient();
@@ -65,7 +62,7 @@ export default function ManageEmployeesModal({ onClose }) {
                 setEmployees(employeesRes.data);
                 setDepartments(departmentsRes.data);
                 const allowedBranches = branchesRes.data.filter((b) =>
-                    ALLOWED_BRANCH_CODES.includes(b.branch_code)
+                    OFFICE_CODES.includes(b.branch_code)
                 );
                 setBranches(allowedBranches);
                 setForm((f) => ({

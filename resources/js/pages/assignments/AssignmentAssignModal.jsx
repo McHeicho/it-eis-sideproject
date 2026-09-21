@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useEquipmentList } from "@/queries/useEquipmentList";
-import { sortBranches } from "@/lib/branches";
+import { sortBranches, OFFICE_CODES } from "@/lib/branches";
 import api from "@/api/axios";
 import { describeError } from "@/lib/errors";
 import AppDialog from "@/components/ui/AppDialog";
@@ -116,7 +116,7 @@ export default function AssignmentAssignModal({
     // The two offices an employee can be based at. Labels come from the branch
     // rows so a rename in ManageBranchesModal carries through; matching on code
     // is stable because branch_code is locked server-side for these two.
-    const officeBranches = ["HO", "MLA"]
+    const officeBranches = OFFICE_CODES
         .map((code) => branches.find((b) => b.branch_code === code))
         .filter(Boolean);
 

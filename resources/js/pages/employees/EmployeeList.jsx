@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useEmployees } from "@/queries/useEmployees";
+import { HEAD_OFFICE_CODE, MANILA_OFFICE_CODE } from "@/lib/branches";
 import EmployeeListTable from "./EmployeeList-Table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/custom/custom-tabs"
 
@@ -9,10 +10,10 @@ export default function EmployeeList() {
     const { data: employees = [], isLoading } = useEmployees();
 
     const headEmployees = employees.filter(
-        (e) => e.branch?.branch_code === "HO"
+        (e) => e.branch?.branch_code === HEAD_OFFICE_CODE
     );
     const manilaEmployees = employees.filter(
-        (e) => e.branch?.branch_code === "MLA"
+        (e) => e.branch?.branch_code === MANILA_OFFICE_CODE
     );
 
     // Loading skeleton

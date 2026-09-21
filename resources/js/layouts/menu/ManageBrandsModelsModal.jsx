@@ -291,10 +291,9 @@ function BrandsView({ setBrandsEditing }) {
                         Add
                     </Button>
                     <Button
-                        variant="secondary"
+                        variant="edit"
                         onClick={handleEditClick}
                         disabled={brands.length === 0}
-                        className="bg-amber-500 text-white hover:bg-amber-600"
                     >
                         <Pencil size={14} />
                         Edit
@@ -649,10 +648,9 @@ function ModelsView({ setModelsEditing, modelsEditing, setOnSave, setOnCancel, s
                         Add
                     </Button>
                     <Button
-                        variant="secondary"
+                        variant="edit"
                         onClick={handleEditClick}
                         disabled={filteredModels.length === 0}
-                        className="bg-amber-500 text-white hover:bg-amber-600"
                     >
                         <Pencil size={14} />
                         Edit

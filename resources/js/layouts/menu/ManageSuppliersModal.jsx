@@ -199,10 +199,9 @@ export default function ManageSuppliersModal({ onClose }) {
                             Add
                         </Button>
                         <Button
-                            variant="secondary"
+                            variant="edit"
                             onClick={handleEditClick}
                             disabled={suppliers.length === 0}
-                            className="bg-amber-500 text-white hover:bg-amber-600"
                         >
                             <Pencil size={14} />
                             Edit

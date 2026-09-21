@@ -285,10 +285,9 @@ export default function ManageEmployeesModal({ onClose }) {
                             Add
                         </Button>
                         <Button
-                            variant="secondary"
+                            variant="edit"
                             onClick={handleEditClick}
                             disabled={filteredEmployees.length === 0}
-                            className="bg-amber-500 text-white hover:bg-amber-600"
                         >
                             <Pencil size={14} />
                             Edit

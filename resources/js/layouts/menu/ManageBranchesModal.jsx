@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil } from "lucide-react";
 import api from "@/api/axios";
+import { describeError } from "@/lib/errors";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +24,7 @@ export default function ManageBranchesModal({ onClose }) {
     });
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(false);
+    const [formError, setFormError] = useState("");
 
     // Inline edit state
     const [isEditing, setIsEditing] = useState(false);
@@ -38,7 +40,7 @@ export default function ManageBranchesModal({ onClose }) {
             const response = await api.get("/branches");
             setBranches(sortBranches(response.data));
         } catch (error) {
-            console.error("Failed to fetch branches:", error);
+            setFormError(describeError(error, "Could not load the list."));
         } finally {
             setLoading(false);
         }
@@ -86,6 +88,7 @@ export default function ManageBranchesModal({ onClose }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+        setFormError("");
 
         try {
             await addBranchMutation.mutateAsync(form);
@@ -96,7 +99,7 @@ export default function ManageBranchesModal({ onClose }) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
             } else {
-                console.error("Failed to save branch:", error);
+                setFormError(describeError(error));
             }
         }
     };
@@ -163,12 +166,13 @@ export default function ManageBranchesModal({ onClose }) {
             return;
         }
 
+        setFormError("");
         try {
             await saveAllMutation.mutateAsync(editRows);
             setIsEditing(false);
             setSuccess(true);
         } catch (error) {
-            console.error("Failed to save branches:", error);
+            setFormError(describeError(error));
         }
     };
 
@@ -247,6 +251,11 @@ export default function ManageBranchesModal({ onClose }) {
                 )}
 
                 {/* Success Message */}
+                {formError && (
+                    <div role="alert" className="bg-red-50 text-red-700 text-xs px-3 py-2 rounded">
+                        {formError}
+                    </div>
+                )}
                 {success && (
                     <div className="bg-green-50 text-green-700 text-xs px-3 py-2 rounded">
                         {isEditing

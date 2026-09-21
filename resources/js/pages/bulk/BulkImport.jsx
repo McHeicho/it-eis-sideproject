@@ -613,14 +613,8 @@ export default function BulkImport() {
                                         {/* Side by Side Cards */}
                                         <div className="grid grid-cols-2 gap-3">
                                             {/* Left — Existing Record */}
-                                            <div
-                                                onClick={() =>
-                                                    setEmpCurrentChecks((prev) => ({
-                                                        ...prev,
-                                                        left: !prev.left,
-                                                    }))
-                                                }
-                                                className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
+                                            <label
+                                                className={`block cursor-pointer rounded border p-3 space-y-1 transition-colors ${
                                                     empCurrentChecks.left
                                                         ? "border-blue-400 bg-blue-50"
                                                         : "border-gray-300 bg-white"
@@ -658,17 +652,11 @@ export default function BulkImport() {
                                                         ].existing_department_name
                                                     }
                                                 </p>
-                                            </div>
+                                            </label>
 
                                             {/* Right — Incoming Record */}
-                                            <div
-                                                onClick={() =>
-                                                    setEmpCurrentChecks((prev) => ({
-                                                        ...prev,
-                                                        right: !prev.right,
-                                                    }))
-                                                }
-                                                className={`cursor-pointer rounded border p-3 space-y-1 transition-colors ${
+                                            <label
+                                                className={`block cursor-pointer rounded border p-3 space-y-1 transition-colors ${
                                                     empCurrentChecks.right
                                                         ? "border-green-400 bg-green-50"
                                                         : "border-gray-300 bg-white"
@@ -706,7 +694,7 @@ export default function BulkImport() {
                                                         ].department_name
                                                     }
                                                 </p>
-                                            </div>
+                                            </label>
                                         </div>
 
                                         {/* Action Buttons */}
@@ -927,9 +915,11 @@ export default function BulkImport() {
                                             <Button
                                                 variant="outline"
                                                 size="lg"
-                                                onClick={() =>
-                                                    window.location.reload()
-                                                }
+                                                onClick={() => {
+                                                    setDocFiles([]);
+                                                    setDocResults([]);
+                                                    setDocError("");
+                                                }}
                                                 disabled={docUploading}
                                             >
                                                 Cancel

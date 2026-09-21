@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
+import { holderLabel } from "@/lib/equipment";
 import {
     Select,
     SelectContent,
@@ -19,19 +20,6 @@ import {
     SelectValue,
 } from "@/components/ui/custom/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
-
-// Tooltip text for an Assigned row's current holder. Employee-held rows name
-// the person and their office; branch-held rows name the branch. Returns null
-// when neither resolves, so the caller can skip the tooltip entirely.
-const holderLabel = (assignment) => {
-    if (!assignment) return null;
-    if (assignment.employee) {
-        const branch = assignment.employee.branch?.branch_name;
-        return `Assigned to: ${assignment.employee.name}${branch ? ` — ${branch}` : ""}`;
-    }
-    const branch = assignment.branch?.branch_name;
-    return branch ? `Located at: ${branch}` : null;
-};
 
 const EMPTY_FILTERS = {
     status: "",

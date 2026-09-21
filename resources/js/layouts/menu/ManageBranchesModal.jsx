@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { sortBranches } from "@/lib/branches";
 
 export default function ManageBranchesModal({ onClose }) {
@@ -271,9 +272,9 @@ export default function ManageBranchesModal({ onClose }) {
                                 key={i}
                                 className="flex justify-between gap-4"
                             >
-                                <div className="skeleton h-3 w-16 rounded"></div>
-                                <div className="skeleton h-3 w-32 rounded"></div>
-                                <div className="skeleton h-3 w-24 rounded"></div>
+                                <Skeleton className="h-3 w-16 rounded" />
+                                <Skeleton className="h-3 w-32 rounded" />
+                                <Skeleton className="h-3 w-24 rounded" />
                             </div>
                         ))}
                     </div>

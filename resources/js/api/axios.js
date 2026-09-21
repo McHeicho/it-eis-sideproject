@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api',
+    // Same origin as the page: works on the server machine and over the LAN,
+    // and under both `php artisan serve` and `npm run dev` (Vite only serves
+    // assets; the page and /api still come from Laravel).
+    baseURL: '/api',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

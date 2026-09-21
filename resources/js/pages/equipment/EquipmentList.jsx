@@ -9,6 +9,8 @@ import ConditionBadge from "@/components/ui/ConditionBadge";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Skeleton } from "@/components/ui/skeleton";
+import { describeError } from "@/lib/errors";
 import { useLookups } from "@/queries/useLookups";
 import { useEquipmentList } from "@/queries/useEquipmentList";
 import { holderLabel } from "@/lib/equipment";
@@ -60,6 +62,9 @@ export default function EquipmentList() {
         data: equipment = [],
         isPending: loading,
         isFetching,
+        isError,
+        error,
+        refetch,
     } = useEquipmentList(appliedFilters);
     const filtering = isFetching && !loading;
 
@@ -70,10 +75,60 @@ export default function EquipmentList() {
         setAppliedFilters(EMPTY_FILTERS);
     };
 
+    // Loading skeleton — mirrors the header, the filter Card and the table
+    // wrapper below so nothing changes shape when the data arrives.
     if (loading) {
         return (
-            <div className="p-6 text-sm text-gray-500">
-                Loading equipment...
+            <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <Skeleton className="h-8 w-40 rounded" />
+                        <Skeleton className="h-3 w-32 rounded mt-2" />
+                    </div>
+                    <Skeleton className="h-9 w-36 rounded" />
+                </div>
+                <Card className="mb-4">
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i}>
+                                    <Skeleton className="h-3 w-20 rounded mb-2" />
+                                    <Skeleton className="h-8 w-full rounded" />
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    {[...Array(6)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="flex items-center justify-between px-4 py-3 border-b border-gray-100"
+                        >
+                            <Skeleton className="h-3 w-40 rounded" />
+                            <Skeleton className="h-3 w-32 rounded" />
+                            <Skeleton className="h-3 w-24 rounded" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (isError && equipment.length === 0) {
+        return (
+            <div className="p-6">
+                <p role="alert" className="text-sm text-red-500">
+                    {describeError(error, "Could not load the equipment list.")}
+                </p>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => refetch()}
+                >
+                    Retry
+                </Button>
             </div>
         );
     }

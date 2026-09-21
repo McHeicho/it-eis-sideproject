@@ -639,6 +639,32 @@ function ReceiptDetail({
         }
     };
 
+    // Attachments live on the private disk, so the browser cannot open them
+    // by URL. Fetch through the token-bearing axios client as a blob and hand
+    // the blob URL to a tab opened synchronously inside the click — popup
+    // blockers allow a tab opened during the click, not one opened after
+    // the await (handoff §6: files behind Sanctum come down as blobs).
+    const handleView = async (attachmentId) => {
+        const viewer = window.open("", "_blank");
+        try {
+            const res = await api.get(
+                `/deliveries/${delivery.id}/attachments/${attachmentId}/stream`,
+                { responseType: "blob" }
+            );
+            const url = window.URL.createObjectURL(
+                new Blob([res.data], { type: "application/pdf" })
+            );
+            if (viewer) {
+                viewer.location.href = url;
+            } else {
+                window.location.assign(url);
+            }
+        } catch (error) {
+            if (viewer) viewer.close();
+            setUploadError(describeError(error, "Could not open the document."));
+        }
+    };
+
     return (
         <div className="pt-4 space-y-5">
             {/* Receipt Details */}
@@ -1006,14 +1032,13 @@ function ReceiptDetail({
                                 <div className="flex items-center gap-4 text-xs text-gray-400">
                                     <span>{formatFileSize(att.file_size)}</span>
                                     <span>{att.uploaded_by_name || "—"}</span>
-                                    <a
-                                        href={`/storage/${att.file_path}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-400 hover:text-blue-600 transition-colors"
+                                    <Button
+                                        variant="link"
+                                        className="h-auto p-0 text-blue-400 hover:text-blue-600 hover:no-underline"
+                                        onClick={() => handleView(att.id)}
                                     >
                                         View
-                                    </a>
+                                    </Button>
                                     <Button
                                         variant="link"
                                         className="h-auto p-0 text-red-400 hover:text-red-600 hover:no-underline"

@@ -25,6 +25,7 @@ import {
     SelectValue,
 } from "@/components/ui/custom/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Sentinels for the form Selects — Radix throws on an empty-string item
 // value, so these stand in for "" ("nothing chosen yet") at the component
@@ -286,7 +287,8 @@ export default function EquipmentAdd() {
         );
     }
 
-    // Loading skeleton
+    // Loading skeleton — same Card and field rhythm as the form below so the
+    // panel keeps its shape when the data arrives.
     if (dropdownsLoading) {
         return (
             <div className="p-6 max-w-2xl">
@@ -300,70 +302,72 @@ export default function EquipmentAdd() {
                             : "Fill in the details below to register a new equipment record."}
                     </p>
                 </div>
-                <div className="bg-white rounded-lg shadow p-6 space-y-5">
-                    {/* Equipment Type skeleton */}
-                    <div>
-                        <div className="skeleton h-3 w-28 rounded mb-3"></div>
-                        <div className="flex gap-3">
-                            <div className="skeleton h-16 w-20 rounded"></div>
-                            <div className="skeleton h-16 w-20 rounded"></div>
-                        </div>
-                    </div>
-
-                    {/* Brand skeleton */}
-                    <div>
-                        <div className="skeleton h-3 w-16 rounded mb-2"></div>
-                        <div className="skeleton h-9 w-full rounded"></div>
-                    </div>
-
-                    {/* Model skeleton */}
-                    <div>
-                        <div className="skeleton h-3 w-16 rounded mb-2"></div>
-                        <div className="skeleton h-9 w-full rounded"></div>
-                    </div>
-
-                    {/* Serial Number skeleton */}
-                    <div>
-                        <div className="skeleton h-3 w-24 rounded mb-2"></div>
-                        <div className="skeleton h-9 w-full rounded"></div>
-                    </div>
-
-                    {/* Supplier skeleton */}
-                    <div>
-                        <div className="skeleton h-3 w-20 rounded mb-2"></div>
-                        <div className="skeleton h-9 w-full rounded"></div>
-                    </div>
-
-                    {/* Purchase Date + Voucher No skeleton */}
-                    <div className="grid grid-cols-2 gap-4">
+                <Card>
+                    <CardContent className="space-y-5">
+                        {/* Equipment Type skeleton */}
                         <div>
-                            <div className="skeleton h-3 w-24 rounded mb-2"></div>
-                            <div className="skeleton h-9 w-full rounded"></div>
+                            <Skeleton className="h-3 w-28 rounded mb-3" />
+                            <div className="flex gap-3">
+                                <Skeleton className="h-16 w-20 rounded" />
+                                <Skeleton className="h-16 w-20 rounded" />
+                            </div>
                         </div>
-                        <div>
-                            <div className="skeleton h-3 w-20 rounded mb-2"></div>
-                            <div className="skeleton h-9 w-full rounded"></div>
-                        </div>
-                    </div>
 
-                    {/* Condition + Status skeleton */}
-                    <div className="grid grid-cols-2 gap-4">
+                        {/* Brand skeleton */}
                         <div>
-                            <div className="skeleton h-3 w-20 rounded mb-2"></div>
-                            <div className="skeleton h-9 w-full rounded"></div>
+                            <Skeleton className="h-3 w-16 rounded mb-2" />
+                            <Skeleton className="h-8 w-full rounded" />
                         </div>
-                        <div>
-                            <div className="skeleton h-3 w-16 rounded mb-2"></div>
-                            <div className="skeleton h-9 w-full rounded"></div>
-                        </div>
-                    </div>
 
-                    {/* Buttons skeleton */}
-                    <div className="flex gap-3 pt-2">
-                        <div className="skeleton h-9 w-32 rounded"></div>
-                        <div className="skeleton h-9 w-24 rounded"></div>
-                    </div>
-                </div>
+                        {/* Model skeleton */}
+                        <div>
+                            <Skeleton className="h-3 w-16 rounded mb-2" />
+                            <Skeleton className="h-8 w-full rounded" />
+                        </div>
+
+                        {/* Serial Number skeleton */}
+                        <div>
+                            <Skeleton className="h-3 w-24 rounded mb-2" />
+                            <Skeleton className="h-8 w-full rounded" />
+                        </div>
+
+                        {/* Delivery handle skeleton */}
+                        <div>
+                            <Skeleton className="h-3 w-20 rounded mb-2" />
+                            <Skeleton className="h-8 w-full rounded" />
+                        </div>
+
+                        {/* Supplier + Purchase Date skeleton */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Skeleton className="h-3 w-24 rounded mb-2" />
+                                <Skeleton className="h-8 w-full rounded" />
+                            </div>
+                            <div>
+                                <Skeleton className="h-3 w-20 rounded mb-2" />
+                                <Skeleton className="h-8 w-full rounded" />
+                            </div>
+                        </div>
+
+                        {/* Condition + Status skeleton */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Skeleton className="h-3 w-20 rounded mb-2" />
+                                <Skeleton className="h-8 w-full rounded" />
+                            </div>
+                            <div>
+                                <Skeleton className="h-3 w-16 rounded mb-2" />
+                                <Skeleton className="h-8 w-full rounded" />
+                            </div>
+                        </div>
+
+                        {/* Buttons skeleton */}
+                        <div className="flex gap-3 pt-2">
+                            <Skeleton className="h-9 w-32 rounded" />
+                            <Skeleton className="h-9 w-24 rounded" />
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         );
     }

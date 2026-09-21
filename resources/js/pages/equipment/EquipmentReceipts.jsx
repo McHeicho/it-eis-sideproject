@@ -9,6 +9,7 @@ import {
     Receipt,
 } from "lucide-react";
 import api from "@/api/axios";
+import { describeError } from "@/lib/errors";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +52,7 @@ export default function EquipmentReceipts() {
     const [expandedId, setExpandedId] = useState(null);
     const [expandedData, setExpandedData] = useState({});
     const [expandLoading, setExpandLoading] = useState(null);
+    const [expandError, setExpandError] = useState({});
     const [filterForm, setFilterForm] = useState(EMPTY_FILTERS);
     const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
 
@@ -75,11 +77,15 @@ export default function EquipmentReceipts() {
         setExpandedId(id);
         if (expandedData[id]) return;
         setExpandLoading(id);
+        setExpandError((prev) => ({ ...prev, [id]: "" }));
         try {
             const res = await api.get(`/deliveries/${id}`);
             setExpandedData((prev) => ({ ...prev, [id]: res.data }));
         } catch (error) {
-            console.error("Failed to fetch delivery detail:", error);
+            setExpandError((prev) => ({
+                ...prev,
+                [id]: describeError(error, "Could not load this receipt."),
+            }));
         } finally {
             setExpandLoading(null);
         }
@@ -114,6 +120,7 @@ export default function EquipmentReceipts() {
     const handleFilter = () => {
         setExpandedId(null);
         setExpandedData({});
+        setExpandError({});
         setAppliedFilters(filterForm);
     };
 
@@ -121,6 +128,7 @@ export default function EquipmentReceipts() {
         setFilterForm(EMPTY_FILTERS);
         setExpandedId(null);
         setExpandedData({});
+        setExpandError({});
         setAppliedFilters(EMPTY_FILTERS);
     };
 
@@ -485,6 +493,10 @@ export default function EquipmentReceipts() {
                                                             );
                                                         }}
                                                     />
+                                                ) : expandError[delivery.id] ? (
+                                                    <p role="alert" className="py-4 text-sm text-red-500">
+                                                        {expandError[delivery.id]}
+                                                    </p>
                                                 ) : null}
                                             </TableCell>
                                         </TableRow>
@@ -623,7 +635,7 @@ function ReceiptDetail({
             );
             onAttachmentRemoved(attachmentId);
         } catch (error) {
-            console.error("Failed to remove attachment:", error);
+            setUploadError(describeError(error, "Could not remove the document."));
         }
     };
 

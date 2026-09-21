@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Laptop, Users } from "lucide-react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/custom/custom-button";
 
 const VISIBLE_LIMIT = 20;
 

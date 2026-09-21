@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil } from 'lucide-react';
-import api from '../../api/axios';
+import api from '@/api/axios';
 import { describeError } from "@/lib/errors";
 import AppDialog from "@/components/ui/AppDialog";
 import { Button } from "@/components/ui/custom/custom-button";

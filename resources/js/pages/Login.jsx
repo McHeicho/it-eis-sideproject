@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/api/axios';
+import { describeError } from '@/lib/errors';
 import { Button } from '@/components/ui/custom/custom-button';
 import { Input } from '@/components/ui/input';
 import { Field, FieldLabel, FieldGroup } from '@/components/ui/field';
@@ -33,7 +34,13 @@ export default function Login() {
             localStorage.setItem('user', JSON.stringify(response.data.user));
             navigate('/dashboard');
         } catch (err) {
-            setError('Invalid email or password.');
+            // 401 is the only "wrong credentials" answer; everything else
+            // (server down, 429 throttle, 422) gets its real explanation.
+            setError(
+                err.response?.status === 401
+                    ? 'Invalid email or password.'
+                    : describeError(err)
+            );
         } finally {
             setLoading(false);
         }

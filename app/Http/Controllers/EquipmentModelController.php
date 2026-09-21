@@ -45,10 +45,4 @@ class EquipmentModelController extends Controller
         $equipmentModel->update($request->only('brand_id', 'name'));
         return response()->json($equipmentModel->load('brand'));
     }
-
-    public function destroy(EquipmentModel $equipmentModel)
-    {
-        $equipmentModel->delete();
-        return response()->json(['message' => 'Model deleted']);
-    }
 }

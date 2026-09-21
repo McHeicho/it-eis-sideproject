@@ -58,10 +58,4 @@ class EmployeeController extends Controller
         $employee->update($request->only('name', 'department_tag', 'branch_id'));
         return response()->json($employee->load('department', 'branch'));
     }
-
-    public function destroy(Employee $employee)
-    {
-        $employee->delete();
-        return response()->json(['message' => 'Employee deleted']);
-    }
 }

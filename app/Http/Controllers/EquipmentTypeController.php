@@ -38,10 +38,4 @@ class EquipmentTypeController extends Controller
         $equipmentType->update($request->only('name', 'icon'));
         return response()->json($equipmentType);
     }
-
-    public function destroy(EquipmentType $equipmentType)
-    {
-        $equipmentType->delete();
-        return response()->json(['message' => 'Equipment type deleted']);
-    }
 }

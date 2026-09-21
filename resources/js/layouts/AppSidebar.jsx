@@ -1,5 +1,7 @@
 import * as React from "react";
 import { NavLink, useMatch, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import api from "@/api/axios";
 import {
     LayoutDashboard,
     Laptop,
@@ -138,6 +140,7 @@ function NavSection({ icon: Icon, label, open, onOpenChange, children }) {
 
 export function AppSidebar(props) {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { setOpenMobile } = useSidebar();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isAdmin = user.role_id === 1;
@@ -160,6 +163,15 @@ export function AppSidebar(props) {
     const closeMobile = () => setOpenMobile(false);
 
     const handleLogout = async () => {
+        try {
+            await api.post("/logout");
+        } catch {
+            // The token is discarded below either way; a failed server-side
+            // revoke only means it expires on its own (sanctum.expiration).
+        }
+        // Drop cached lists so the next account on this browser never paints
+        // the previous account's data first.
+        queryClient.clear();
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useLookups } from "@/queries/useLookups";
 import { Button } from "@/components/ui/custom/custom-button";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/custom/custom-toggle-group";
 import { Field, FieldLabel, FieldError, FieldGroup, FieldSet } from "@/components/ui/field";
 import {
     Combobox,
@@ -388,28 +389,34 @@ export default function EquipmentAdd() {
                         {/* Equipment Type */}
                         <Field>
                             <FieldLabel>Equipment Type</FieldLabel>
-                            <div className="flex gap-3">
+                            <ToggleGroup
+                                type="single"
+                                variant="outline"
+                                value={
+                                    form.equipment_type_id
+                                        ? String(form.equipment_type_id)
+                                        : ""
+                                }
+                                onValueChange={(value) => {
+                                    if (!value) return; // deselect-click on the active item — ignore
+                                    setForm({
+                                        ...form,
+                                        equipment_type_id: Number(value),
+                                    });
+                                    setErrors({ ...errors, equipment_type_id: "" });
+                                }}
+                            >
                                 {equipmentTypes.map((type) => (
-                                    <button
-                                        type="button"
+                                    <ToggleGroupItem
                                         key={type.id}
-                                        onClick={() =>
-                                            setForm({
-                                                ...form,
-                                                equipment_type_id: type.id,
-                                            })
-                                        }
-                                        className={`flex flex-col items-center gap-1 px-4 py-3 rounded border text-sm transition-colors ${
-                                            form.equipment_type_id === type.id
-                                                ? "border-blue-500 bg-blue-50 text-blue-600"
-                                                : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                                        }`}
+                                        value={String(type.id)}
+                                        className="h-auto flex-col gap-1 rounded-md px-4 py-3"
                                     >
                                         <Laptop size={20} />
                                         {type.name}
-                                    </button>
+                                    </ToggleGroupItem>
                                 ))}
-                            </div>
+                            </ToggleGroup>
                             {errors.equipment_type_id && (
                                 <FieldError>
                                     {errors.equipment_type_id[0]}

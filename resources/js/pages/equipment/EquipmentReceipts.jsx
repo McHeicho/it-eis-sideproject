@@ -366,27 +366,35 @@ export default function EquipmentReceipts() {
                                 <React.Fragment key={delivery.id}>
                                     {/* Summary Row */}
                                     <TableRow
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-expanded={expandedId === delivery.id}
                                         onClick={() => handleExpand(delivery.id)}
-                                        onKeyDown={(e) => {
-                                            if (
-                                                e.key === "Enter" ||
-                                                e.key === " "
-                                            ) {
-                                                e.preventDefault();
-                                                handleExpand(delivery.id);
-                                            }
-                                        }}
                                         className="border-0 hover:bg-gray-50 transition-colors cursor-pointer"
                                     >
                                         <TableCell className="px-4 py-3 text-gray-400">
-                                            {expandedId === delivery.id ? (
-                                                <ChevronDown size={16} />
-                                            ) : (
-                                                <ChevronRight size={16} />
-                                            )}
+                                            {/* The row stays clickable for the mouse; the button
+                                                carries keyboard access and the expanded state so
+                                                the row keeps its table semantics (blueprint A-16). */}
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon-xs"
+                                                aria-expanded={expandedId === delivery.id}
+                                                aria-label={
+                                                    expandedId === delivery.id
+                                                        ? "Collapse receipt"
+                                                        : "Expand receipt"
+                                                }
+                                                className="text-gray-400 hover:bg-transparent hover:text-gray-600"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleExpand(delivery.id);
+                                                }}
+                                            >
+                                                {expandedId === delivery.id ? (
+                                                    <ChevronDown size={16} />
+                                                ) : (
+                                                    <ChevronRight size={16} />
+                                                )}
+                                            </Button>
                                         </TableCell>
                                         <TableCell className="px-4 py-3 font-medium text-gray-800">
                                             {delivery.supplier?.name || "—"}

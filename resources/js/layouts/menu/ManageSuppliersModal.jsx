@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ManageSuppliersModal({ onClose }) {
     const queryClient = useQueryClient();
@@ -225,7 +226,7 @@ export default function ManageSuppliersModal({ onClose }) {
                 {loading ? (
                     <div className="space-y-2">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="skeleton h-3 w-full rounded"></div>
+                            <Skeleton key={i} className="h-3 w-full rounded" />
                         ))}
                     </div>
                 ) : isEditing ? (

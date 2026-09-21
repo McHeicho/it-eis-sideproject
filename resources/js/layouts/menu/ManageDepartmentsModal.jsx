@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ManageDepartmentsModal({ onClose }) {
     const queryClient = useQueryClient();
@@ -254,8 +255,8 @@ export default function ManageDepartmentsModal({ onClose }) {
                     <div className="space-y-2">
                         {[...Array(3)].map((_, i) => (
                             <div key={i} className="flex justify-between">
-                                <div className="skeleton h-3 w-16 rounded"></div>
-                                <div className="skeleton h-3 w-32 rounded"></div>
+                                <Skeleton className="h-3 w-16 rounded" />
+                                <Skeleton className="h-3 w-32 rounded" />
                             </div>
                         ))}
                     </div>

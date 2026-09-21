@@ -27,6 +27,7 @@ import {
     SelectValue,
 } from "@/components/ui/custom/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Sentinels for the filter-bar Selects — Radix throws on an empty-string item
 // value, so these stand in for "" ("All X") at the component boundary and get
@@ -136,9 +137,9 @@ export default function EquipmentReceipts() {
     if (loading) {
         return (
             <div className="p-6 max-w-4xl space-y-3">
-                <div className="skeleton h-6 w-48 rounded mb-4"></div>
+                <Skeleton className="h-6 w-48 rounded mb-4" />
                 {[...Array(5)].map((_, i) => (
-                    <div key={i} className="skeleton h-14 w-full rounded"></div>
+                    <Skeleton key={i} className="h-14 w-full rounded" />
                 ))}
             </div>
         );
@@ -428,10 +429,10 @@ export default function EquipmentReceipts() {
                                                     <div className="py-4 space-y-2">
                                                         {[...Array(3)].map(
                                                             (_, i) => (
-                                                                <div
+                                                                <Skeleton
                                                                     key={i}
-                                                                    className="skeleton h-8 w-full rounded"
-                                                                ></div>
+                                                                    className="h-8 w-full rounded"
+                                                                />
                                                             )
                                                         )}
                                                     </div>

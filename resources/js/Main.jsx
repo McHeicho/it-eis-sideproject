@@ -86,6 +86,7 @@ export default function Main() {
                     <Route path="assignments" element={<AssignmentList />} />
                     <Route path="bulk-import" element={<BulkImport />} />
                     <Route path="reports-equipment" element={<EquipmentReports />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Route>
             </Routes>
         </BrowserRouter>

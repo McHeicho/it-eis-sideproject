@@ -346,35 +346,39 @@ export default function EquipmentList() {
                                             <StatusBadge status={item.status} />
                                         )}
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 flex items-center gap-3">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon-sm"
-                                            className="text-blue-600 hover:bg-transparent hover:text-blue-800"
-                                            onClick={() =>
-                                                navigate(
-                                                    `/equipment/${item.id}`
-                                                )
-                                            }
-                                            title="View"
-                                        >
-                                            <FileSearch size={15} />
-                                        </Button>
-                                        {user.role_id === 1 && (
+                                    <TableCell className="px-4 py-3">
+                                        <div className="flex items-center gap-3">
                                             <Button
                                                 variant="ghost"
                                                 size="icon-sm"
-                                                className="text-amber-600 hover:bg-transparent hover:text-amber-800"
+                                                className="text-blue-600 hover:bg-transparent hover:text-blue-800"
                                                 onClick={() =>
                                                     navigate(
-                                                        `/equipment/${item.id}/edit`
+                                                        `/equipment/${item.id}`
                                                     )
                                                 }
-                                                title="Edit"
+                                                title="View"
+                                                aria-label="View"
                                             >
-                                                <Pencil size={15} />
+                                                <FileSearch size={15} />
                                             </Button>
-                                        )}
+                                            {user.role_id === 1 && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon-sm"
+                                                    className="text-amber-600 hover:bg-transparent hover:text-amber-800"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/equipment/${item.id}/edit`
+                                                        )
+                                                    }
+                                                    title="Edit"
+                                                    aria-label="Edit"
+                                                >
+                                                    <Pencil size={15} />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

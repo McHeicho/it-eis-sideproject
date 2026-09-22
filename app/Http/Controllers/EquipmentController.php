@@ -194,15 +194,20 @@ class EquipmentController extends Controller
         // row, and leaves Assigned only through return(). The edit form
         // mirrors this by locking the select; this is the server-side half.
         $hasActiveAssignment = $equipment->currentAssignment()->exists();
+        $statusChanged = $request->status !== $equipment->status;
 
-        if ($request->status === "Assigned" && !$hasActiveAssignment) {
+        // Guard status changes only. A save that keeps the current status is
+        // always allowed, so a unit whose status and assignment rows already
+        // disagree (older imports created "Assigned" units with no
+        // assignment) can still be edited and repaired.
+        if ($statusChanged && $request->status === "Assigned") {
             return $this->validationError(
                 "status",
                 "Equipment can only become Assigned through the Assignments page.",
             );
         }
 
-        if ($hasActiveAssignment && $request->status !== "Assigned") {
+        if ($statusChanged && $hasActiveAssignment) {
             return $this->validationError(
                 "status",
                 "This equipment is currently assigned. Return it before changing its status.",

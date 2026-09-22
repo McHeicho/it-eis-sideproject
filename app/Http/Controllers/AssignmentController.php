@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AssignmentController extends Controller
 {
@@ -38,27 +39,25 @@ class AssignmentController extends Controller
             "notes"         => "nullable|string",
         ]);
 
-        // Make sure equipment is Available before assigning
-        $equipment = Equipment::findOrFail($request->equipment_id);
+        // Lock the unit's row for the whole check-and-write, so two assigns
+        // sent at the same moment cannot both pass the checks below.
+        $assignment = DB::transaction(function () use ($request) {
+            $equipment = Equipment::lockForUpdate()->findOrFail($request->equipment_id);
 
-        $assignable = ["Available", "Spare Unit", "Lost/Missing"];
+            $assignable = ["Available", "Spare Unit", "Lost/Missing"];
 
-        if (!in_array($equipment->status, $assignable, true)) {
-            return $this->validationError(
-                "equipment_id",
-                "Equipment is not available for assignment",
-            );
-        }
+            if (!in_array($equipment->status, $assignable, true)) {
+                throw ValidationException::withMessages([
+                    "equipment_id" => "Equipment is not available for assignment",
+                ]);
+            }
 
-        if ($equipment->currentAssignment()->exists()) {
-            return $this->validationError(
-                "equipment_id",
-                "This equipment already has an active assignment.",
-            );
-        }
+            if ($equipment->currentAssignment()->exists()) {
+                throw ValidationException::withMessages([
+                    "equipment_id" => "This equipment already has an active assignment.",
+                ]);
+            }
 
-        // Row and status flag move together or not at all.
-        $assignment = DB::transaction(function () use ($request, $equipment) {
             $assignment = Assignment::create(
                 $request->only(
                     "equipment_id",

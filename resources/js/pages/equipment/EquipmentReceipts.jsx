@@ -374,7 +374,7 @@ export default function EquipmentReceipts() {
                                         <TableCell className="px-4 py-3 text-gray-400">
                                             {/* The row stays clickable for the mouse; the button
                                                 carries keyboard access and the expanded state so
-                                                the row keeps its table semantics (blueprint A-16). */}
+                                                the row keeps its table semantics. */}
                                             <Button
                                                 type="button"
                                                 variant="ghost"
@@ -645,7 +645,7 @@ function ReceiptDetail({
     // by URL. Fetch through the token-bearing axios client as a blob and hand
     // the blob URL to a tab opened synchronously inside the click — popup
     // blockers allow a tab opened during the click, not one opened after
-    // the await (handoff §6: files behind Sanctum come down as blobs).
+    // the await.
     const handleView = async (attachmentId) => {
         const viewer = window.open("", "_blank");
         try {

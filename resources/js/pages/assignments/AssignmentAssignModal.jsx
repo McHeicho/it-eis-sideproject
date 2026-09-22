@@ -149,7 +149,7 @@ export default function AssignmentAssignModal({
             } else {
                 // Network failures, 403/409/500, and any 422 without an
                 // errors map — the old code stored undefined here and the
-                // next render crashed the whole app (blueprint A-05).
+                // next render crashed the whole app.
                 setAssignErrors({ general: [describeError(error)] });
             }
         } finally {

@@ -1,6 +1,6 @@
 // Turns a failed axios call into one sentence a user can act on. Every catch
-// block that used to end in console.error goes through here (blueprint A-06).
-// Convention (handoff §4): render the sentence inline when the context stays
+// block that used to end in console.error goes through here.
+// Convention: render the sentence inline when the context stays
 // (a modal, a form, a card); use toast.error() only when the context is gone
 // (a modal closed, the page navigated).
 export function describeError(

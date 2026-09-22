@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/custom/custom-button";
 
 // Catches render errors below it so one broken page does not blank the whole
-// app (blueprint A-13). A class component: React has no hook equivalent.
+// app. A class component: React has no hook equivalent.
 // The console.error here is deliberate — it is the only place a render
 // error is logged, and the user still sees a message.
 export default class ErrorBoundary extends React.Component {

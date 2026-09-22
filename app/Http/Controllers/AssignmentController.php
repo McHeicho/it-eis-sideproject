@@ -114,7 +114,7 @@ class AssignmentController extends Controller
     }
 
     // 422 in Laravel's own validation shape so the modals show it under the
-    // field instead of crashing on a missing `errors` key (blueprint A-05).
+    // field instead of crashing on a missing `errors` key.
     private function validationError(string $field, string $message)
     {
         return response()->json(

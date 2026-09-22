@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-// Roles: role_id 1 = Admin, 2 = User (handoff §4). Applied in routes/api.php
+// Roles: role_id 1 = Admin, 2 = User. Applied in routes/api.php
 // to every write route. Runs after auth:sanctum, so $request->user() is set;
 // the null-safe access only guards against misordered middleware.
 class EnsureUserIsAdmin

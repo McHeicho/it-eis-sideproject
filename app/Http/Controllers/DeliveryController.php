@@ -152,7 +152,7 @@ class DeliveryController extends Controller
 
         $file = $request->file("file");
         // Private disk (storage/app/private): reachable only through
-        // streamAttachment, which sits behind auth:sanctum (blueprint A-17).
+        // streamAttachment, which sits behind auth:sanctum.
         $path = $file->store("deliveries/attachments", "local");
         $originalName = $file->getClientOriginalName();
         $mimeType = $file->getClientMimeType();

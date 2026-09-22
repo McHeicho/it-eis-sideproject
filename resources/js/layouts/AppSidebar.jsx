@@ -93,7 +93,7 @@ function NavSubItem({ to, end, exclude, icon: Icon, label, onNavigate }) {
         <SidebarMenuSubItem>
             <SidebarMenuSubButton asChild isActive={isActive}
                 className="gap-1.5 py-2 data-[active=true]:bg-[var(--sidebar-active-bg)]">
-                <NavLink to={to} end={end} onClick={onNavigate}>
+                <NavLink to={to} end={end} onClick={onNavigate} aria-current={isActive ? "page" : false}>
                     <Icon />
                     <span>{label}</span>
                 </NavLink>

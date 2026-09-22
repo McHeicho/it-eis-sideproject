@@ -99,6 +99,10 @@ class EquipmentController extends Controller
             return $mismatch;
         }
 
+        if ($conflict = $this->deliverySupplierConflict($request)) {
+            return $conflict;
+        }
+
         $equipment = DB::transaction(function () use ($request) {
             $deliveryId = $request->delivery_id ?? $this->resolveDelivery($request)->id;
 
@@ -189,6 +193,10 @@ class EquipmentController extends Controller
             return $mismatch;
         }
 
+        if ($conflict = $this->deliverySupplierConflict($request)) {
+            return $conflict;
+        }
+
         // Status is action-driven (cleanup #2): a unit becomes Assigned only
         // through AssignmentController::store, which creates the Assignment
         // row, and leaves Assigned only through return(). The edit form
@@ -267,6 +275,22 @@ class EquipmentController extends Controller
     // which used to hit the unique index and return a 500.
     private function resolveDelivery(Request $request): Delivery
     {
+        return $this->findExistingDelivery($request)
+            ?? Delivery::create(
+                $request->only([
+                    "voucher_no",
+                    "invoice_no",
+                    "supplier_id",
+                    "purchase_date",
+                    "order_no",
+                    "notes",
+                ]),
+            );
+    }
+
+    // A delivery already on file under this voucher or invoice number.
+    private function findExistingDelivery(Request $request): ?Delivery
+    {
         if ($request->filled("voucher_no")) {
             $existing = Delivery::where("voucher_no", $request->voucher_no)->first();
             if ($existing) {
@@ -275,21 +299,32 @@ class EquipmentController extends Controller
         }
 
         if ($request->filled("invoice_no")) {
-            $existing = Delivery::where("invoice_no", $request->invoice_no)->first();
-            if ($existing) {
-                return $existing;
-            }
+            return Delivery::where("invoice_no", $request->invoice_no)->first();
         }
 
-        return Delivery::create(
-            $request->only([
-                "voucher_no",
-                "invoice_no",
-                "supplier_id",
-                "purchase_date",
-                "order_no",
-                "notes",
-            ]),
+        return null;
+    }
+
+    // A voucher or invoice number already on file belongs to that delivery's
+    // supplier. Reusing it under a different supplier would file the unit
+    // under the wrong supplier without a word, so refuse instead.
+    private function deliverySupplierConflict(Request $request)
+    {
+        if ($request->filled("delivery_id")) {
+            return null;
+        }
+
+        $existing = $this->findExistingDelivery($request);
+
+        if (!$existing || (int) $existing->supplier_id === (int) $request->supplier_id) {
+            return null;
+        }
+
+        return $this->validationError(
+            "supplier_id",
+            "That number is already on file under "
+                . ($existing->supplier?->name ?? "another supplier")
+                . ". Pick that supplier or check the number.",
         );
     }
 

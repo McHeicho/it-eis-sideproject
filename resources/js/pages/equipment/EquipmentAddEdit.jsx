@@ -42,6 +42,7 @@ export default function EquipmentAdd() {
 
     const [models, setModels] = useState([]);
     const [lastSeenUpdatedAt, setLastSeenUpdatedAt] = useState(null);
+    const [hasActiveAssignment, setHasActiveAssignment] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [equipmentLoading, setEquipmentLoading] = useState(isEditMode);
     const [loadError, setLoadError] = useState("");
@@ -98,6 +99,7 @@ export default function EquipmentAdd() {
                 });
 
                 setLastSeenUpdatedAt(eq.updated_at);
+                setHasActiveAssignment(!!eq.current_assignment);
                 setForm({
                     equipment_type_id: eq.equipment_type_id,
                     brand_id: eq.brand_id,
@@ -800,7 +802,7 @@ export default function EquipmentAdd() {
                                             onValueChange={(value) =>
                                                 handleSelectChange("status", value)
                                             }
-                                            disabled={form.status === "Assigned"}
+                                            disabled={hasActiveAssignment}
                                         >
                                             <SelectTrigger
                                                 id="status"
@@ -824,7 +826,7 @@ export default function EquipmentAdd() {
                                                     ))}
                                             </SelectContent>
                                         </Select>
-                                        {form.status === "Assigned" && (
+                                        {hasActiveAssignment && (
                                             <p className="text-xs text-gray-400 mt-1">
                                                 Status is locked while equipment is
                                                 assigned. Use Return Equipment to change
